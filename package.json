@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "python3 -m http.server 8093 -d site",
     "build": "node build/esbuild.config.mjs && node build/integrity.mjs",
-    "test": "node --test tests/**/*.test.js",
+    "test": "node --test tests/",
     "lint": "tsc --noEmit",
     "deploy:local": "bash build/deploy_local.sh"
   },
