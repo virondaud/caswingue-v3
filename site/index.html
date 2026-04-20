@@ -7206,6 +7206,7 @@ function playing(){
     </div>
     <div class="hpb"><div class="hpf" style="width:${pct}%"></div></div>
     <div class="f12 tm tc" style="margin-bottom:10px">${hn} trou${hn!==1?'s':''} joué${hn!==1?'s':''} sur 18</div>
+    ${renderPlayingNotebookCard(g.courseId,hn)}
     ${gameStatus(g,pls,hole,hn)}
     ${g.gameType==='loup'?loupPickUI(g,pls,hn):''}
     <div class="card"><div class="ct">Scores — Trou ${hn+1}</div>
@@ -11162,6 +11163,38 @@ function deleteHoleNote(){
     S._noteForm=null;
     render();
   });
+}
+
+// Rend une carte compacte « Mes notes de ce trou » dans la vue Playing.
+// Affiche les infos du trou courant si elles existent, sinon un lien pour en créer.
+function renderPlayingNotebookCard(courseId,holeIdx){
+  var note=getHoleNote(courseId,holeIdx);
+  if(!note){
+    return '<div class="card" style="padding:8px 12px;background:#faf5ff;border-left:3px solid #a855f7;margin-bottom:10px;cursor:pointer" onclick="openHoleEdit(\''+courseId+'\','+holeIdx+')">'+
+      '<div class="f" style="align-items:center;justify-content:space-between">'+
+        '<div class="f11" style="color:#7c3aed">📓 + Ajouter mes notes pour ce trou</div>'+
+        '<div style="color:#7c3aed;font-size:16px">›</div>'+
+      '</div></div>';
+  }
+  var ts=note.teeShot||{};
+  var ap=note.approach||{};
+  var apStratLabel=ap.strategy?APPROACH_STRATEGIES.find(t=>t.key===ap.strategy)?.label.replace(/^[^ ]+ /,''):'';
+  var lzLabel=ts.landingZone?LANDING_ZONES.find(z=>z.key===ts.landingZone)?.label:'';
+  var stars=note.difficulty?('⭐'.repeat(note.difficulty)):'';
+  var ucStart=ts.usualClub?getClubLabelFromId(courseId,ts.usualClub):'';
+  var ucApp=ap.usualClub?getClubLabelFromId(courseId,ap.usualClub):'';
+  var dangers=ts.dangers||[];
+  return '<div class="card" style="padding:10px;background:#faf5ff;border-left:3px solid #7c3aed;margin-bottom:10px;cursor:pointer" onclick="openHoleEdit(\''+courseId+'\','+holeIdx+')">'+
+    '<div class="f" style="align-items:center;justify-content:space-between;margin-bottom:6px">'+
+      '<div class="fw7 f13" style="color:#7c3aed">📓 Mes notes '+(stars?'· '+stars:'')+'</div>'+
+      '<div style="color:#7c3aed;font-size:14px">✏️</div>'+
+    '</div>'+
+    (ts.targetDistance?'<div class="f11" style="color:#16a34a">🚩 Viser '+ts.targetDistance+'m'+(lzLabel?' ('+esc(lzLabel).toLowerCase()+')':'')+(ucStart?' · habituel : '+esc(ucStart):'')+'</div>':'')+
+    (dangers.length?'<div class="f g8 mt8" style="flex-wrap:wrap">'+dangers.map(d=>{var dl=DANGER_TYPES.find(x=>x.key===d.type);return dl?'<span class="badge bg" style="background:#fef3c7;color:#92400e;font-size:10px">⚠️ '+esc(dl.label)+(d.distance?' '+d.distance+'m':'')+'</span>':'';}).join('')+'</div>':'')+
+    (apStratLabel?'<div class="f11" style="margin-top:4px;color:#7c3aed">⛳ '+esc(apStratLabel)+(ap.targetBeforePin?' · '+ap.targetBeforePin+'m avant drapeau':'')+(ucApp?' · habituel : '+esc(ucApp):'')+'</div>':'')+
+    (note.strategy?'<div class="f12" style="margin-top:6px;color:#334155;font-style:italic">«'+esc(note.strategy.slice(0,180))+(note.strategy.length>180?'…':'')+'»</div>':'')+
+    (note.notes?'<div class="f11 tm mt8">📝 '+esc(note.notes.slice(0,120))+(note.notes.length>120?'…':'')+'</div>':'')+
+  '</div>';
 }
 
 // Ouvre le Club Advisor pré-rempli avec la distance cible du trou courant
