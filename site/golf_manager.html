@@ -3123,19 +3123,6 @@ function clubNantesView(){
       <div class="rules-title">Golf Club de Nantes</div>
       <div class="rules-sub">Vigneux-de-Bretagne — Fondé en 1921</div>
     </div>
-    <div class="card" style="border:1.5px solid ${gold};overflow:hidden;margin-top:12px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <div class="ct" style="margin-bottom:0">🌤️ Météo au club</div>
-        <a href="https://wttr.in/Vigneux-de-Bretagne?lang=fr" target="_blank" style="font-size:11px;color:${gold};font-weight:600;text-decoration:none">📅 3 jours ›</a>
-      </div>
-      <div id="wx-gcn" style="min-height:80px;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:13px">⏳ Chargement météo…</div>
-      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-        <a href="https://meteofrance.com/previsions-meteo-france/vigneux-de-bretagne/44360" target="_blank" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 12px;border-radius:10px;background:linear-gradient(135deg,#0284c7,#38bdf8);color:#fff;font-size:12px;font-weight:700;text-decoration:none"><img src="${ASSETS['app_meteofrance']}" width="20" height="20" style="border-radius:4px"> Météo France</a>
-        <a href="https://www.lachainemeteo.com/meteo-france/ville-216472/previsions-meteo-vigneux-de-bretagne-aujourdhui" target="_blank" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 12px;border-radius:10px;background:linear-gradient(135deg,#0369a1,#0ea5e9);color:#fff;font-size:12px;font-weight:700;text-decoration:none"><img src="${ASSETS['app_lachainemeteo']}" width="20" height="20" style="border-radius:4px"> La Chaîne Météo</a>
-        <a href="weather://" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 12px;border-radius:10px;background:linear-gradient(135deg,#1d4ed8,#60a5fa);color:#fff;font-size:12px;font-weight:700;text-decoration:none"><img src="${ASSETS['app_apple-meteo']}" width="20" height="20" style="border-radius:4px"> App Météo</a>
-      </div>
-    </div>
-    ${(()=>{setTimeout(()=>loadWx('gcn','Nantes Vigneux'),300);return '';})()}
     ${nt('<img src="'+ASSETS["app_waze"]+'" width="28" height="28" style="border-radius:6px">','Y aller avec Waze','Itinéraire vers le Golf Club de Nantes','https://waze.com/ul?ll=47.290906,-1.699960&navigate=yes&z=15','linear-gradient(135deg,#33ccff,#00aaff)')}
 
     <div class="sec-lbl mt8">📱 Accès rapide</div>
@@ -3160,17 +3147,11 @@ function clubNantesView(){
     ${nt('✉️','Envoyer un email','accueil@golfclubdenantes.com','mailto:accueil@golfclubdenantes.com','linear-gradient(135deg,#8b6f3a,#b8956a)')}
     ${nt('📘','Page Facebook','Actualités & photos du club','https://www.facebook.com/golfclubdenantes/','linear-gradient(135deg,#a6894f,#c8a96e)')}
 
-    ${render7dayPicker('Nantes Vigneux','gcn_date')}
+    <input type="hidden" id="gcn_date" value="${new Date(Date.now()+3*86400000).toISOString().slice(0,10)}">
+    <input type="hidden" id="gcn_time" value="09:00">
+    ${render7dayPicker('Nantes Vigneux','gcn_date','gcn_time')}
     <div class="card mt8" style="border-left:4px solid #25D366">
       <div class="ct">📲 Prévenir les copains</div>
-      <div class="fg mb8">
-        <label class="lbl">Date</label>
-        <input type="date" class="inp" id="gcn_date" value="${new Date(Date.now()+3*86400000).toISOString().slice(0,10)}">
-      </div>
-      <div class="fg mb8">
-        <label class="lbl">Heure de départ</label>
-        <input type="time" class="inp" id="gcn_time" value="09:00">
-      </div>
       <div class="fg mb8">
         <label class="lbl">Message personnalisé (optionnel)</label>
         <input type="text" class="inp" id="gcn_msg" placeholder="Ex : Après on mange au club !">
@@ -3951,57 +3932,142 @@ function formatWeatherLine(wx){
   var desc=wmoDesc(wx.weatherCode)||'Météo';
   return desc+' - '+wx.temp+'°C - vent '+wx.windKmh+' km/h - pluie '+wx.precipProb+'%';
 }
-// Rendu de la grille 7 jours — renvoie du HTML à insérer dans la page.
-// inputId : id de l'input[type=date] à mettre à jour quand on tap sur une carte.
-function render7dayPicker(courseName,inputId){
+// Widget unifié 7 jours + expansion horaire au tap.
+// dateInputId/timeInputId : inputs cachés pilotés par le widget.
+function render7dayPicker(courseName,dateInputId,timeInputId){
   var geo=courseGeo(courseName);
-  if(!geo)return ''; // pas de GPS = pas de grille
+  if(!geo)return ''; // pas de GPS = pas de widget
   var slot='fc-'+Math.random().toString(36).slice(2,8);
-  setTimeout(function(){load7dayPicker(slot,courseName,inputId);},200);
+  // Footer discret : 3 liens externes (on reprend courseMeteoUrls)
+  var mu=courseMeteoUrls(courseName);
+  var footer=
+    '<div style="display:flex;gap:6px;margin-top:10px;font-size:11px;color:#64748b;flex-wrap:wrap;justify-content:center">'+
+    '<span>Voir aussi :</span>'+
+    '<a href="'+mu.mf+'" target="_blank" style="color:#0284c7;text-decoration:none">Météo France</a><span>·</span>'+
+    '<a href="'+mu.lcm+'" target="_blank" style="color:#0369a1;text-decoration:none">La Chaîne Météo</a><span>·</span>'+
+    '<a href="weather://" style="color:#1d4ed8;text-decoration:none">App Météo</a>'+
+    '</div>';
+  setTimeout(function(){load7dayPicker(slot,courseName,dateInputId,timeInputId);},200);
   return '<div class="card mt8" style="padding:10px">'+
-    '<div class="ct" style="margin-bottom:8px">📅 Choisis ta date — météo 7 jours</div>'+
-    '<div id="'+slot+'" style="min-height:120px;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:13px">⏳ Chargement prévisions…</div>'+
+    '<div class="ct" style="margin-bottom:8px">📅 Choisis ton créneau — météo 7 jours</div>'+
+    '<div id="'+slot+'" data-course="'+esc(courseName)+'" data-didi="'+dateInputId+'" data-tidi="'+timeInputId+'" '+
+    'style="min-height:140px;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:13px">⏳ Chargement prévisions…</div>'+
+    footer+
     '</div>';
 }
-function load7dayPicker(slotId,courseName,inputId){
+function load7dayPicker(slotId,courseName,dateInputId,timeInputId){
   var el=document.getElementById(slotId);if(!el)return;
   fetch7dayForecast(courseName).then(function(fc){
     if(!fc||!fc.daily||!fc.daily.time){el.innerHTML='<div style="color:#94a3b8;font-size:12px;padding:12px">❌ Prévisions indisponibles</div>';return;}
-    var jours=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
-    var d=fc.daily;
-    var selected=document.getElementById(inputId)?.value||'';
-    var html='<div style="display:flex;gap:4px;overflow-x:auto;padding:2px 0">';
-    for(var i=0;i<d.time.length;i++){
-      var dt=new Date(d.time[i]+'T12:00:00');
-      var isSel=d.time[i]===selected;
-      var icon=wmoIcon(d.weather_code[i]);
-      var tmax=Math.round(d.temperature_2m_max[i]);
-      var tmin=Math.round(d.temperature_2m_min[i]);
-      var wind=Math.round(d.wind_speed_10m_max[i]);
-      var precip=Math.round(d.precipitation_probability_max[i]||0);
-      var dayKey=d.time[i];
-      html+='<button type="button" onclick="selectForecastDay(\''+inputId+'\',\''+dayKey+'\',\''+slotId+'\',\''+esc(courseName).replace(/\'/g,"\\'")+'\')" '+
-        'style="min-width:68px;flex:0 0 auto;background:'+(isSel?'#f0fdf4':'#fff')+';border:2px solid '+(isSel?'#16a34a':'#e2e8f0')+';border-radius:10px;padding:8px 4px;text-align:center;cursor:pointer;font-family:inherit">'+
-        '<div style="font-size:10px;color:#64748b;font-weight:700">'+jours[dt.getDay()]+'</div>'+
-        '<div style="font-size:11px;color:#334155;margin-bottom:2px">'+dt.getDate()+'/'+(dt.getMonth()+1)+'</div>'+
-        '<div style="font-size:22px;margin:2px 0">'+icon+'</div>'+
-        '<div style="font-size:11px;font-weight:700;color:#dc2626">'+tmax+'°</div>'+
-        '<div style="font-size:10px;color:#64748b">'+tmin+'°</div>'+
-        '<div style="font-size:9px;color:#64748b;margin-top:2px">💨'+wind+'</div>'+
-        '<div style="font-size:9px;color:'+(precip>30?'#0891b2':'#94a3b8')+';margin-top:1px">💧'+precip+'%</div>'+
-      '</button>';
-    }
-    html+='</div>';
-    el.innerHTML=html;
+    // stocker fc pour les clics suivants
+    el._fc=fc;
+    renderDayGrid(slotId,courseName,dateInputId,timeInputId);
   }).catch(function(err){
-    el.innerHTML='<div style="color:#94a3b8;font-size:12px;padding:12px">☁️ Prévisions indisponibles</div>';
+    el.innerHTML='<div style="color:#94a3b8;font-size:12px;padding:12px">☁️ Prévisions indisponibles — '+(err.message||'erreur')+'</div>';
   });
 }
-function selectForecastDay(inputId,dateStr,slotId,courseName){
-  var inp=document.getElementById(inputId);
+function renderDayGrid(slotId,courseName,dateInputId,timeInputId){
+  var el=document.getElementById(slotId);if(!el||!el._fc)return;
+  var fc=el._fc;
+  var jours=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+  var d=fc.daily;
+  var selectedDate=document.getElementById(dateInputId)?.value||'';
+  var selectedTime=document.getElementById(timeInputId)?.value||'';
+  // Grille jours
+  var html='<div style="display:flex;gap:4px;overflow-x:auto;padding:2px 0">';
+  for(var i=0;i<d.time.length;i++){
+    var dt=new Date(d.time[i]+'T12:00:00');
+    var isSel=d.time[i]===selectedDate;
+    var icon=wmoIcon(d.weather_code[i]);
+    var tmax=Math.round(d.temperature_2m_max[i]);
+    var tmin=Math.round(d.temperature_2m_min[i]);
+    var precip=Math.round(d.precipitation_probability_max[i]||0);
+    var dayKey=d.time[i];
+    html+='<button type="button" onclick="selectForecastDay(\''+slotId+'\',\''+dayKey+'\')" '+
+      'style="min-width:62px;flex:0 0 auto;background:'+(isSel?'#f0fdf4':'#fff')+';border:2px solid '+(isSel?'#16a34a':'#e2e8f0')+';border-radius:10px;padding:6px 4px;text-align:center;cursor:pointer;font-family:inherit">'+
+      '<div style="font-size:10px;color:#64748b;font-weight:700">'+jours[dt.getDay()]+'</div>'+
+      '<div style="font-size:11px;color:#334155;margin-bottom:2px">'+dt.getDate()+'/'+(dt.getMonth()+1)+'</div>'+
+      '<div style="font-size:22px;margin:2px 0">'+icon+'</div>'+
+      '<div style="font-size:11px;font-weight:700;color:#dc2626">'+tmax+'°</div>'+
+      '<div style="font-size:10px;color:#64748b">'+tmin+'°</div>'+
+      '<div style="font-size:9px;color:'+(precip>30?'#0891b2':'#94a3b8')+';margin-top:1px">'+precip+'% 💧</div>'+
+    '</button>';
+  }
+  html+='</div>';
+  // Ligne horaire si un jour est sélectionné
+  if(selectedDate){
+    html+=renderHourlyStrip(fc,selectedDate,selectedTime,slotId);
+    // Résumé
+    var lbl=formatDayLabel(selectedDate);
+    html+='<div style="margin-top:8px;padding:8px;background:#f0fdf4;border-radius:8px;text-align:center;font-size:12px;color:#166534;font-weight:600">';
+    html+='Créneau : '+lbl+(selectedTime?' à '+selectedTime:' — choisis une heure');
+    html+='</div>';
+  }
+  el.innerHTML=html;
+}
+function renderHourlyStrip(fc,dateStr,selectedTime,slotId){
+  if(!fc.hourly||!fc.hourly.time)return '';
+  // Slots : 7h, 9h, 11h, 13h, 15h, 17h, 19h
+  var hours=[7,9,11,13,15,17,19];
+  var lbl=formatDayLabel(dateStr);
+  var html='<div style="margin-top:10px;padding-top:10px;border-top:1px dashed #cbd5e1">';
+  html+='<div style="font-size:11px;color:#64748b;margin-bottom:6px;font-weight:700">'+lbl+' — horaires</div>';
+  html+='<div style="display:flex;gap:4px;overflow-x:auto">';
+  hours.forEach(function(h){
+    // Find hour index in fc.hourly.time
+    var target=dateStr+'T'+String(h).padStart(2,'0')+':00';
+    var idx=fc.hourly.time.indexOf(target);
+    if(idx<0){
+      // Try closest
+      var t0=new Date(target).getTime();
+      var best=-1,bd=1e18;
+      for(var j=0;j<fc.hourly.time.length;j++){
+        var td=Math.abs(new Date(fc.hourly.time[j]).getTime()-t0);
+        if(td<bd){bd=td;best=j;}
+      }
+      if(bd<2*3600000)idx=best;
+    }
+    var temp=idx>=0?Math.round(fc.hourly.temperature_2m[idx]):'–';
+    var wind=idx>=0?Math.round(fc.hourly.wind_speed_10m[idx]):'–';
+    var precip=idx>=0?Math.round(fc.hourly.precipitation_probability[idx]||0):0;
+    var icon=idx>=0?wmoIcon(fc.hourly.weather_code[idx]):'–';
+    var timeStr=String(h).padStart(2,'0')+':00';
+    var isSel=selectedTime===timeStr;
+    html+='<button type="button" onclick="selectForecastHour(\''+slotId+'\',\''+timeStr+'\')" '+
+      'style="min-width:56px;flex:0 0 auto;background:'+(isSel?'#f0fdf4':'#fff')+';border:2px solid '+(isSel?'#16a34a':'#e2e8f0')+';border-radius:10px;padding:6px 3px;text-align:center;cursor:pointer;font-family:inherit">'+
+      '<div style="font-size:11px;font-weight:700;color:#334155">'+h+'h</div>'+
+      '<div style="font-size:18px;margin:2px 0">'+icon+'</div>'+
+      '<div style="font-size:11px;font-weight:700;color:#dc2626">'+temp+'°</div>'+
+      '<div style="font-size:9px;color:#64748b">💨'+wind+'</div>'+
+      '<div style="font-size:9px;color:'+(precip>30?'#0891b2':'#94a3b8')+'">'+precip+'%</div>'+
+    '</button>';
+  });
+  html+='</div></div>';
+  return html;
+}
+function formatDayLabel(dateStr){
+  var d=new Date(dateStr+'T12:00:00');
+  var jours=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+  var mois=['janv','fév','mars','avr','mai','juin','juil','août','sept','oct','nov','déc'];
+  return jours[d.getDay()]+' '+d.getDate()+' '+mois[d.getMonth()];
+}
+function selectForecastDay(slotId,dateStr){
+  var el=document.getElementById(slotId);if(!el)return;
+  var dateInputId=el.dataset.didi;
+  var timeInputId=el.dataset.tidi;
+  var courseName=el.dataset.course;
+  var inp=document.getElementById(dateInputId);
   if(inp){inp.value=dateStr;inp.dispatchEvent(new Event('change'));}
-  // Rerender pour mettre à jour la sélection visuelle
-  load7dayPicker(slotId,courseName,inputId);
+  renderDayGrid(slotId,courseName,dateInputId,timeInputId);
+}
+function selectForecastHour(slotId,timeStr){
+  var el=document.getElementById(slotId);if(!el)return;
+  var dateInputId=el.dataset.didi;
+  var timeInputId=el.dataset.tidi;
+  var courseName=el.dataset.course;
+  var inp=document.getElementById(timeInputId);
+  if(inp){inp.value=timeStr;inp.dispatchEvent(new Event('change'));}
+  renderDayGrid(slotId,courseName,dateInputId,timeInputId);
 }
 function courseGeo(name){
   const direct=COURSE_GEO[name];
@@ -4071,33 +4137,17 @@ function bookingDetailView(){
       <div class="rules-title">${esc(c.name)}</div>
       <div class="rules-sub">Réserver un départ</div>
     </div>
-    <div class="card mt8">
-      <div class="ct" style="margin-bottom:0">🌤️ Météo</div>
-      <div id="wx-${c.id}" style="min-height:64px;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:13px">⏳ Chargement…</div>
-      ${(()=>{const mu=courseMeteoUrls(c.name);return`<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-        <a href="${mu.mf}" target="_blank" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 12px;border-radius:10px;background:linear-gradient(135deg,#0284c7,#38bdf8);color:#fff;font-size:12px;font-weight:700;text-decoration:none"><img src="${ASSETS['app_meteofrance']}" width="20" height="20" style="border-radius:4px"> Météo France</a>
-        <a href="${mu.lcm}" target="_blank" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 12px;border-radius:10px;background:linear-gradient(135deg,#0369a1,#0ea5e9);color:#fff;font-size:12px;font-weight:700;text-decoration:none"><img src="${ASSETS['app_lachainemeteo']}" width="20" height="20" style="border-radius:4px"> La Chaîne Météo</a>
-        <a href="weather://" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 12px;border-radius:10px;background:linear-gradient(135deg,#1d4ed8,#60a5fa);color:#fff;font-size:12px;font-weight:700;text-decoration:none"><img src="${ASSETS['app_apple-meteo']}" width="20" height="20" style="border-radius:4px"> App Météo</a>
-      </div>`;})()}
-    </div>
-    ${(()=>{setTimeout(()=>loadWx(c.id,c.name),500);return '';})()}
     ${bk.length?`<div class="card mt8">
       <div class="ct">⛳ Options de réservation</div>
       <div class="f g8" style="flex-direction:column">
         ${(()=>{const cl=clubLogo(c.name);return bk.map(b=>`<a ${calAttrs(b.url)} style="text-decoration:none;display:flex;align-items:center;gap:12px;padding:10px 8px;border-radius:10px;margin-bottom:4px;background:#f8fafc">${favi(b.url,'🔗',32,bookIcon(b.url)||cl)}<div style="flex:1;font-weight:700;font-size:14px;color:#1e293b">${b.label}</div><div style="color:${b.color};font-size:18px">›</div></a>`).join('');})()}
       </div>
     </div>`:`<div class="empty" style="padding:32px 0"><div class="ei">🔗</div>Pas de lien de réservation disponible pour ce parcours.</div>`}
-    ${render7dayPicker(c.name,'inv_date')}
+    <input type="hidden" id="inv_date" value="${defaultDate}">
+    <input type="hidden" id="inv_time" value="09:00">
+    ${render7dayPicker(c.name,'inv_date','inv_time')}
     <div class="card mt8" style="border-left:4px solid #25D366">
       <div class="ct">📲 Prévenir les copains</div>
-      <div class="fg mb8">
-        <label class="lbl">Date</label>
-        <input type="date" class="inp" id="inv_date" value="${defaultDate}">
-      </div>
-      <div class="fg mb8">
-        <label class="lbl">Heure de départ</label>
-        <input type="time" class="inp" id="inv_time" value="09:00">
-      </div>
       <div class="fg mb8">
         <label class="lbl">Message personnalisé (optionnel)</label>
         <input type="text" class="inp" id="inv_msg" placeholder="Ex : Après on mange ensemble !">
