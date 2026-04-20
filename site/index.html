@@ -7192,7 +7192,7 @@ function playing(){
   return`
   <div class="hdr"><button class="back" onclick="go('home')">‹</button>
   <h1 style="font-size:14px">${esc(course.name)} <span style='font-size:11px;opacity:.8'>${g.tee==='jaune'?'🟡':'⬜'}</span></h1>
-  <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><a href="https://18birdies.com" class="ha" title="18Birdies GPS" style="font-size:18px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;text-decoration:none">🐦</a><button class="ha" onclick="openAdvisorFromGame()" title="Quel club ?" style="font-size:20px;width:44px;height:44px;background:rgba(22,163,74,.15);color:#16a34a">🎯</button><button class="ha" onclick="shareScores()" style="font-size:20px;width:44px;height:44px">📲</button><button class="ha" onclick="startLiveShare()" title="${DB.game?.liveId?'Rediffuser le lien live':'Démarrer le partage live'}" style="font-size:20px;width:44px;height:44px;${DB.game?.liveId?'background:rgba(22,163,74,.15);color:#16a34a':''}">📡</button><button class="ha" onclick="terminateGame()" title="Terminer la partie" style="font-size:20px;width:44px;height:44px">🏁</button></div></div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><a href="https://18birdies.com" class="ha" title="18Birdies GPS" style="font-size:18px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;text-decoration:none">🐦</a><button class="ha" onclick="shareScores()" style="font-size:20px;width:44px;height:44px">📲</button><button class="ha" onclick="startLiveShare()" title="${DB.game?.liveId?'Rediffuser le lien live':'Démarrer le partage live'}" style="font-size:20px;width:44px;height:44px;${DB.game?.liveId?'background:rgba(22,163,74,.15);color:#16a34a':''}">📡</button><button class="ha" onclick="terminateGame()" title="Terminer la partie" style="font-size:20px;width:44px;height:44px">🏁</button></div></div>
   <div class="content an" style="padding-bottom:100px">
     <div class="hh">
       <div style="font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:.5px">Trou</div>
@@ -7215,11 +7215,13 @@ function playing(){
     ${g.gameType==='bbb'?bbbUI(g,pls,hn):''}
   </div>
   <div class="navbar">
-    <button class="btn bo mb0" style="width:auto;padding:11px 14px" onclick="prevH()" ${hn===0?'disabled style="opacity:.35"':''}>‹</button>
-    <button class="btn bo mb0" style="width:auto;padding:11px 12px;font-size:18px" onclick="go('scorecard')" title="Carte de score">📊</button>
-    <div class="hctr">Trou ${hn+1} / 18</div>
-    ${hn<17?`<button class="btn bp mb0" style="width:auto;padding:11px 14px" onclick="nextH()">›</button>`:
-    `<button class="btn bg2 mb0" style="width:auto;padding:11px 18px" onclick="finishGame()">🏆 Fin</button>`}
+    <button class="btn bo mb0" style="width:auto;padding:11px 12px" onclick="prevH()" ${hn===0?'disabled style="opacity:.35"':''}>‹</button>
+    <button class="btn bo mb0" style="width:auto;padding:11px 10px;font-size:18px" onclick="openHoleEdit('${g.courseId}',${hn})" title="Carnet de parcours">📓</button>
+    <button class="btn bo mb0" style="width:auto;padding:11px 10px;font-size:18px;background:rgba(22,163,74,.15);color:#16a34a" onclick="openAdvisorFromGame()" title="Quel club ?">🎯</button>
+    <button class="btn bo mb0" style="width:auto;padding:11px 10px;font-size:18px" onclick="go('scorecard')" title="Carte de score">📊</button>
+    <div class="hctr" style="flex:1;text-align:center;font-size:12px">T${hn+1}/18</div>
+    ${hn<17?`<button class="btn bp mb0" style="width:auto;padding:11px 12px" onclick="nextH()">›</button>`:
+    `<button class="btn bg2 mb0" style="width:auto;padding:11px 14px" onclick="finishGame()">🏆 Fin</button>`}
   </div>`}
 
 // ── Score row ──────────────────────────────────────────────────────────────
