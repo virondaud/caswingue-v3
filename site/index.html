@@ -3973,8 +3973,8 @@ function renderDayGrid(slotId,courseName,dateInputId,timeInputId){
   var d=fc.daily;
   var selectedDate=document.getElementById(dateInputId)?.value||'';
   var selectedTime=document.getElementById(timeInputId)?.value||'';
-  // Grille jours
-  var html='<div style="display:flex;gap:4px;overflow-x:auto;padding:2px 0">';
+  // Grille jours : grid 7 colonnes qui s'étirent pour s'adapter à toutes les largeurs
+  var html='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:2px 0">';
   for(var i=0;i<d.time.length;i++){
     var dt=new Date(d.time[i]+'T12:00:00');
     var isSel=d.time[i]===selectedDate;
@@ -3984,13 +3984,13 @@ function renderDayGrid(slotId,courseName,dateInputId,timeInputId){
     var precip=Math.round(d.precipitation_probability_max[i]||0);
     var dayKey=d.time[i];
     html+='<button type="button" onclick="selectForecastDay(\''+slotId+'\',\''+dayKey+'\')" '+
-      'style="min-width:62px;flex:0 0 auto;background:'+(isSel?'#f0fdf4':'#fff')+';border:2px solid '+(isSel?'#16a34a':'#e2e8f0')+';border-radius:10px;padding:6px 4px;text-align:center;cursor:pointer;font-family:inherit">'+
+      'style="background:'+(isSel?'#f0fdf4':'#fff')+';border:2px solid '+(isSel?'#16a34a':'#e2e8f0')+';border-radius:10px;padding:6px 2px;text-align:center;cursor:pointer;font-family:inherit;min-width:0;overflow:hidden">'+
       '<div style="font-size:10px;color:#64748b;font-weight:700">'+jours[dt.getDay()]+'</div>'+
-      '<div style="font-size:11px;color:#334155;margin-bottom:2px">'+dt.getDate()+'/'+(dt.getMonth()+1)+'</div>'+
-      '<div style="font-size:22px;margin:2px 0">'+icon+'</div>'+
+      '<div style="font-size:10px;color:#334155;margin-bottom:2px">'+dt.getDate()+'/'+(dt.getMonth()+1)+'</div>'+
+      '<div style="font-size:20px;margin:2px 0;line-height:1">'+icon+'</div>'+
       '<div style="font-size:11px;font-weight:700;color:#dc2626">'+tmax+'°</div>'+
       '<div style="font-size:10px;color:#64748b">'+tmin+'°</div>'+
-      '<div style="font-size:9px;color:'+(precip>30?'#0891b2':'#94a3b8')+';margin-top:1px">'+precip+'% 💧</div>'+
+      '<div style="font-size:9px;color:'+(precip>30?'#0891b2':'#94a3b8')+';margin-top:1px">'+precip+'%</div>'+
     '</button>';
   }
   html+='</div>';
@@ -4012,7 +4012,7 @@ function renderHourlyStrip(fc,dateStr,selectedTime,slotId){
   var lbl=formatDayLabel(dateStr);
   var html='<div style="margin-top:10px;padding-top:10px;border-top:1px dashed #cbd5e1">';
   html+='<div style="font-size:11px;color:#64748b;margin-bottom:6px;font-weight:700">'+lbl+' — horaires</div>';
-  html+='<div style="display:flex;gap:4px;overflow-x:auto">';
+  html+='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">';
   hours.forEach(function(h){
     // Find hour index in fc.hourly.time
     var target=dateStr+'T'+String(h).padStart(2,'0')+':00';
@@ -4034,9 +4034,9 @@ function renderHourlyStrip(fc,dateStr,selectedTime,slotId){
     var timeStr=String(h).padStart(2,'0')+':00';
     var isSel=selectedTime===timeStr;
     html+='<button type="button" onclick="selectForecastHour(\''+slotId+'\',\''+timeStr+'\')" '+
-      'style="min-width:56px;flex:0 0 auto;background:'+(isSel?'#f0fdf4':'#fff')+';border:2px solid '+(isSel?'#16a34a':'#e2e8f0')+';border-radius:10px;padding:6px 3px;text-align:center;cursor:pointer;font-family:inherit">'+
+      'style="background:'+(isSel?'#f0fdf4':'#fff')+';border:2px solid '+(isSel?'#16a34a':'#e2e8f0')+';border-radius:10px;padding:6px 2px;text-align:center;cursor:pointer;font-family:inherit;min-width:0;overflow:hidden">'+
       '<div style="font-size:11px;font-weight:700;color:#334155">'+h+'h</div>'+
-      '<div style="font-size:18px;margin:2px 0">'+icon+'</div>'+
+      '<div style="font-size:17px;margin:2px 0;line-height:1">'+icon+'</div>'+
       '<div style="font-size:11px;font-weight:700;color:#dc2626">'+temp+'°</div>'+
       '<div style="font-size:9px;color:#64748b">💨'+wind+'</div>'+
       '<div style="font-size:9px;color:'+(precip>30?'#0891b2':'#94a3b8')+'">'+precip+'%</div>'+
