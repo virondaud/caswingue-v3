@@ -3937,6 +3937,35 @@ function formatWeatherLine(wx){
   var desc=wmoDesc(wx.weatherCode)||'Météo';
   return desc+' - '+wx.temp+'°C - vent '+wx.windKmh+' km/h - pluie '+wx.precipProb+'%';
 }
+// Ajoute N heures à "HH:MM" — retourne "HH:MM" (clamp à 23:59 si dépasse la journée)
+function addHoursToTime(timeStr,n){
+  var p=(timeStr||'00:00').split(':');
+  var h=parseInt(p[0],10)+n;
+  var m=parseInt(p[1],10)||0;
+  if(h>23){h=23;m=59;}
+  return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+}
+// Convertit "09:00" ou "09:30" en forme lisible "9h" / "9h30"
+function prettyHour(timeStr){
+  var p=(timeStr||'').split(':');
+  var h=parseInt(p[0],10);
+  var m=parseInt(p[1],10)||0;
+  return h+'h'+(m?String(m).padStart(2,'0'):'');
+}
+// Retourne un bloc texte météo au format B (titre + 2 puces)
+// - Au départ (9h) : ...
+// - Mi-parcours (11h) : ...
+// Retour : string complète (avec \n), ou '' si aucune donnée dispo.
+function formatRoundWeather(fc,dateVal,timeVal){
+  var wx0=getForecastAt(fc,dateVal,timeVal);
+  var timeLater=addHoursToTime(timeVal,2);
+  var wx2=getForecastAt(fc,dateVal,timeLater);
+  var lines=[];
+  if(wx0)lines.push('- Au départ ('+prettyHour(timeVal)+') : '+formatWeatherLine(wx0));
+  if(wx2)lines.push('- Mi-parcours ('+prettyHour(timeLater)+') : '+formatWeatherLine(wx2));
+  if(lines.length===0)return '';
+  return 'Météo prévue :\n'+lines.join('\n');
+}
 // Widget unifié 7 jours + expansion horaire au tap.
 // dateInputId/timeInputId : inputs cachés pilotés par le widget.
 function render7dayPicker(courseName,dateInputId,timeInputId){
@@ -4210,21 +4239,20 @@ async function shareInvite(courseName){
   const dateStr=`${jours[d.getDay()]} ${d.getDate()} ${mois[d.getMonth()]} ${d.getFullYear()}`;
   const [h,m]=timeVal.split(':');
   const timeStr=`${h}h${m==='00'?'':m}`;
-  // Météo prévue si date dans les 7 prochains jours
-  let wxLine='';
+  // Météo prévue (départ + 2h plus tard) si date dans les 7 prochains jours
+  let wxBlock='';
   try{
     const diffDays=(new Date(dateVal+'T12:00:00')-new Date())/86400000;
     if(diffDays>-1 && diffDays<=7){
       const fc=await fetch7dayForecast(courseName);
-      const wx=getForecastAt(fc,dateVal,timeVal);
-      if(wx)wxLine=formatWeatherLine(wx);
+      wxBlock=formatRoundWeather(fc,dateVal,timeVal);
     }
   }catch(e){}
   let txt=`⛳ *Ça Swingue !*\n\n`;
   txt+=`📍 ${courseName}\n`;
   txt+=`📅 ${dateStr}\n`;
   txt+=`🕐 Départ à ${timeStr}\n`;
-  if(wxLine)txt+=`${wxLine}\n`;
+  if(wxBlock)txt+=`\n${wxBlock}\n`;
   if(msgVal) txt+=`\n💬 ${msgVal}\n`;
   txt+=`\nQui est partant ? 🏌️`;
   (function(){var u='https://wa.me/?text='+encodeURIComponent(txt);if(window.navigator.standalone){save();location.href=u;}else{window.open(u,'_blank');}})()
@@ -10776,21 +10804,20 @@ async function shareGCN(){
   var dateStr=jours[d.getDay()]+' '+d.getDate()+' '+mois[d.getMonth()]+' '+d.getFullYear();
   var h=timeVal.split(':');
   var timeStr=h[0]+'h'+(h[1]==='00'?'':h[1]);
-  // Météo prévue si date dans les 7 prochains jours
-  var wxLine='';
+  // Météo prévue (départ + 2h plus tard) si date dans les 7 prochains jours
+  var wxBlock='';
   try{
     var diffDays=(new Date(dateVal+'T12:00:00')-new Date())/86400000;
     if(diffDays>-1 && diffDays<=7){
       var fc=await fetch7dayForecast('Nantes Vigneux');
-      var wx=getForecastAt(fc,dateVal,timeVal);
-      if(wx)wxLine=formatWeatherLine(wx);
+      wxBlock=formatRoundWeather(fc,dateVal,timeVal);
     }
   }catch(e){}
   var txt='⛳ Golf Club de Nantes — Vigneux\n';
   txt+='📅 '+dateStr+' à '+timeStr+'\n';
-  if(wxLine)txt+=wxLine+'\n';
   txt+='📍 Route départementale 81, Vigneux-de-Bretagne\n';
   txt+='📅 Réserver : https://nantes.l.netgolf.fr/index.php\n';
+  if(wxBlock)txt+='\n'+wxBlock+'\n';
   if(msgVal)txt+='\n💬 '+msgVal+'\n';
   txt+='\nOn y va ? 🏌️';
   var u='https://wa.me/?text='+encodeURIComponent(txt);
