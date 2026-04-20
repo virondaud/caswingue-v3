@@ -7638,9 +7638,13 @@ function runTotals(g,pls,hn){
     return{gr,net,pts,parPlayed,diff:gr-parPlayed,diffNet:net-parPlayed};
   });
   const fmtDiff=(d)=>d===0?'E':(d>0?'+'+d:String(d));
-  // Couleur basée sur la performance par rapport à l'index (net diff)
-  // Si pas de handicap (mode scratch), on utilise le diff brut.
-  const diffColor=(d)=>d<0?'#16a34a':d>0?'#dc2626':'#64748b';
+  // Gradient HSL : vert sombre (-6 ou mieux) → amber (par) → rouge (+6 ou pire)
+  // Hue 120° (vert) à 0° (rouge), stepping par unité de diff.
+  const diffColor=(d)=>{
+    var c=Math.max(-6,Math.min(6,d));
+    var hue=60-c*10; // -6→120, 0→60, +6→0
+    return 'hsl('+hue+',72%,42%)';
+  };
   const refDiff=(t)=>g.useHandicap?t.diffNet:t.diff;
   return`<div class="card"><div class="ct">${hn} trou${hn>1?'s':''} joués</div>
     ${pls.map((p,pi)=>{
