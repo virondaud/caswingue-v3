@@ -539,7 +539,7 @@ ASSETS["swingue"]="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAkACQAAD/4QCSRXhpZg
 const COLORS=['#16a34a','#dc2626','#1d4ed8','#d97706','#7c3aed','#0891b2'];
 function lg(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}}
 function ls(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
-let DB={courses:lg('gm_c',[]),players:lg('gm_p',[]),game:lg('gm_g',null),history:lg('gm_h',[]),favGames:lg('gm_fg',[]),championships:lg('gm_ch',[]),customShopLinks:lg('gm_csl',[]),customAppLinks:lg('gm_cal',[]),customCompLinks:lg('gm_ccl',[]),customWazeDest:lg('gm_cwd',[]),practice:lg('gm_prac',[]),cloudBackup:lg('gm_cb',{enabled:false}),offlineQueue:lg('gm_oq',[])};
+let DB={courses:lg('gm_c',[]),players:lg('gm_p',[]),game:lg('gm_g',null),history:lg('gm_h',[]),favGames:lg('gm_fg',[]),championships:lg('gm_ch',[]),customShopLinks:lg('gm_csl',[]),customAppLinks:lg('gm_cal',[]),customCompLinks:lg('gm_ccl',[]),customWazeDest:lg('gm_cwd',[]),practice:lg('gm_prac',[]),cloudBackup:lg('gm_cb',{enabled:false}),offlineQueue:lg('gm_oq',[]),courseNotebooks:lg('gm_cn',{})};
 window.DB=DB;
 // ══ DEVICE IDENTITY ═══════════════════════════════════════════════════════
 function getDeviceId(){
@@ -583,7 +583,7 @@ async function activateSuperAdmin(){
     }
   }
 })();
-function save(){ls('gm_c',DB.courses);ls('gm_p',DB.players);ls('gm_g',DB.game);ls('gm_h',DB.history);ls('gm_fg',DB.favGames);ls('gm_ch',DB.championships);ls('gm_csl',DB.customShopLinks);ls('gm_cal',DB.customAppLinks);ls('gm_ccl',DB.customCompLinks);ls('gm_cwd',DB.customWazeDest);ls('gm_prac',DB.practice||[]);ls('gm_cb',DB.cloudBackup||{enabled:false});try{if(typeof pushLive==='function')pushLive();}catch(e){}try{if(typeof cloudSync==='function')cloudSync();}catch(e){}}
+function save(){ls('gm_c',DB.courses);ls('gm_p',DB.players);ls('gm_g',DB.game);ls('gm_h',DB.history);ls('gm_fg',DB.favGames);ls('gm_ch',DB.championships);ls('gm_csl',DB.customShopLinks);ls('gm_cal',DB.customAppLinks);ls('gm_ccl',DB.customCompLinks);ls('gm_cwd',DB.customWazeDest);ls('gm_prac',DB.practice||[]);ls('gm_cb',DB.cloudBackup||{enabled:false});ls('gm_cn',DB.courseNotebooks||{});try{if(typeof pushLive==='function')pushLive();}catch(e){}try{if(typeof cloudSync==='function')cloudSync();}catch(e){}}
 
 // ══ 🔥 FIREBASE LIVE SHARE + AUTH ═════════════════════════════════════════
 let fbApp=null,fbDb=null,fbReady=false,fbAuth=null,fbUid=null;
@@ -829,7 +829,7 @@ function defHoles(){
 let S={view:DB.game?'playing':'home',setup:{},ec:null,tab:0,rulesGame:null};window.S=S;
 
 // ══ RENDER ════════════════════════════════════════════════════════════════
-const VIEWS={home,courses,editCourse:ecView,players,setup,playing,scorecard,editscores:editScores,results,history,championships,championship,rules:rulesView,rulesmenu:rulesMenu,courseInfo:courseInfoView,bookingCourses:bookingCoursesView,bookingDetail:bookingDetailView,infoGolf:infoGolfView,materielGolf:materielGolfView,appsGolf:appsGolfView,competitionsGolf:competitionsGolfView,clubCalendars:clubCalendarsView,ballReco:ballRecoView,ballSwing:ballSwingView,ballTop:ballTopView,ballFit:ballFitView,gloveReco:gloveRecoView,comparatif:comparatifView,clubNantes:clubNantesView,technique:techniqueView,techniqueDrawFade:techniqueDrawFadeView,wazeGolfs:wazeGolfsView,destinationsGolf:destinationsGolfView,techniqueChipping:techniqueChippingView,techniqueFers:techniqueFersView,techniqueBois:techniqueBoisView,calendarEmbed:calendarEmbedView,stats:statsView,achievements:achievementsView,practice:practiceView,trainingStats:trainingStatsView,h2h:h2hView,cloudBackup:cloudBackupView,cloudCats:cloudCatsView,clubs:clubsView,clubsEdit:clubsEditView,clubsCalc:clubsCalcView,clubsAdvisor:clubsAdvisorView,petitJeu:petitJeuView,clubsChipEdit:clubsChipEditView,allGlobalPlayers:allGlobalPlayersView};
+const VIEWS={home,courses,editCourse:ecView,players,setup,playing,scorecard,editscores:editScores,results,history,championships,championship,rules:rulesView,rulesmenu:rulesMenu,courseInfo:courseInfoView,bookingCourses:bookingCoursesView,bookingDetail:bookingDetailView,infoGolf:infoGolfView,materielGolf:materielGolfView,appsGolf:appsGolfView,competitionsGolf:competitionsGolfView,clubCalendars:clubCalendarsView,ballReco:ballRecoView,ballSwing:ballSwingView,ballTop:ballTopView,ballFit:ballFitView,gloveReco:gloveRecoView,comparatif:comparatifView,clubNantes:clubNantesView,courseNotebook:courseNotebookView,technique:techniqueView,techniqueDrawFade:techniqueDrawFadeView,wazeGolfs:wazeGolfsView,destinationsGolf:destinationsGolfView,techniqueChipping:techniqueChippingView,techniqueFers:techniqueFersView,techniqueBois:techniqueBoisView,calendarEmbed:calendarEmbedView,stats:statsView,achievements:achievementsView,practice:practiceView,trainingStats:trainingStatsView,h2h:h2hView,cloudBackup:cloudBackupView,cloudCats:cloudCatsView,clubs:clubsView,clubsEdit:clubsEditView,clubsCalc:clubsCalcView,clubsAdvisor:clubsAdvisorView,petitJeu:petitJeuView,clubsChipEdit:clubsChipEditView,allGlobalPlayers:allGlobalPlayersView};
 const APP_FOOTER='<div style="text-align:center;padding:18px 0 10px;color:#94a3b8;font-size:12px" ondblclick="activateSuperAdmin()">⛳ Ça Swingue Manager <b>v2.0</b> · © 2026 Virnaoned</div>';
 function render(){
   const f=VIEWS[S.view];
@@ -3127,6 +3127,7 @@ function clubNantesView(){
     <input type="hidden" id="gcn_time" value="09:00">
     ${render7dayPicker('Nantes Vigneux','gcn_date','gcn_time')}
     ${nt('<img src="'+ASSETS["app_waze"]+'" width="28" height="28" style="border-radius:6px">','Y aller avec Waze','Itinéraire vers le Golf Club de Nantes','https://waze.com/ul?ll=47.290906,-1.699960&navigate=yes&z=15','linear-gradient(135deg,#33ccff,#00aaff)')}
+    ${nt('📓','Mon carnet de parcours','Stratégie et notes trou par trou',"openVigneuxNotebook()",'linear-gradient(135deg,#7c3aed,#a855f7)')}
 
     <div class="sec-lbl mt8">📱 Accès rapide</div>
     ${nt('📲','Application Golf de Nantes','Réserver, scores, infos du club','smartOpen(\'https://apps.apple.com/fr/app/golf-de-nantes/id6449734698\',\'https://www.golfclubdenantes.com\')','linear-gradient(135deg,#a6894f,#c8a96e)')}
@@ -10826,6 +10827,270 @@ async function shareGCN(){
   txt+='\nOn y va ? 🏌️';
   var u='https://wa.me/?text='+encodeURIComponent(txt);
   if(window.navigator.standalone){save();location.href=u;}else{window.open(u,'_blank');}
+}
+
+// ══ 📓 CARNET DE PARCOURS (v3 — MVP Vigneux) ═════════════════════════════
+// Stockage : DB.courseNotebooks[courseId][holeIdx] = { type, clubStart, hazards[], approachStrategy, approachClub, strategy, difficulty, notes }
+// Architecture générique (keyed by courseId) mais pour le MVP, accès uniquement via la page Golf Club de Nantes.
+
+var HOLE_TYPES=[
+  {key:'straight',label:'Droit'},
+  {key:'dogleg_l',label:'Dog-leg gauche'},
+  {key:'dogleg_r',label:'Dog-leg droit'},
+  {key:'blind',label:'Blind'},
+  {key:'up',label:'En montée'},
+  {key:'down',label:'En descente'}
+];
+var HAZARDS=[
+  {key:'bunker',label:'Bunker(s)'},
+  {key:'water',label:'Eau'},
+  {key:'ob_left',label:'OB à gauche'},
+  {key:'ob_right',label:'OB à droite'},
+  {key:'rough',label:'Rough épais'},
+  {key:'trees',label:'Arbres'},
+  {key:'elevation',label:'Dénivelé important'}
+];
+var APPROACH_STRATEGIES=[
+  {key:'direct',label:'🎯 Direct — viser le drapeau'},
+  {key:'front',label:'⏩ Front du green — faire rouler'},
+  {key:'back',label:'⏪ Arrière du green — approche longue'},
+  {key:'left',label:'↗️ Côté gauche du green'},
+  {key:'right',label:'↘️ Côté droit du green'},
+  {key:'lob',label:'🪶 Lob — par-dessus un piège'},
+  {key:'bump',label:'🪁 Bump and run — balle basse'},
+  {key:'slope',label:'⛵ Jouer la pente'}
+];
+
+function getCourseNotebook(courseId){
+  if(!DB.courseNotebooks)DB.courseNotebooks={};
+  if(!DB.courseNotebooks[courseId])DB.courseNotebooks[courseId]={};
+  return DB.courseNotebooks[courseId];
+}
+function getHoleNote(courseId,holeIdx){
+  var nb=getCourseNotebook(courseId);
+  return nb[holeIdx]||null;
+}
+function saveHoleNote(courseId,holeIdx,data){
+  if(!DB.courseNotebooks)DB.courseNotebooks={};
+  if(!DB.courseNotebooks[courseId])DB.courseNotebooks[courseId]={};
+  DB.courseNotebooks[courseId][holeIdx]=data;
+  save();
+}
+function clearHoleNote(courseId,holeIdx){
+  if(DB.courseNotebooks&&DB.courseNotebooks[courseId]){
+    delete DB.courseNotebooks[courseId][holeIdx];
+    save();
+  }
+}
+
+// Entrée principale pour Vigneux
+function openVigneuxNotebook(){
+  var c=DB.courses.find(x=>_norm(x.name).includes(_norm('Nantes Vigneux'))||_norm(x.name).includes(_norm('Golf Club de Nantes')));
+  if(!c){alert('Parcours Nantes Vigneux non trouvé dans la base.');return;}
+  S.notebookCourseId=c.id;
+  go('courseNotebook');
+}
+
+// Vue liste 18 trous du carnet
+function courseNotebookView(){
+  var cid=S.notebookCourseId;
+  var c=DB.courses.find(x=>x.id===cid);
+  if(!c)return clubNantesView();
+  var nb=getCourseNotebook(cid);
+  var holes=c.holes||[];
+  return`<div class="hdr"><button class="back" onclick="go('clubNantes')">‹</button><h1>📓 Carnet — ${esc(c.name)}</h1></div>
+  <div class="content an">
+    <div class="card" style="background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;padding:14px">
+      <div class="f fc g8"><div style="font-size:28px">📓</div>
+        <div style="flex:1"><div class="fw8 f14">Carnet de parcours</div>
+        <div class="f12" style="opacity:.9">Stratégie, club préféré, pièges et notes — trou par trou.</div></div>
+      </div>
+    </div>
+    ${holes.map((h,i)=>renderNotebookHoleRow(cid,i,h,nb[i])).join('')}
+  </div>`;
+}
+
+function renderNotebookHoleRow(courseId,idx,hole,note){
+  var n=note||{};
+  var stars='★'.repeat(n.difficulty||0)+'☆'.repeat(5-(n.difficulty||0));
+  var hasNote=n.strategy||n.notes||n.clubStart||n.approachClub||(n.hazards&&n.hazards.length)||n.type||n.approachStrategy||n.difficulty;
+  var clubLabel=n.clubStart?getClubLabelFromId(courseId,n.clubStart):'';
+  var appLabel=n.approachClub?getClubLabelFromId(courseId,n.approachClub):'';
+  var typeLabel=n.type?HOLE_TYPES.find(t=>t.key===n.type)?.label:'';
+  var appStratLabel=n.approachStrategy?APPROACH_STRATEGIES.find(t=>t.key===n.approachStrategy)?.label.replace(/^[^ ]+ /,''):'';
+  return `<div class="card" style="padding:10px;cursor:pointer" onclick="openHoleEdit('${courseId}',${idx})">
+    <div class="f" style="justify-content:space-between;align-items:flex-start">
+      <div style="flex:1;min-width:0">
+        <div class="fw7 f14">Trou ${idx+1} · Par ${hole.par} · HCP ${hole.handicap}${hole.distBlanc?' · '+hole.distBlanc+'m':''}</div>
+        ${hasNote?`
+          ${typeLabel?`<div class="f11 tm mt8">${typeLabel}</div>`:''}
+          ${clubLabel||appLabel?`<div class="f11" style="margin-top:2px">🏌️ ${esc(clubLabel||'—')} → ⛳ ${esc(appLabel||'—')}${appStratLabel?' · '+esc(appStratLabel):''}</div>`:''}
+          ${n.hazards&&n.hazards.length?`<div class="f g8 mt8" style="flex-wrap:wrap">${n.hazards.map(h=>{var hl=HAZARDS.find(x=>x.key===h);return hl?`<span class="badge bg" style="background:#fef3c7;color:#92400e;font-size:10px">⚠️ ${esc(hl.label)}</span>`:'';}).join('')}</div>`:''}
+          ${n.strategy?`<div class="f12" style="margin-top:6px;color:#334155">«${esc(n.strategy.slice(0,120))}${n.strategy.length>120?'…':''}»</div>`:''}
+          ${n.difficulty?`<div class="f11 tm mt8" style="color:#d97706">${stars}</div>`:''}
+        `:`<div class="f11 tm" style="margin-top:4px;font-style:italic">Sans notes — tap pour compléter</div>`}
+      </div>
+      <div style="color:#7c3aed;font-size:20px;align-self:center">›</div>
+    </div>
+  </div>`;
+}
+
+function getClubLabelFromId(courseId,clubId){
+  // Cherche le club dans les sacs des joueurs (prend le 1er trouvé)
+  // En priorité : le joueur "Moi"
+  var me=getMePlayer();
+  var players=me?[me].concat(DB.players.filter(p=>p.id!==me.id)):DB.players;
+  for(var i=0;i<players.length;i++){
+    var c=(players[i].clubs||[]).find(x=>x.id===clubId);
+    if(c)return c.name;
+  }
+  // Fallback : les clubs standards par id
+  var std={drv:'Driver',b3:'Bois 3',b5:'Bois 5',b7:'Bois 7',h3:'Hybride 3',h4:'Hybride 4',h5:'Hybride 5',f4:'Fer 4',f5:'Fer 5',f6:'Fer 6',f7:'Fer 7',f8:'Fer 8',f9:'Fer 9'};
+  return std[clubId]||clubId;
+}
+
+// Formulaire d'édition d'un trou (modal bottom-sheet)
+function openHoleEdit(courseId,holeIdx){
+  var c=DB.courses.find(x=>x.id===courseId);if(!c)return;
+  var hole=c.holes[holeIdx];
+  var note=getHoleNote(courseId,holeIdx)||{};
+  S._noteForm={
+    courseId:courseId,
+    holeIdx:holeIdx,
+    type:note.type||'',
+    clubStart:note.clubStart||'',
+    hazards:(note.hazards||[]).slice(),
+    approachStrategy:note.approachStrategy||'',
+    approachClub:note.approachClub||'',
+    strategy:note.strategy||'',
+    difficulty:note.difficulty||0,
+    notes:note.notes||''
+  };
+  renderHoleEditModal(c,hole);
+}
+
+function renderHoleEditModal(course,hole){
+  var f=S._noteForm;if(!f)return;
+  var existing=document.getElementById('nb-mo');if(existing)existing.remove();
+  var div=document.createElement('div');
+  div.id='nb-mo';
+  div.style.cssText='display:flex;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:400;align-items:flex-end;padding:0';
+
+  // Récupère les clubs du joueur "Moi" (ou du 1er joueur) pour les dropdowns
+  var me=getMePlayer()||DB.players[0];
+  var clubs=me?getPlayerClubs(me):[];
+
+  var html='<div style="background:#fff;border-radius:20px 20px 0 0;padding:16px;width:100%;max-height:92vh;overflow-y:auto">';
+  html+='<div style="font-weight:800;font-size:17px;margin-bottom:4px">📓 Trou '+(f.holeIdx+1)+'</div>';
+  html+='<div class="f11 tm" style="margin-bottom:12px">Par '+hole.par+' · HCP '+hole.handicap+(hole.distBlanc?' · '+hole.distBlanc+'m blanc':'')+'</div>';
+
+  // Type de trou
+  html+='<div class="lbl">Type de trou</div>';
+  html+='<select class="inp mb8" onchange="S._noteForm.type=this.value">';
+  html+='<option value="">— Non défini —</option>';
+  HOLE_TYPES.forEach(function(t){
+    html+='<option value="'+t.key+'"'+(f.type===t.key?' selected':'')+'>'+t.label+'</option>';
+  });
+  html+='</select>';
+
+  // Club de départ
+  html+='<div class="lbl">🏌️ Club de départ</div>';
+  html+='<select class="inp mb8" onchange="S._noteForm.clubStart=this.value">';
+  html+='<option value="">— Non défini —</option>';
+  clubs.forEach(function(c){
+    html+='<option value="'+c.id+'"'+(f.clubStart===c.id?' selected':'')+'>'+esc(c.name)+'</option>';
+  });
+  html+='</select>';
+
+  // Dangers (multi-select checkboxes)
+  html+='<div class="lbl">⚠️ Dangers principaux</div>';
+  html+='<div class="f g8" style="flex-wrap:wrap;margin-bottom:12px">';
+  HAZARDS.forEach(function(h){
+    var on=f.hazards.indexOf(h.key)>=0;
+    html+='<button type="button" class="btn bxs mb0" style="padding:6px 10px;font-size:11px;'+(on?'background:#fef3c7;color:#92400e;border:1px solid #f59e0b':'background:#fff;color:#64748b;border:1px solid #cbd5e1')+'" onclick="toggleNoteHazard(\''+h.key+'\')">'+(on?'✓ ':'+ ')+h.label+'</button>';
+  });
+  html+='</div>';
+
+  // Attaque de green
+  html+='<div class="lbl">⛳ Attaque de green — stratégie</div>';
+  html+='<select class="inp mb8" onchange="S._noteForm.approachStrategy=this.value">';
+  html+='<option value="">— Non défini —</option>';
+  APPROACH_STRATEGIES.forEach(function(s){
+    html+='<option value="'+s.key+'"'+(f.approachStrategy===s.key?' selected':'')+'>'+s.label+'</option>';
+  });
+  html+='</select>';
+
+  html+='<div class="lbl">⛳ Club d\'attaque</div>';
+  html+='<select class="inp mb8" onchange="S._noteForm.approachClub=this.value">';
+  html+='<option value="">— Non défini —</option>';
+  clubs.forEach(function(c){
+    html+='<option value="'+c.id+'"'+(f.approachClub===c.id?' selected':'')+'>'+esc(c.name)+'</option>';
+  });
+  html+='</select>';
+
+  // Stratégie texte libre
+  html+='<div class="lbl">🎯 Stratégie du trou</div>';
+  html+='<textarea class="inp mb8" rows="3" placeholder="Ex: Dog-leg à gauche, rester à droite. Bunker à 220m." onchange="S._noteForm.strategy=this.value">'+esc(f.strategy)+'</textarea>';
+
+  // Difficulté (étoiles)
+  html+='<div class="lbl">⭐ Difficulté perçue</div>';
+  html+='<div class="f g8 mb8">';
+  for(var i=1;i<=5;i++){
+    var sel=f.difficulty>=i;
+    html+='<button type="button" class="btn bsm mb0" style="flex:1;padding:10px;font-size:20px;'+(sel?'background:#fef3c7;border-color:#f59e0b;color:#92400e':'background:#fff;color:#cbd5e1;border:1px solid #cbd5e1')+'" onclick="S._noteForm.difficulty='+(f.difficulty===i?0:i)+';reopenHoleModal()">'+(sel?'⭐':'☆')+'</button>';
+  }
+  html+='</div>';
+
+  // Notes libres
+  html+='<div class="lbl">📝 Notes libres</div>';
+  html+='<textarea class="inp mb8" rows="2" placeholder="Vent dominant, pente du green, repères…" onchange="S._noteForm.notes=this.value">'+esc(f.notes)+'</textarea>';
+
+  // Boutons
+  html+='<div class="f g8 mt8">';
+  html+='<button class="btn bd mb0" style="flex:1" onclick="deleteHoleNote()">🗑 Effacer</button>';
+  html+='<button class="btn bo mb0" style="flex:1" onclick="document.getElementById(\'nb-mo\').remove();S._noteForm=null">Annuler</button>';
+  html+='<button class="btn bp mb0" style="flex:2" onclick="saveHoleNoteFromForm()">✅ Enregistrer</button>';
+  html+='</div>';
+  html+='</div>';
+  div.innerHTML=html;
+  document.body.appendChild(div);
+}
+
+function toggleNoteHazard(key){
+  var f=S._noteForm;if(!f)return;
+  var i=f.hazards.indexOf(key);
+  if(i>=0)f.hazards.splice(i,1);else f.hazards.push(key);
+  reopenHoleModal();
+}
+function reopenHoleModal(){
+  var f=S._noteForm;if(!f)return;
+  var c=DB.courses.find(x=>x.id===f.courseId);if(!c)return;
+  renderHoleEditModal(c,c.holes[f.holeIdx]);
+}
+function saveHoleNoteFromForm(){
+  var f=S._noteForm;if(!f)return;
+  // Synchronise les textareas dont le onchange pourrait ne pas s'être déclenché
+  var stratEl=document.querySelector('#nb-mo textarea[placeholder^="Ex: Dog-leg"]');
+  if(stratEl)f.strategy=stratEl.value;
+  var notesEl=document.querySelector('#nb-mo textarea[placeholder^="Vent dominant"]');
+  if(notesEl)f.notes=notesEl.value;
+  saveHoleNote(f.courseId,f.holeIdx,{
+    type:f.type,clubStart:f.clubStart,hazards:f.hazards,
+    approachStrategy:f.approachStrategy,approachClub:f.approachClub,
+    strategy:f.strategy,difficulty:f.difficulty,notes:f.notes
+  });
+  document.getElementById('nb-mo')?.remove();
+  S._noteForm=null;
+  render();
+}
+function deleteHoleNote(){
+  var f=S._noteForm;if(!f)return;
+  conf('Effacer les notes de ce trou ?','Toutes les infos saisies seront perdues.',function(){
+    clearHoleNote(f.courseId,f.holeIdx);
+    document.getElementById('nb-mo')?.remove();
+    S._noteForm=null;
+    render();
+  });
 }
 
 // ── Export / Import données ──
