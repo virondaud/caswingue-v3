@@ -3944,10 +3944,12 @@ function getForecastAt(fc,dateStr,timeStr){
     weatherCode:fc.hourly.weather_code[bestIdx]
   };
 }
-// Formate une ligne compacte pour le message WhatsApp
+// Formate une ligne compacte pour le message WhatsApp (texte pur, pas d'emoji météo
+// car les variation selectors VS16 s'affichent en losange "?" sur certains téléphones).
 function formatWeatherLine(wx){
   if(!wx)return '';
-  return wmoIcon(wx.weatherCode)+' '+wx.temp+'°C · vent '+wx.windKmh+' km/h · '+wx.precipProb+'% pluie';
+  var desc=wmoDesc(wx.weatherCode)||'Météo';
+  return desc+' - '+wx.temp+'°C - vent '+wx.windKmh+' km/h - pluie '+wx.precipProb+'%';
 }
 // Rendu de la grille 7 jours — renvoie du HTML à insérer dans la page.
 // inputId : id de l'input[type=date] à mettre à jour quand on tap sur une carte.
