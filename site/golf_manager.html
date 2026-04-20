@@ -3160,11 +3160,12 @@ function clubNantesView(){
     ${nt('✉️','Envoyer un email','accueil@golfclubdenantes.com','mailto:accueil@golfclubdenantes.com','linear-gradient(135deg,#8b6f3a,#b8956a)')}
     ${nt('📘','Page Facebook','Actualités & photos du club','https://www.facebook.com/golfclubdenantes/','linear-gradient(135deg,#a6894f,#c8a96e)')}
 
+    ${render7dayPicker('Nantes Vigneux','gcn_date')}
     <div class="card mt8" style="border-left:4px solid #25D366">
       <div class="ct">📲 Prévenir les copains</div>
       <div class="fg mb8">
         <label class="lbl">Date</label>
-        <input type="date" class="inp" id="gcn_date" value="${new Date(Date.now()+86400000).toISOString().slice(0,10)}">
+        <input type="date" class="inp" id="gcn_date" value="${new Date(Date.now()+3*86400000).toISOString().slice(0,10)}">
       </div>
       <div class="fg mb8">
         <label class="lbl">Heure de départ</label>
@@ -3904,6 +3905,102 @@ function courseWttrLoc(name){
   const geo=courseGeo(name);
   return geo?name:name.split('—')[0].split('–')[0].trim();
 }
+
+// ══ 🌤️ MÉTÉO PRÉVISIONS 7 JOURS (feature v3) ═══════════════════════════════
+var _fcCache={}; // {courseName: {data, fetchedAt}}
+function fetch7dayForecast(courseName){
+  if(!navigator.onLine)return Promise.reject(new Error('offline'));
+  var geo=courseGeo(courseName);
+  if(!geo)return Promise.reject(new Error('no GPS'));
+  var cached=_fcCache[courseName];
+  if(cached && Date.now()-cached.fetchedAt < 3600000) return Promise.resolve(cached.data);
+  var url='https://api.open-meteo.com/v1/forecast'+
+    '?latitude='+geo[0]+'&longitude='+geo[1]+
+    '&daily=weather_code,temperature_2m_max,temperature_2m_min,wind_speed_10m_max,precipitation_probability_max'+
+    '&hourly=temperature_2m,weather_code,wind_speed_10m,precipitation_probability'+
+    '&forecast_days=7&timezone=auto';
+  return fetch(url).then(function(r){if(!r.ok)throw new Error(r.status);return r.json();}).then(function(d){
+    _fcCache[courseName]={data:d,fetchedAt:Date.now()};
+    return d;
+  });
+}
+// Récupère la météo prévue pour une date+heure précise (retour null si hors plage)
+function getForecastAt(fc,dateStr,timeStr){
+  if(!fc||!fc.hourly)return null;
+  var target=dateStr+'T'+(timeStr||'12:00'); // ex '2026-04-25T14:00'
+  // Trouve l'index de l'heure la plus proche dans fc.hourly.time[]
+  var times=fc.hourly.time||[];
+  var bestIdx=-1,bestDiff=1e18;
+  var tTarget=new Date(target).getTime();
+  for(var i=0;i<times.length;i++){
+    var diff=Math.abs(new Date(times[i]).getTime()-tTarget);
+    if(diff<bestDiff){bestDiff=diff;bestIdx=i;}
+  }
+  if(bestIdx<0 || bestDiff>6*3600000)return null;
+  return {
+    temp:Math.round(fc.hourly.temperature_2m[bestIdx]),
+    windKmh:Math.round(fc.hourly.wind_speed_10m[bestIdx]),
+    precipProb:Math.round(fc.hourly.precipitation_probability[bestIdx]||0),
+    weatherCode:fc.hourly.weather_code[bestIdx]
+  };
+}
+// Formate une ligne compacte pour le message WhatsApp
+function formatWeatherLine(wx){
+  if(!wx)return '';
+  return wmoIcon(wx.weatherCode)+' '+wx.temp+'°C · vent '+wx.windKmh+' km/h · '+wx.precipProb+'% pluie';
+}
+// Rendu de la grille 7 jours — renvoie du HTML à insérer dans la page.
+// inputId : id de l'input[type=date] à mettre à jour quand on tap sur une carte.
+function render7dayPicker(courseName,inputId){
+  var geo=courseGeo(courseName);
+  if(!geo)return ''; // pas de GPS = pas de grille
+  var slot='fc-'+Math.random().toString(36).slice(2,8);
+  setTimeout(function(){load7dayPicker(slot,courseName,inputId);},200);
+  return '<div class="card mt8" style="padding:10px">'+
+    '<div class="ct" style="margin-bottom:8px">📅 Choisis ta date — météo 7 jours</div>'+
+    '<div id="'+slot+'" style="min-height:120px;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:13px">⏳ Chargement prévisions…</div>'+
+    '</div>';
+}
+function load7dayPicker(slotId,courseName,inputId){
+  var el=document.getElementById(slotId);if(!el)return;
+  fetch7dayForecast(courseName).then(function(fc){
+    if(!fc||!fc.daily||!fc.daily.time){el.innerHTML='<div style="color:#94a3b8;font-size:12px;padding:12px">❌ Prévisions indisponibles</div>';return;}
+    var jours=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+    var d=fc.daily;
+    var selected=document.getElementById(inputId)?.value||'';
+    var html='<div style="display:flex;gap:4px;overflow-x:auto;padding:2px 0">';
+    for(var i=0;i<d.time.length;i++){
+      var dt=new Date(d.time[i]+'T12:00:00');
+      var isSel=d.time[i]===selected;
+      var icon=wmoIcon(d.weather_code[i]);
+      var tmax=Math.round(d.temperature_2m_max[i]);
+      var tmin=Math.round(d.temperature_2m_min[i]);
+      var wind=Math.round(d.wind_speed_10m_max[i]);
+      var precip=Math.round(d.precipitation_probability_max[i]||0);
+      var dayKey=d.time[i];
+      html+='<button type="button" onclick="selectForecastDay(\''+inputId+'\',\''+dayKey+'\',\''+slotId+'\',\''+esc(courseName).replace(/\'/g,"\\'")+'\')" '+
+        'style="min-width:68px;flex:0 0 auto;background:'+(isSel?'#f0fdf4':'#fff')+';border:2px solid '+(isSel?'#16a34a':'#e2e8f0')+';border-radius:10px;padding:8px 4px;text-align:center;cursor:pointer;font-family:inherit">'+
+        '<div style="font-size:10px;color:#64748b;font-weight:700">'+jours[dt.getDay()]+'</div>'+
+        '<div style="font-size:11px;color:#334155;margin-bottom:2px">'+dt.getDate()+'/'+(dt.getMonth()+1)+'</div>'+
+        '<div style="font-size:22px;margin:2px 0">'+icon+'</div>'+
+        '<div style="font-size:11px;font-weight:700;color:#dc2626">'+tmax+'°</div>'+
+        '<div style="font-size:10px;color:#64748b">'+tmin+'°</div>'+
+        '<div style="font-size:9px;color:#64748b;margin-top:2px">💨'+wind+'</div>'+
+        '<div style="font-size:9px;color:'+(precip>30?'#0891b2':'#94a3b8')+';margin-top:1px">💧'+precip+'%</div>'+
+      '</button>';
+    }
+    html+='</div>';
+    el.innerHTML=html;
+  }).catch(function(err){
+    el.innerHTML='<div style="color:#94a3b8;font-size:12px;padding:12px">☁️ Prévisions indisponibles</div>';
+  });
+}
+function selectForecastDay(inputId,dateStr,slotId,courseName){
+  var inp=document.getElementById(inputId);
+  if(inp){inp.value=dateStr;inp.dispatchEvent(new Event('change'));}
+  // Rerender pour mettre à jour la sélection visuelle
+  load7dayPicker(slotId,courseName,inputId);
+}
 function courseGeo(name){
   const direct=COURSE_GEO[name];
   if(direct)return direct;
@@ -3962,9 +4059,9 @@ function bookingDetailView(){
   if(!c)return bookingCoursesView();
   const bk=cbooking(c.name);
   const wttrLoc=courseWttrLoc(c.name);
-  // Date par défaut = demain
-  const tom=new Date();tom.setDate(tom.getDate()+1);
-  const defaultDate=tom.toISOString().slice(0,10);
+  // Date par défaut = J+3 (bon compromis pour organisation + fiabilité météo)
+  const j3=new Date();j3.setDate(j3.getDate()+3);
+  const defaultDate=j3.toISOString().slice(0,10);
   return`<div class="hdr"><button class="back" onclick="go('bookingCourses')">‹</button><h1>${esc(c.name)}</h1></div>
   <div class="content an">
     <div class="rules-hero" style="background:linear-gradient(135deg,#166534,#15803d)">
@@ -3988,6 +4085,7 @@ function bookingDetailView(){
         ${(()=>{const cl=clubLogo(c.name);return bk.map(b=>`<a ${calAttrs(b.url)} style="text-decoration:none;display:flex;align-items:center;gap:12px;padding:10px 8px;border-radius:10px;margin-bottom:4px;background:#f8fafc">${favi(b.url,'🔗',32,bookIcon(b.url)||cl)}<div style="flex:1;font-weight:700;font-size:14px;color:#1e293b">${b.label}</div><div style="color:${b.color};font-size:18px">›</div></a>`).join('');})()}
       </div>
     </div>`:`<div class="empty" style="padding:32px 0"><div class="ei">🔗</div>Pas de lien de réservation disponible pour ce parcours.</div>`}
+    ${render7dayPicker(c.name,'inv_date')}
     <div class="card mt8" style="border-left:4px solid #25D366">
       <div class="ct">📲 Prévenir les copains</div>
       <div class="fg mb8">
@@ -4007,7 +4105,7 @@ function bookingDetailView(){
       </button>
     </div>
   </div>`}
-function shareInvite(courseName){
+async function shareInvite(courseName){
   const dateVal=document.getElementById('inv_date')?.value;
   const timeVal=document.getElementById('inv_time')?.value;
   const msgVal=document.getElementById('inv_msg')?.value?.trim();
@@ -4019,10 +4117,21 @@ function shareInvite(courseName){
   const dateStr=`${jours[d.getDay()]} ${d.getDate()} ${mois[d.getMonth()]} ${d.getFullYear()}`;
   const [h,m]=timeVal.split(':');
   const timeStr=`${h}h${m==='00'?'':m}`;
+  // Météo prévue si date dans les 7 prochains jours
+  let wxLine='';
+  try{
+    const diffDays=(new Date(dateVal+'T12:00:00')-new Date())/86400000;
+    if(diffDays>-1 && diffDays<=7){
+      const fc=await fetch7dayForecast(courseName);
+      const wx=getForecastAt(fc,dateVal,timeVal);
+      if(wx)wxLine=formatWeatherLine(wx);
+    }
+  }catch(e){}
   let txt=`⛳ *Ça Swingue !*\n\n`;
   txt+=`📍 ${courseName}\n`;
   txt+=`📅 ${dateStr}\n`;
   txt+=`🕐 Départ à ${timeStr}\n`;
+  if(wxLine)txt+=`${wxLine}\n`;
   if(msgVal) txt+=`\n💬 ${msgVal}\n`;
   txt+=`\nQui est partant ? 🏌️`;
   (function(){var u='https://wa.me/?text='+encodeURIComponent(txt);if(window.navigator.standalone){save();location.href=u;}else{window.open(u,'_blank');}})()
@@ -10563,7 +10672,7 @@ window.addEventListener('resize',()=>{if(S.view==='scorecard')render();});
 // En mode standalone (ajouté à l'écran d'accueil), ni target="_blank"
 // ni window.open() ne fonctionnent de façon fiable sur toutes les
 // ── Invitation WhatsApp Golf Club de Nantes ──
-function shareGCN(){
+async function shareGCN(){
   var dateVal=document.getElementById('gcn_date')?.value;
   var timeVal=document.getElementById('gcn_time')?.value;
   var msgVal=document.getElementById('gcn_msg')?.value?.trim();
@@ -10574,8 +10683,19 @@ function shareGCN(){
   var dateStr=jours[d.getDay()]+' '+d.getDate()+' '+mois[d.getMonth()]+' '+d.getFullYear();
   var h=timeVal.split(':');
   var timeStr=h[0]+'h'+(h[1]==='00'?'':h[1]);
+  // Météo prévue si date dans les 7 prochains jours
+  var wxLine='';
+  try{
+    var diffDays=(new Date(dateVal+'T12:00:00')-new Date())/86400000;
+    if(diffDays>-1 && diffDays<=7){
+      var fc=await fetch7dayForecast('Nantes Vigneux');
+      var wx=getForecastAt(fc,dateVal,timeVal);
+      if(wx)wxLine=formatWeatherLine(wx);
+    }
+  }catch(e){}
   var txt='⛳ Golf Club de Nantes — Vigneux\n';
   txt+='📅 '+dateStr+' à '+timeStr+'\n';
+  if(wxLine)txt+=wxLine+'\n';
   txt+='📍 Route départementale 81, Vigneux-de-Bretagne\n';
   txt+='📅 Réserver : https://nantes.l.netgolf.fr/index.php\n';
   if(msgVal)txt+='\n💬 '+msgVal+'\n';
