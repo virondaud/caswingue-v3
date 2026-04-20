@@ -10918,6 +10918,20 @@ function getCourseNotebook(courseId){
   if(!DB.courseNotebooks[courseId])DB.courseNotebooks[courseId]={};
   return DB.courseNotebooks[courseId];
 }
+function getCourseOverview(courseId){
+  var nb=getCourseNotebook(courseId);
+  return nb._course||null;
+}
+function saveCourseOverview(courseId,data){
+  if(!DB.courseNotebooks)DB.courseNotebooks={};
+  if(!DB.courseNotebooks[courseId])DB.courseNotebooks[courseId]={};
+  DB.courseNotebooks[courseId]._course=data;
+  save();
+}
+function hasCourseOverview(courseId){
+  var ov=getCourseOverview(courseId);
+  return !!ov && (ov.overview||ov.generalTips||ov.rating);
+}
 function getHoleNote(courseId,holeIdx){
   var nb=getCourseNotebook(courseId);
   return nb[holeIdx]||null;
@@ -10958,8 +10972,113 @@ function courseNotebookView(){
         <div class="f12" style="opacity:.9">Stratégie, club préféré, pièges et notes — trou par trou.</div></div>
       </div>
     </div>
+    ${renderCourseOverviewCard(cid,c)}
     ${holes.map((h,i)=>renderNotebookHoleRow(cid,i,h,nb[i])).join('')}
   </div>`;
+}
+
+// Carte "Présentation du parcours" en tête du carnet
+function renderCourseOverviewCard(courseId,course){
+  var ov=getCourseOverview(courseId);
+  var hasOv=hasCourseOverview(courseId);
+  var stars=ov&&ov.rating?'★'.repeat(ov.rating)+'☆'.repeat(5-ov.rating):'';
+  return `<div class="card" style="padding:12px;cursor:pointer;border-left:4px solid #0891b2" onclick="openCourseOverviewEdit('${courseId}')">
+    <div class="f" style="justify-content:space-between;align-items:flex-start">
+      <div style="flex:1;min-width:0">
+        <div class="fw7 f14" style="color:#0891b2">📖 Présentation du parcours</div>
+        ${hasOv?`
+          ${stars?`<div style="color:#d97706;margin-top:4px">${stars}</div>`:''}
+          ${ov.overview?`<div class="f12" style="margin-top:6px;color:#334155">${esc(ov.overview)}</div>`:''}
+          ${ov.generalTips?`<div class="f12" style="margin-top:6px;padding:8px;background:#f0fdf4;border-radius:6px;color:#166534"><b>🎯 Consignes :</b> ${esc(ov.generalTips)}</div>`:''}
+        `:`<div class="f11 tm" style="margin-top:4px;font-style:italic">Aucune présentation — tap pour ajouter des consignes générales</div>`}
+      </div>
+      <div style="color:#0891b2;font-size:20px;align-self:center;margin-left:8px">›</div>
+    </div>
+  </div>`;
+}
+
+// Modal d'édition de la présentation parcours
+function openCourseOverviewEdit(courseId){
+  var c=DB.courses.find(x=>x.id===courseId);if(!c)return;
+  var ov=getCourseOverview(courseId)||{};
+  S._overviewForm={
+    courseId:courseId,
+    rating:ov.rating||0,
+    overview:ov.overview||'',
+    generalTips:ov.generalTips||''
+  };
+  renderCourseOverviewModal(c);
+}
+
+function renderCourseOverviewModal(course){
+  var f=S._overviewForm;if(!f)return;
+  var existing=document.getElementById('ov-mo');if(existing)existing.remove();
+  var div=document.createElement('div');
+  div.id='ov-mo';
+  div.style.cssText='display:flex;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:400;align-items:flex-end;padding:0';
+
+  var html='<div style="background:#fff;border-radius:20px 20px 0 0;padding:16px;width:100%;max-height:92vh;overflow-y:auto">';
+  html+='<div style="font-weight:800;font-size:17px;margin-bottom:4px;color:#0891b2">📖 Présentation du parcours</div>';
+  html+='<div class="f11 tm" style="margin-bottom:12px">'+esc(course.name)+'</div>';
+
+  // Note parcours
+  html+='<div class="lbl">⭐ Note globale du parcours</div>';
+  html+='<div class="f g8 mb8">';
+  for(var i=1;i<=5;i++){
+    var sel=f.rating>=i;
+    html+='<button type="button" class="btn bsm mb0" style="flex:1;padding:10px;font-size:20px;'+(sel?'background:#fef3c7;border-color:#f59e0b;color:#92400e':'background:#fff;color:#cbd5e1;border:1px solid #cbd5e1')+'" onclick="syncOverviewFormFromDOM();S._overviewForm.rating='+(f.rating===i?0:i)+';reopenOverviewModal()">'+(sel?'⭐':'☆')+'</button>';
+  }
+  html+='</div>';
+
+  // Description
+  html+='<div class="lbl">📝 Description / caractéristiques</div>';
+  html+='<textarea class="inp mb8" rows="3" placeholder="Ex: Parcours en forêt de 6100m, greens rapides en été, pente générale sud." onchange="S._overviewForm.overview=this.value">'+esc(f.overview)+'</textarea>';
+
+  // Consignes générales
+  html+='<div class="lbl">🎯 Consignes générales de jeu</div>';
+  html+='<textarea class="inp mb8" rows="4" placeholder="Ex: Vent dominant SW. Trous 1-9 sous le vent. Greens en pente avant. Rough épais après pluie. Ne jamais sous-clubber en hiver." onchange="S._overviewForm.generalTips=this.value">'+esc(f.generalTips)+'</textarea>';
+
+  // Boutons
+  html+='<div class="f g8 mt8">';
+  html+='<button class="btn bd mb0" style="flex:1" onclick="deleteCourseOverview()">🗑 Effacer</button>';
+  html+='<button class="btn bo mb0" style="flex:1" onclick="document.getElementById(\'ov-mo\').remove();S._overviewForm=null">Annuler</button>';
+  html+='<button class="btn bp mb0" style="flex:2" onclick="saveCourseOverviewFromForm()">✅ Enregistrer</button>';
+  html+='</div>';
+  html+='</div>';
+  div.innerHTML=html;
+  document.body.appendChild(div);
+}
+
+function syncOverviewFormFromDOM(){
+  var f=S._overviewForm;if(!f)return;
+  var mo=document.getElementById('ov-mo');if(!mo)return;
+  var ov=mo.querySelector('textarea[placeholder^="Ex: Parcours"]');
+  if(ov)f.overview=ov.value;
+  var tips=mo.querySelector('textarea[placeholder^="Ex: Vent"]');
+  if(tips)f.generalTips=tips.value;
+}
+function reopenOverviewModal(){
+  var f=S._overviewForm;if(!f)return;
+  var c=DB.courses.find(x=>x.id===f.courseId);if(!c)return;
+  renderCourseOverviewModal(c);
+}
+function saveCourseOverviewFromForm(){
+  var f=S._overviewForm;if(!f)return;
+  syncOverviewFormFromDOM();
+  saveCourseOverview(f.courseId,{rating:f.rating,overview:f.overview,generalTips:f.generalTips});
+  document.getElementById('ov-mo')?.remove();
+  S._overviewForm=null;
+  render();
+}
+function deleteCourseOverview(){
+  var f=S._overviewForm;if(!f)return;
+  conf('Effacer la présentation du parcours ?','',function(){
+    if(DB.courseNotebooks&&DB.courseNotebooks[f.courseId])delete DB.courseNotebooks[f.courseId]._course;
+    save();
+    document.getElementById('ov-mo')?.remove();
+    S._overviewForm=null;
+    render();
+  });
 }
 
 function renderNotebookHoleRow(courseId,idx,hole,note){
@@ -11245,7 +11364,9 @@ function renderNotebookFab(courseId,holeIdx){
       body='<div style="padding:10px 14px"><button class="btn bp mb0" style="width:100%" onclick="event.stopPropagation();openHoleEdit(\''+courseId+'\','+holeIdx+')">✏️ Ajouter des notes</button></div>';
     }
   }
+  var hasOv=hasCourseOverview(courseId);
   return '<div class="nb-drawer" style="position:sticky;bottom:60px;z-index:35;background:var(--card);border-top:1px solid var(--gray);box-shadow:0 -2px 10px rgba(0,0,0,.04)">'+
+    (hasOv?'<a href="javascript:void(0)" onclick="event.stopPropagation();openCourseOverviewEdit(\''+courseId+'\')" style="display:block;padding:6px 14px 0;font-size:11px;color:#0891b2;text-decoration:none;font-weight:600">📖 Consignes du parcours ›</a>':'')+
     '<button type="button" onclick="S.nbDrawerOpen='+(!open)+';render()" '+
     'style="width:100%;background:transparent;border:none;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-family:inherit">'+
     '<div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1">'+
