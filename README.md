@@ -110,16 +110,22 @@ la nouvelle branche principale.
 ```
 ça_swingue_3/
 ├── site/                   # Copie de l'app v2.0 au départ
-│   └── golf_manager.html   # Tout le code
-├── docs/                   # Spécifications des features
-│   └── 01_gps.md
-│   └── 02_stats_cachees.md
-│   └── ...
+│   ├── golf_manager.html   # Tout le code (avec CSP ajouté)
+│   └── ...                 # assets, firebase-config, etc.
+├── docs/
+│   └── 00_ROADMAP.md       # Suivi des features à venir
+├── .github/workflows/
+│   └── deploy.yml          # Déploiement GitHub Pages auto
 ├── .claude/
 │   ├── CLAUDE.md           # Brief Claude
 │   └── settings.local.json
-└── README.md               # Ce fichier
+├── package.json            # Scripts (dev server Python sur 8093)
+├── Lancer_v3.command       # Raccourci macOS pour le serveur local
+└── README.md
 ```
+
+**Principe YAGNI** : aucun module ni test n'est créé avant qu'une feature
+ne soit validée. On ajoute à la demande, pas par anticipation.
 
 ---
 

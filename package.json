@@ -3,21 +3,8 @@
   "version": "3.0.0-alpha.1",
   "description": "Ça Swingue Manager v3 — branche d'évolution de la PWA golf",
   "private": true,
-  "type": "module",
   "scripts": {
-    "dev": "python3 -m http.server 8093 -d site",
-    "build": "node build/esbuild.config.mjs && node build/integrity.mjs",
-    "test": "node --test tests/",
-    "lint": "tsc --noEmit",
-    "deploy:local": "bash build/deploy_local.sh"
-  },
-  "devDependencies": {
-    "@types/node": "^20.11.0",
-    "esbuild": "^0.24.0",
-    "typescript": "^5.4.0"
-  },
-  "dependencies": {
-    "idb": "^8.0.0"
+    "dev": "python3 -m http.server 8093 -d site"
   },
   "engines": {
     "node": ">=20"
