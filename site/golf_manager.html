@@ -7206,7 +7206,7 @@ function playing(){
     </div>
     <div class="hpb"><div class="hpf" style="width:${pct}%"></div></div>
     <div class="f12 tm tc" style="margin-bottom:10px">${hn} trou${hn!==1?'s':''} joué${hn!==1?'s':''} sur 18</div>
-    ${renderPlayingNotebookCard(g.courseId,hn)}
+    ${(function(){try{return renderPlayingNotebookCard(g.courseId,hn);}catch(e){console.warn('notebook card err',e);return '<div class="card" style="background:#fee2e2;color:#991b1b;padding:8px">❌ Carnet : '+e.message+'</div>';}})()}
     ${gameStatus(g,pls,hole,hn)}
     ${g.gameType==='loup'?loupPickUI(g,pls,hn):''}
     <div class="card"><div class="ct">Scores — Trou ${hn+1}</div>
@@ -9933,7 +9933,7 @@ function practiceView(){
         <div class="fw8 f20" style="color:#92400e">${streak} ${streak>1?'jours':'jour'}</div>
         <div class="f11 tm">Record : ${maxStreak} ${maxStreak>1?'jours':'jour'}</div>
       </div>
-      <div class="card" style="flex:1 1 45%;padding:12px;margin:0;background:#faf5ff;border-left:3px solid #7c3aed;cursor:pointer" onclick="setWeeklyGoal()">
+      <div class="card" style="flex:1 1 45%;padding:12px;margin:0;background:#ede9fe;border-left:4px solid #7c3aed;cursor:pointer" onclick="setWeeklyGoal()">
         <div class="f11 tm">🎯 Objectif semaine</div>
         <div class="fw8 f18" style="color:#7c3aed">${wp.count} / ${wp.goal}</div>
         <div style="height:6px;background:#e2e8f0;border-radius:3px;margin-top:6px;overflow:hidden"><div style="height:100%;width:${wp.pct}%;background:${wp.pct>=100?'#16a34a':'#7c3aed'}"></div></div>
@@ -9967,7 +9967,7 @@ function practiceView(){
         <div class="card" style="flex:1 1 30%;padding:10px;margin:0;background:#f0fdf4;border-left:3px solid #16a34a">
           <div class="f11 tm">Sessions</div><div class="fw8 f18" style="color:#16a34a">${last30.length}</div>
         </div>
-        <div class="card" style="flex:1 1 30%;padding:10px;margin:0;background:#faf5ff;border-left:3px solid #7c3aed">
+        <div class="card" style="flex:1 1 30%;padding:10px;margin:0;background:#ede9fe;border-left:4px solid #7c3aed">
           <div class="f11 tm">Durée totale</div><div class="fw8 f18" style="color:#7c3aed">${Math.floor(totalMin/60)}h${(totalMin%60).toString().padStart(2,'0')}</div>
         </div>
         <div class="card" style="flex:1 1 30%;padding:10px;margin:0;background:#fef3c7;border-left:3px solid #d97706">
@@ -11172,7 +11172,7 @@ function deleteHoleNote(){
 function renderPlayingNotebookCard(courseId,holeIdx){
   var note=getHoleNote(courseId,holeIdx);
   if(!note){
-    return '<div class="card" style="padding:8px 12px;background:#faf5ff;border-left:3px solid #a855f7;margin-bottom:10px;cursor:pointer" onclick="openHoleEdit(\''+courseId+'\','+holeIdx+')">'+
+    return '<div class="card" style="padding:8px 12px;background:#ede9fe;border-left:4px solid #7c3aed;margin-bottom:10px;cursor:pointer" onclick="openHoleEdit(\''+courseId+'\','+holeIdx+')">'+
       '<div class="f" style="align-items:center;justify-content:space-between">'+
         '<div class="f11" style="color:#7c3aed">📓 + Ajouter mes notes pour ce trou</div>'+
         '<div style="color:#7c3aed;font-size:16px">›</div>'+
@@ -11186,7 +11186,7 @@ function renderPlayingNotebookCard(courseId,holeIdx){
   var ucStart=ts.usualClub?getClubLabelFromId(courseId,ts.usualClub):'';
   var ucApp=ap.usualClub?getClubLabelFromId(courseId,ap.usualClub):'';
   var dangers=ts.dangers||[];
-  return '<div class="card" style="padding:10px;background:#faf5ff;border-left:3px solid #7c3aed;margin-bottom:10px;cursor:pointer" onclick="openHoleEdit(\''+courseId+'\','+holeIdx+')">'+
+  return '<div class="card" style="padding:10px;background:#ede9fe;border-left:4px solid #7c3aed;margin-bottom:10px;cursor:pointer" onclick="openHoleEdit(\''+courseId+'\','+holeIdx+')">'+
     '<div class="f" style="align-items:center;justify-content:space-between;margin-bottom:6px">'+
       '<div class="fw7 f13" style="color:#7c3aed">📓 Mes notes '+(stars?'· '+stars:'')+'</div>'+
       '<div style="color:#7c3aed;font-size:14px">✏️</div>'+
