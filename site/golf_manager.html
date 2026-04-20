@@ -3976,7 +3976,7 @@ function render7dayPicker(courseName,dateInputId,timeInputId){
     '</div>';
   setTimeout(function(){load7dayPicker(slot,courseName,dateInputId,timeInputId);},200);
   return '<div class="card mt8" style="padding:10px">'+
-    '<div class="ct" style="margin-bottom:8px">Choisis ton créneau — météo 7 jours</div>'+
+    '<div class="ct" style="margin-bottom:8px;display:flex;align-items:center;gap:8px"><img src="assets/favicons/golf-flag.png" style="width:22px;height:22px" alt=""> Choisis ton créneau — météo 7 jours</div>'+
     '<div id="'+slot+'" data-course="'+esc(courseName)+'" data-didi="'+dateInputId+'" data-tidi="'+timeInputId+'" '+
     'style="min-height:140px;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:13px">⏳ Chargement prévisions…</div>'+
     footer+
