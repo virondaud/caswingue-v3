@@ -4020,15 +4020,14 @@ function renderDayGrid(slotId,courseName,dateInputId,timeInputId){
     '</button>';
   }
   html+='</div>';
-  // Ligne horaire si un jour est sélectionné
-  if(selectedDate){
-    html+=renderHourlyStrip(fc,selectedDate,selectedTime,slotId);
-    // Résumé
-    var lbl=formatDayLabel(selectedDate);
-    html+='<div style="margin-top:8px;padding:8px;background:#f0fdf4;border-radius:8px;text-align:center;font-size:12px;color:#166534;font-weight:600">';
-    html+='Créneau : '+lbl+(selectedTime?' à '+selectedTime:' — choisis une heure');
-    html+='</div>';
-  }
+  // Ligne horaire TOUJOURS affichée (défaut = selectedDate ou le 1er jour dispo)
+  var dayForHours=selectedDate||d.time[0];
+  html+=renderHourlyStrip(fc,dayForHours,selectedTime,slotId);
+  // Résumé du créneau
+  var lbl=formatDayLabel(dayForHours);
+  html+='<div style="margin-top:8px;padding:8px;background:#f0fdf4;border-radius:8px;text-align:center;font-size:12px;color:#166534;font-weight:600">';
+  html+='Créneau : '+lbl+(selectedTime?' à '+selectedTime:' — choisis une heure');
+  html+='</div>';
   el.innerHTML=html;
 }
 function renderHourlyStrip(fc,dateStr,selectedTime,slotId){
