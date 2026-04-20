@@ -11166,18 +11166,59 @@ function deleteHoleNote(){
   });
 }
 
-// FAB flottant (bottom-right) pour ouvrir/éditer les notes du trou courant
+// Drawer collant en bas (au-dessus de la navbar), extensible.
+// État géré par S.nbDrawerOpen (boolean).
 function renderNotebookFab(courseId,holeIdx){
   var note=getHoleNote(courseId,holeIdx);
-  var hasNote=!!note && (note.strategy||note.notes||note.type||note.difficulty||(note.teeShot&&(note.teeShot.targetDistance||(note.teeShot.dangers&&note.teeShot.dangers.length)||note.teeShot.usualClub))||(note.approach&&(note.approach.strategy||note.approach.usualClub)));
-  var title=hasNote?'Voir / modifier mes notes':'Ajouter mes notes pour ce trou';
-  return '<button class="nb-fab" onclick="openHoleEdit(\''+courseId+'\','+holeIdx+')" title="'+esc(title)+'" '+
-    'style="position:fixed;bottom:72px;right:18px;z-index:50;width:54px;height:54px;border-radius:50%;'+
-    'background:#0891b2;color:#fff;border:none;box-shadow:0 4px 14px rgba(8,145,178,.45);cursor:pointer;'+
-    'display:flex;align-items:center;justify-content:center;font-size:22px">'+
-    '✏️'+
-    (hasNote?'<span style="position:absolute;top:4px;right:4px;width:12px;height:12px;border-radius:50%;background:#16a34a;border:2px solid #fff"></span>':'')+
-    '</button>';
+  var ts=(note&&note.teeShot)||{};
+  var ap=(note&&note.approach)||{};
+  var hasNote=!!note && (note.strategy||note.notes||note.type||note.difficulty||ts.targetDistance||(ts.dangers&&ts.dangers.length)||ts.usualClub||ap.strategy||ap.usualClub);
+  var open=!!S.nbDrawerOpen;
+  var summary='';
+  if(hasNote){
+    var bits=[];
+    if(ts.targetDistance)bits.push('🚩 '+ts.targetDistance+'m');
+    if(ap.strategy){var sl=APPROACH_STRATEGIES.find(s=>s.key===ap.strategy);if(sl)bits.push('⛳ '+sl.label.replace(/^[^ ]+ /,''));}
+    if(note.difficulty)bits.push('⭐'.repeat(note.difficulty));
+    summary=bits.join(' · ')||'Notes saisies';
+  }
+  var headerText=hasNote?summary:'+ Ajouter mes notes pour ce trou';
+  var chev=open?'▾':'▴';
+
+  // Contenu étendu
+  var body='';
+  if(open){
+    if(hasNote){
+      var lzLabel=ts.landingZone?LANDING_ZONES.find(z=>z.key===ts.landingZone)?.label:'';
+      var ucStart=ts.usualClub?getClubLabelFromId(courseId,ts.usualClub):'';
+      var ucApp=ap.usualClub?getClubLabelFromId(courseId,ap.usualClub):'';
+      var dangers=ts.dangers||[];
+      var apStratLabel=ap.strategy?APPROACH_STRATEGIES.find(t=>t.key===ap.strategy)?.label.replace(/^[^ ]+ /,''):'';
+      body='<div style="padding:10px 14px;max-height:40vh;overflow-y:auto;font-size:12px;line-height:1.5">';
+      if(ts.targetDistance)body+='<div style="color:#16a34a;font-weight:700">🚩 Viser '+ts.targetDistance+'m'+(lzLabel?' ('+esc(lzLabel).toLowerCase()+')':'')+'</div>';
+      if(ucStart)body+='<div class="f11 tm" style="margin-top:2px">Habituel départ : '+esc(ucStart)+'</div>';
+      if(dangers.length)body+='<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">'+dangers.map(d=>{var dl=DANGER_TYPES.find(x=>x.key===d.type);return dl?'<span class="badge bg" style="background:#fef3c7;color:#92400e;font-size:10px">⚠️ '+esc(dl.label)+(d.distance?' '+d.distance+'m':'')+'</span>':'';}).join('')+'</div>';
+      if(apStratLabel)body+='<div style="margin-top:6px;color:#0891b2;font-weight:700">⛳ '+esc(apStratLabel)+(ap.targetBeforePin?' · '+ap.targetBeforePin+'m avant drapeau':'')+'</div>';
+      if(ucApp)body+='<div class="f11 tm" style="margin-top:2px">Habituel attaque : '+esc(ucApp)+'</div>';
+      if(note.strategy)body+='<div style="margin-top:6px;color:#334155;font-style:italic">«'+esc(note.strategy)+'»</div>';
+      if(note.notes)body+='<div class="f11 tm" style="margin-top:4px">📝 '+esc(note.notes)+'</div>';
+      body+='<button class="btn bp mb0 mt8" style="width:100%" onclick="event.stopPropagation();openHoleEdit(\''+courseId+'\','+holeIdx+')">✏️ Modifier</button>';
+      body+='</div>';
+    }else{
+      body='<div style="padding:10px 14px"><button class="btn bp mb0" style="width:100%" onclick="event.stopPropagation();openHoleEdit(\''+courseId+'\','+holeIdx+')">✏️ Ajouter des notes</button></div>';
+    }
+  }
+  return '<div class="nb-drawer" style="position:sticky;bottom:60px;z-index:35;background:#cffafe;border-top:2px solid #0891b2;border-bottom:1px solid #0891b2">'+
+    '<button type="button" onclick="S.nbDrawerOpen='+(!open)+';render()" '+
+    'style="width:100%;background:transparent;border:none;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-family:inherit">'+
+    '<div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1">'+
+      '<span style="font-size:16px">'+(hasNote?'✏️':'📓')+'</span>'+
+      '<span style="color:#0891b2;font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(headerText)+'</span>'+
+    '</div>'+
+    '<span style="color:#0891b2;font-size:18px;flex-shrink:0;margin-left:8px">'+chev+'</span>'+
+    '</button>'+
+    body+
+    '</div>';
 }
 
 // Rend une carte compacte « Mes notes de ce trou » dans la vue Playing.
