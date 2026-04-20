@@ -10830,8 +10830,10 @@ async function shareGCN(){
 }
 
 // ══ 📓 CARNET DE PARCOURS (v3 — MVP Vigneux) ═════════════════════════════
-// Stockage : DB.courseNotebooks[courseId][holeIdx] = { type, clubStart, hazards[], approachStrategy, approachClub, strategy, difficulty, notes }
-// Architecture générique (keyed by courseId) mais pour le MVP, accès uniquement via la page Golf Club de Nantes.
+// Stockage : DB.courseNotebooks[courseId][holeIdx] = { ... } (v2 data model)
+// v2 : stratégie par distances cibles et dangers chiffrés, pas par club imposé
+//      → club recommandé calculé dynamiquement par Club Advisor selon météo
+// Architecture générique (keyed by courseId) mais MVP = Vigneux uniquement.
 
 var HOLE_TYPES=[
   {key:'straight',label:'Droit'},
@@ -10841,14 +10843,25 @@ var HOLE_TYPES=[
   {key:'up',label:'En montée'},
   {key:'down',label:'En descente'}
 ];
-var HAZARDS=[
-  {key:'bunker',label:'Bunker(s)'},
-  {key:'water',label:'Eau'},
-  {key:'ob_left',label:'OB à gauche'},
-  {key:'ob_right',label:'OB à droite'},
+var LANDING_ZONES=[
+  {key:'center',label:'Centre du fairway'},
+  {key:'left',label:'Côté gauche'},
+  {key:'right',label:'Côté droit'},
+  {key:'layup',label:'Layup (court, sécurité)'}
+];
+var DANGER_TYPES=[
+  {key:'bunker_l',label:'Bunker gauche'},
+  {key:'bunker_r',label:'Bunker droit'},
+  {key:'bunker_c',label:'Bunker central'},
+  {key:'ob_l',label:'OB gauche'},
+  {key:'ob_r',label:'OB droite'},
+  {key:'water_l',label:'Eau gauche'},
+  {key:'water_r',label:'Eau droite'},
+  {key:'water_c',label:'Eau traversant'},
+  {key:'trees_l',label:'Arbres gauche'},
+  {key:'trees_r',label:'Arbres droite'},
   {key:'rough',label:'Rough épais'},
-  {key:'trees',label:'Arbres'},
-  {key:'elevation',label:'Dénivelé important'}
+  {key:'slope',label:'Dénivelé'}
 ];
 var APPROACH_STRATEGIES=[
   {key:'direct',label:'🎯 Direct — viser le drapeau'},
@@ -10912,20 +10925,22 @@ function courseNotebookView(){
 
 function renderNotebookHoleRow(courseId,idx,hole,note){
   var n=note||{};
+  var ts=n.teeShot||{};
+  var ap=n.approach||{};
   var stars='★'.repeat(n.difficulty||0)+'☆'.repeat(5-(n.difficulty||0));
-  var hasNote=n.strategy||n.notes||n.clubStart||n.approachClub||(n.hazards&&n.hazards.length)||n.type||n.approachStrategy||n.difficulty;
-  var clubLabel=n.clubStart?getClubLabelFromId(courseId,n.clubStart):'';
-  var appLabel=n.approachClub?getClubLabelFromId(courseId,n.approachClub):'';
+  var hasNote=n.strategy||n.notes||n.type||n.difficulty||ts.targetDistance||(ts.dangers&&ts.dangers.length)||ap.strategy||ts.usualClub||ap.usualClub;
   var typeLabel=n.type?HOLE_TYPES.find(t=>t.key===n.type)?.label:'';
-  var appStratLabel=n.approachStrategy?APPROACH_STRATEGIES.find(t=>t.key===n.approachStrategy)?.label.replace(/^[^ ]+ /,''):'';
+  var apStratLabel=ap.strategy?APPROACH_STRATEGIES.find(t=>t.key===ap.strategy)?.label.replace(/^[^ ]+ /,''):'';
+  var lzLabel=ts.landingZone?LANDING_ZONES.find(z=>z.key===ts.landingZone)?.label:'';
   return `<div class="card" style="padding:10px;cursor:pointer" onclick="openHoleEdit('${courseId}',${idx})">
     <div class="f" style="justify-content:space-between;align-items:flex-start">
       <div style="flex:1;min-width:0">
         <div class="fw7 f14">Trou ${idx+1} · Par ${hole.par} · HCP ${hole.handicap}${hole.distBlanc?' · '+hole.distBlanc+'m':''}</div>
         ${hasNote?`
           ${typeLabel?`<div class="f11 tm mt8">${typeLabel}</div>`:''}
-          ${clubLabel||appLabel?`<div class="f11" style="margin-top:2px">🏌️ ${esc(clubLabel||'—')} → ⛳ ${esc(appLabel||'—')}${appStratLabel?' · '+esc(appStratLabel):''}</div>`:''}
-          ${n.hazards&&n.hazards.length?`<div class="f g8 mt8" style="flex-wrap:wrap">${n.hazards.map(h=>{var hl=HAZARDS.find(x=>x.key===h);return hl?`<span class="badge bg" style="background:#fef3c7;color:#92400e;font-size:10px">⚠️ ${esc(hl.label)}</span>`:'';}).join('')}</div>`:''}
+          ${ts.targetDistance?`<div class="f11" style="margin-top:2px;color:#16a34a">🚩 Viser ${ts.targetDistance}m${lzLabel?' · '+esc(lzLabel):''}</div>`:''}
+          ${ts.dangers&&ts.dangers.length?`<div class="f g8 mt8" style="flex-wrap:wrap">${ts.dangers.map(d=>{var dl=DANGER_TYPES.find(x=>x.key===d.type);return dl?`<span class="badge bg" style="background:#fef3c7;color:#92400e;font-size:10px">⚠️ ${esc(dl.label)}${d.distance?' '+d.distance+'m':''}</span>`:'';}).join('')}</div>`:''}
+          ${apStratLabel?`<div class="f11" style="margin-top:4px;color:#7c3aed">⛳ ${esc(apStratLabel)}${ap.targetBeforePin?' · '+ap.targetBeforePin+'m avant drapeau':''}</div>`:''}
           ${n.strategy?`<div class="f12" style="margin-top:6px;color:#334155">«${esc(n.strategy.slice(0,120))}${n.strategy.length>120?'…':''}»</div>`:''}
           ${n.difficulty?`<div class="f11 tm mt8" style="color:#d97706">${stars}</div>`:''}
         `:`<div class="f11 tm" style="margin-top:4px;font-style:italic">Sans notes — tap pour compléter</div>`}
@@ -10949,19 +10964,24 @@ function getClubLabelFromId(courseId,clubId){
   return std[clubId]||clubId;
 }
 
-// Formulaire d'édition d'un trou (modal bottom-sheet)
+// Formulaire d'édition d'un trou (modal bottom-sheet) — v2 data model
 function openHoleEdit(courseId,holeIdx){
   var c=DB.courses.find(x=>x.id===courseId);if(!c)return;
   var hole=c.holes[holeIdx];
   var note=getHoleNote(courseId,holeIdx)||{};
+  var ts=note.teeShot||{};
+  var ap=note.approach||{};
   S._noteForm={
     courseId:courseId,
     holeIdx:holeIdx,
     type:note.type||'',
-    clubStart:note.clubStart||'',
-    hazards:(note.hazards||[]).slice(),
-    approachStrategy:note.approachStrategy||'',
-    approachClub:note.approachClub||'',
+    ts_targetDistance:ts.targetDistance||'',
+    ts_landingZone:ts.landingZone||'',
+    ts_dangers:(ts.dangers||[]).map(d=>Object.assign({},d)),
+    ts_usualClub:ts.usualClub||'',
+    ap_strategy:ap.strategy||'',
+    ap_targetBeforePin:ap.targetBeforePin||'',
+    ap_usualClub:ap.usualClub||'',
     strategy:note.strategy||'',
     difficulty:note.difficulty||0,
     notes:note.notes||''
@@ -10976,7 +10996,6 @@ function renderHoleEditModal(course,hole){
   div.id='nb-mo';
   div.style.cssText='display:flex;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:400;align-items:flex-end;padding:0';
 
-  // Récupère les clubs du joueur "Moi" (ou du 1er joueur) pour les dropdowns
   var me=getMePlayer()||DB.players[0];
   var clubs=me?getPlayerClubs(me):[];
 
@@ -10988,56 +11007,78 @@ function renderHoleEditModal(course,hole){
   html+='<div class="lbl">Type de trou</div>';
   html+='<select class="inp mb8" onchange="S._noteForm.type=this.value">';
   html+='<option value="">— Non défini —</option>';
-  HOLE_TYPES.forEach(function(t){
-    html+='<option value="'+t.key+'"'+(f.type===t.key?' selected':'')+'>'+t.label+'</option>';
-  });
+  HOLE_TYPES.forEach(function(t){html+='<option value="'+t.key+'"'+(f.type===t.key?' selected':'')+'>'+t.label+'</option>';});
   html+='</select>';
 
-  // Club de départ
-  html+='<div class="lbl">🏌️ Club de départ</div>';
-  html+='<select class="inp mb8" onchange="S._noteForm.clubStart=this.value">';
-  html+='<option value="">— Non défini —</option>';
-  clubs.forEach(function(c){
-    html+='<option value="'+c.id+'"'+(f.clubStart===c.id?' selected':'')+'>'+esc(c.name)+'</option>';
-  });
-  html+='</select>';
-
-  // Dangers (multi-select checkboxes)
-  html+='<div class="lbl">⚠️ Dangers principaux</div>';
-  html+='<div class="f g8" style="flex-wrap:wrap;margin-bottom:12px">';
-  HAZARDS.forEach(function(h){
-    var on=f.hazards.indexOf(h.key)>=0;
-    html+='<button type="button" class="btn bxs mb0" style="padding:6px 10px;font-size:11px;'+(on?'background:#fef3c7;color:#92400e;border:1px solid #f59e0b':'background:#fff;color:#64748b;border:1px solid #cbd5e1')+'" onclick="toggleNoteHazard(\''+h.key+'\')">'+(on?'✓ ':'+ ')+h.label+'</button>';
+  // ── Section DÉPART ──
+  html+='<div style="margin-top:14px;padding:10px;background:#f0fdf4;border-radius:10px;border-left:3px solid #16a34a">';
+  html+='<div class="ct" style="margin-bottom:8px;color:#16a34a">🚩 Départ (tee shot)</div>';
+  html+='<div class="f g8">';
+  html+='<div class="fg mb0" style="flex:2"><label class="lbl">Distance cible (m)</label>';
+  html+='<input type="number" class="inp" min="0" max="400" value="'+(f.ts_targetDistance||'')+'" placeholder="ex: 230" onchange="S._noteForm.ts_targetDistance=parseInt(this.value)||0"></div>';
+  html+='<div class="fg mb0" style="flex:3"><label class="lbl">Zone d\'atterrissage</label>';
+  html+='<select class="inp" onchange="S._noteForm.ts_landingZone=this.value"><option value="">—</option>';
+  LANDING_ZONES.forEach(function(z){html+='<option value="'+z.key+'"'+(f.ts_landingZone===z.key?' selected':'')+'>'+z.label+'</option>';});
+  html+='</select></div>';
+  html+='</div>';
+  // Dangers chiffrés
+  html+='<div class="lbl" style="margin-top:10px">⚠️ Dangers chiffrés</div>';
+  html+='<div id="ts-dangers">';
+  f.ts_dangers.forEach(function(d,i){
+    html+='<div class="f g8 mb8" style="align-items:center">';
+    html+='<select class="inp" style="flex:3" onchange="S._noteForm.ts_dangers['+i+'].type=this.value"><option value="">— type —</option>';
+    DANGER_TYPES.forEach(function(dt){html+='<option value="'+dt.key+'"'+(d.type===dt.key?' selected':'')+'>'+dt.label+'</option>';});
+    html+='</select>';
+    html+='<span class="f11 tm">à</span>';
+    html+='<input type="number" class="inp" style="flex:1;width:60px" min="0" max="400" value="'+(d.distance||'')+'" placeholder="m" onchange="S._noteForm.ts_dangers['+i+'].distance=parseInt(this.value)||0">';
+    html+='<span class="f11 tm">m</span>';
+    html+='<button class="btn bxs bd mb0" style="padding:4px 8px" onclick="removeDanger('+i+')">🗑</button>';
+    html+='</div>';
   });
   html+='</div>';
-
-  // Attaque de green
-  html+='<div class="lbl">⛳ Attaque de green — stratégie</div>';
-  html+='<select class="inp mb8" onchange="S._noteForm.approachStrategy=this.value">';
-  html+='<option value="">— Non défini —</option>';
-  APPROACH_STRATEGIES.forEach(function(s){
-    html+='<option value="'+s.key+'"'+(f.approachStrategy===s.key?' selected':'')+'>'+s.label+'</option>';
-  });
+  html+='<button class="btn bxs bo mb0" style="margin-top:4px" onclick="addDanger()">+ Ajouter un danger</button>';
+  // Bouton Club Advisor
+  if(f.ts_targetDistance){
+    html+='<button class="btn bp mb0 mt8" style="width:100%" onclick="openAdvisorFromNotebook('+f.ts_targetDistance+')">🎯 Voir quel club avec la météo</button>';
+  }
+  // Club habituel (discret)
+  html+='<div style="margin-top:10px;display:flex;align-items:center;gap:6px">';
+  html+='<span class="f11 tm">Habituellement je prends :</span>';
+  html+='<select class="inp" style="flex:1;padding:4px 6px;font-size:11px" onchange="S._noteForm.ts_usualClub=this.value">';
+  html+='<option value="">—</option>';
+  clubs.forEach(function(c){html+='<option value="'+c.id+'"'+(f.ts_usualClub===c.id?' selected':'')+'>'+esc(c.name)+'</option>';});
   html+='</select>';
+  html+='</div>';
+  html+='</div>';
 
-  html+='<div class="lbl">⛳ Club d\'attaque</div>';
-  html+='<select class="inp mb8" onchange="S._noteForm.approachClub=this.value">';
-  html+='<option value="">— Non défini —</option>';
-  clubs.forEach(function(c){
-    html+='<option value="'+c.id+'"'+(f.approachClub===c.id?' selected':'')+'>'+esc(c.name)+'</option>';
-  });
+  // ── Section ATTAQUE DE GREEN ──
+  html+='<div style="margin-top:14px;padding:10px;background:#faf5ff;border-radius:10px;border-left:3px solid #7c3aed">';
+  html+='<div class="ct" style="margin-bottom:8px;color:#7c3aed">⛳ Attaque de green</div>';
+  html+='<div class="lbl">Stratégie d\'attaque</div>';
+  html+='<select class="inp mb8" onchange="S._noteForm.ap_strategy=this.value"><option value="">— Non défini —</option>';
+  APPROACH_STRATEGIES.forEach(function(s){html+='<option value="'+s.key+'"'+(f.ap_strategy===s.key?' selected':'')+'>'+s.label+'</option>';});
   html+='</select>';
+  html+='<div class="fg mb0" style="margin-bottom:8px"><label class="lbl">Zone d\'atterrissage visée (optionnel)</label>';
+  html+='<div class="f g8" style="align-items:center"><input type="number" class="inp" min="0" max="60" value="'+(f.ap_targetBeforePin||'')+'" placeholder="ex: 10" onchange="S._noteForm.ap_targetBeforePin=parseInt(this.value)||0"><span class="f11 tm">m avant le drapeau</span></div></div>';
+  html+='<div style="margin-top:10px;display:flex;align-items:center;gap:6px">';
+  html+='<span class="f11 tm">Habituellement je prends :</span>';
+  html+='<select class="inp" style="flex:1;padding:4px 6px;font-size:11px" onchange="S._noteForm.ap_usualClub=this.value">';
+  html+='<option value="">—</option>';
+  clubs.forEach(function(c){html+='<option value="'+c.id+'"'+(f.ap_usualClub===c.id?' selected':'')+'>'+esc(c.name)+'</option>';});
+  html+='</select>';
+  html+='</div>';
+  html+='</div>';
 
   // Stratégie texte libre
-  html+='<div class="lbl">🎯 Stratégie du trou</div>';
-  html+='<textarea class="inp mb8" rows="3" placeholder="Ex: Dog-leg à gauche, rester à droite. Bunker à 220m." onchange="S._noteForm.strategy=this.value">'+esc(f.strategy)+'</textarea>';
+  html+='<div class="lbl" style="margin-top:14px">🎯 Stratégie du trou (texte libre)</div>';
+  html+='<textarea class="inp mb8" rows="3" placeholder="Ex: Dog-leg à gauche, rester à droite du fairway. Bunker à 220m." onchange="S._noteForm.strategy=this.value">'+esc(f.strategy)+'</textarea>';
 
   // Difficulté (étoiles)
   html+='<div class="lbl">⭐ Difficulté perçue</div>';
   html+='<div class="f g8 mb8">';
   for(var i=1;i<=5;i++){
     var sel=f.difficulty>=i;
-    html+='<button type="button" class="btn bsm mb0" style="flex:1;padding:10px;font-size:20px;'+(sel?'background:#fef3c7;border-color:#f59e0b;color:#92400e':'background:#fff;color:#cbd5e1;border:1px solid #cbd5e1')+'" onclick="S._noteForm.difficulty='+(f.difficulty===i?0:i)+';reopenHoleModal()">'+(sel?'⭐':'☆')+'</button>';
+    html+='<button type="button" class="btn bsm mb0" style="flex:1;padding:10px;font-size:20px;'+(sel?'background:#fef3c7;border-color:#f59e0b;color:#92400e':'background:#fff;color:#cbd5e1;border:1px solid #cbd5e1')+'" onclick="syncNoteFormFromDOM();S._noteForm.difficulty='+(f.difficulty===i?0:i)+';reopenHoleModal()">'+(sel?'⭐':'☆')+'</button>';
   }
   html+='</div>';
 
@@ -11056,32 +11097,95 @@ function renderHoleEditModal(course,hole){
   document.body.appendChild(div);
 }
 
-function toggleNoteHazard(key){
+// Gestion des dangers chiffrés (ts_dangers)
+function addDanger(){
   var f=S._noteForm;if(!f)return;
-  var i=f.hazards.indexOf(key);
-  if(i>=0)f.hazards.splice(i,1);else f.hazards.push(key);
+  syncNoteFormFromDOM();
+  f.ts_dangers.push({type:'',distance:0});
   reopenHoleModal();
 }
+function removeDanger(idx){
+  var f=S._noteForm;if(!f)return;
+  syncNoteFormFromDOM();
+  f.ts_dangers.splice(idx,1);
+  reopenHoleModal();
+}
+
+// Récupère les valeurs des textareas et inputs dans S._noteForm
+// (utilisé avant rerender pour ne pas perdre la saisie)
+function syncNoteFormFromDOM(){
+  var f=S._noteForm;if(!f)return;
+  var mo=document.getElementById('nb-mo');if(!mo)return;
+  var strat=mo.querySelector('textarea[placeholder^="Ex: Dog-leg"]');
+  if(strat)f.strategy=strat.value;
+  var notes=mo.querySelector('textarea[placeholder^="Vent dominant"]');
+  if(notes)f.notes=notes.value;
+}
+
 function reopenHoleModal(){
   var f=S._noteForm;if(!f)return;
   var c=DB.courses.find(x=>x.id===f.courseId);if(!c)return;
   renderHoleEditModal(c,c.holes[f.holeIdx]);
 }
+
 function saveHoleNoteFromForm(){
   var f=S._noteForm;if(!f)return;
-  // Synchronise les textareas dont le onchange pourrait ne pas s'être déclenché
-  var stratEl=document.querySelector('#nb-mo textarea[placeholder^="Ex: Dog-leg"]');
-  if(stratEl)f.strategy=stratEl.value;
-  var notesEl=document.querySelector('#nb-mo textarea[placeholder^="Vent dominant"]');
-  if(notesEl)f.notes=notesEl.value;
-  saveHoleNote(f.courseId,f.holeIdx,{
-    type:f.type,clubStart:f.clubStart,hazards:f.hazards,
-    approachStrategy:f.approachStrategy,approachClub:f.approachClub,
-    strategy:f.strategy,difficulty:f.difficulty,notes:f.notes
-  });
+  syncNoteFormFromDOM();
+  var entry={
+    type:f.type,
+    teeShot:{
+      targetDistance:f.ts_targetDistance||0,
+      landingZone:f.ts_landingZone,
+      dangers:f.ts_dangers.filter(function(d){return d.type;}),
+      usualClub:f.ts_usualClub
+    },
+    approach:{
+      strategy:f.ap_strategy,
+      targetBeforePin:f.ap_targetBeforePin||0,
+      usualClub:f.ap_usualClub
+    },
+    strategy:f.strategy,
+    difficulty:f.difficulty,
+    notes:f.notes
+  };
+  saveHoleNote(f.courseId,f.holeIdx,entry);
   document.getElementById('nb-mo')?.remove();
   S._noteForm=null;
   render();
+}
+
+function deleteHoleNote(){
+  var f=S._noteForm;if(!f)return;
+  conf('Effacer les notes de ce trou ?','Toutes les infos saisies seront perdues.',function(){
+    clearHoleNote(f.courseId,f.holeIdx);
+    document.getElementById('nb-mo')?.remove();
+    S._noteForm=null;
+    render();
+  });
+}
+
+// Ouvre le Club Advisor pré-rempli avec la distance cible du trou courant
+function openAdvisorFromNotebook(targetDist){
+  var f=S._noteForm;
+  if(f&&f.courseId){
+    // Ferme le modal et mémorise qu'on vient du carnet
+    document.getElementById('nb-mo')?.remove();
+    S._noteForm=null;
+    S.clubsPlayerId=getMePlayer()?.id||DB.players[0]?.id;
+    S.advDist=targetDist;
+    S.advisorReturnTo='courseNotebook';
+    // Charge la météo live du parcours si possible
+    var c=DB.courses.find(x=>x.id===f.courseId);
+    if(c)fetchLiveWeatherForCourse(c).then(function(wx){
+      if(wx&&DB.roundConditions){
+        DB.roundConditions.temp=wx.temp;
+        DB.roundConditions.humidity=wx.humidity;
+        DB.roundConditions.liveWx=wx;
+        save();render();
+      }
+    }).catch(function(){});
+    go('clubsAdvisor');
+  }
 }
 function deleteHoleNote(){
   var f=S._noteForm;if(!f)return;
