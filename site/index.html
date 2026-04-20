@@ -3995,6 +3995,14 @@ function load7dayPicker(slotId,courseName,dateInputId,timeInputId){
 }
 function renderDayGrid(slotId,courseName,dateInputId,timeInputId){
   var el=document.getElementById(slotId);if(!el||!el._fc)return;
+  // Réinitialise les styles du loader (flex center) pour que le contenu
+  // final s'empile normalement en block
+  el.style.display='block';
+  el.style.alignItems='';
+  el.style.justifyContent='';
+  el.style.minHeight='';
+  el.style.color='';
+  el.style.fontSize='';
   var fc=el._fc;
   var jours=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
   var d=fc.daily;
@@ -4011,7 +4019,8 @@ function renderDayGrid(slotId,courseName,dateInputId,timeInputId){
     var precip=Math.round(d.precipitation_probability_max[i]||0);
     var dayKey=d.time[i];
     html+='<button type="button" onclick="selectForecastDay(\''+slotId+'\',\''+dayKey+'\')" class="wx-card'+(isSel?' sel':'')+'">'+
-      '<div class="wx-l">'+jours[dt.getDay()]+' '+dt.getDate()+'/'+(dt.getMonth()+1)+'</div>'+
+      '<div class="wx-l">'+jours[dt.getDay()]+'</div>'+
+      '<div class="wx-d">'+dt.getDate()+'/'+(dt.getMonth()+1)+'</div>'+
       '<div class="wx-i">'+icon+'</div>'+
       '<div class="wx-t">'+tmax+'°</div>'+
       '<div class="wx-wind">💨'+wind+'</div>'+
@@ -4059,6 +4068,7 @@ function renderHourlyStrip(fc,dateStr,selectedTime,slotId){
     var isSel=selectedTime===timeStr;
     html+='<button type="button" onclick="selectForecastHour(\''+slotId+'\',\''+timeStr+'\')" class="wx-card'+(isSel?' sel':'')+'">'+
       '<div class="wx-l">'+h+'h</div>'+
+      '<div class="wx-d">&nbsp;</div>'+
       '<div class="wx-i">'+icon+'</div>'+
       '<div class="wx-t">'+temp+'°</div>'+
       '<div class="wx-wind">💨'+wind+'</div>'+
