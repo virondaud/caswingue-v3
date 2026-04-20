@@ -3952,17 +3952,21 @@ function prettyHour(timeStr){
   var m=parseInt(p[1],10)||0;
   return h+'h'+(m?String(m).padStart(2,'0'):'');
 }
-// Retourne un bloc texte météo au format B (titre + 2 puces)
+// Retourne un bloc texte météo au format B (titre + 3 puces couvrant la partie)
 // - Au départ (9h) : ...
 // - Mi-parcours (11h) : ...
+// - Fin de parcours (13h) : ...
 // Retour : string complète (avec \n), ou '' si aucune donnée dispo.
 function formatRoundWeather(fc,dateVal,timeVal){
   var wx0=getForecastAt(fc,dateVal,timeVal);
-  var timeLater=addHoursToTime(timeVal,2);
-  var wx2=getForecastAt(fc,dateVal,timeLater);
+  var time2=addHoursToTime(timeVal,2);
+  var wx2=getForecastAt(fc,dateVal,time2);
+  var time4=addHoursToTime(timeVal,4);
+  var wx4=getForecastAt(fc,dateVal,time4);
   var lines=[];
   if(wx0)lines.push('- Au départ ('+prettyHour(timeVal)+') : '+formatWeatherLine(wx0));
-  if(wx2)lines.push('- Mi-parcours ('+prettyHour(timeLater)+') : '+formatWeatherLine(wx2));
+  if(wx2)lines.push('- Mi-parcours ('+prettyHour(time2)+') : '+formatWeatherLine(wx2));
+  if(wx4)lines.push('- Fin de parcours ('+prettyHour(time4)+') : '+formatWeatherLine(wx4));
   if(lines.length===0)return '';
   return 'Météo prévue :\n'+lines.join('\n');
 }
