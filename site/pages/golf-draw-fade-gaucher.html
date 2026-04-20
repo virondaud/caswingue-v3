@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Draw & Fade – Golfeur Gaucher</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #1a472a;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 20px;
+    min-height: 100vh;
+  }
+  h1 { font-size: 28px; margin-bottom: 6px; letter-spacing: 1px; text-transform: uppercase; }
+  .subtitle { font-size: 15px; opacity: 0.8; margin-bottom: 30px; }
+  .container { display: flex; gap: 40px; flex-wrap: wrap; justify-content: center; }
+  .card {
+    background: rgba(255,255,255,0.07);
+    border-radius: 16px;
+    padding: 24px 20px 20px;
+    width: 460px;
+    border: 2px solid rgba(255,255,255,0.15);
+  }
+  .card h2 { text-align: center; font-size: 22px; margin-bottom: 4px; }
+  .card .effect { text-align: center; font-size: 14px; opacity: 0.7; margin-bottom: 16px; }
+  .draw-card { border-color: #4fc3f7; }
+  .fade-card { border-color: #ffb74d; }
+  .draw-card h2 { color: #4fc3f7; }
+  .fade-card h2 { color: #ffb74d; }
+  svg { display: block; margin: 0 auto; }
+  .legend {
+    margin-top: 14px; font-size: 13px; line-height: 1.9;
+    padding: 12px 14px; background: rgba(0,0,0,0.25); border-radius: 10px;
+  }
+  .legend b { font-size: 14px; }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+  .footer {
+    margin-top: 30px; max-width: 960px; font-size: 13.5px; opacity: 0.85;
+    line-height: 1.8; text-align: center; padding: 20px;
+    background: rgba(0,0,0,0.2); border-radius: 12px;
+  }
+  .footer b { color: #8bc34a; opacity: 1; }
+  .vocab {
+    margin-top: 20px; max-width: 960px; font-size: 12.5px; line-height: 1.7;
+    padding: 14px 18px; background: rgba(255,255,255,0.06);
+    border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
+  }
+  .vocab b { color: #ce93d8; }
+  .sources { margin-top: 16px; font-size: 11px; opacity: 0.5; text-align: center; }
+  .sources a { color: #aaa; }
+</style>
+</head>
+<body>
+
+<h1>Draw & Fade</h1>
+<p class="subtitle">Golfeur gaucher – vue de dessus (du ciel vers le sol) – la cible est en haut</p>
+
+<div class="container">
+
+  <!-- ============ DRAW ============ -->
+  <div class="card draw-card">
+    <h2>DRAW</h2>
+    <p class="effect">La balle part a gauche de la cible puis courbe vers la droite</p>
+    <svg width="420" height="420" viewBox="0 0 420 420">
+      <rect x="0" y="0" width="420" height="420" rx="12" fill="#2e7d32"/>
+
+      <!-- Target line -->
+      <line x1="190" y1="370" x2="190" y2="30" stroke="white" stroke-width="1.5" stroke-dasharray="8,6" opacity="0.35"/>
+      <text x="196" y="24" fill="white" font-size="10" opacity="0.4">Ligne cible</text>
+
+      <!-- TARGET -->
+      <circle cx="190" cy="42" r="7" fill="#f44336"/>
+      <line x1="190" y1="42" x2="190" y2="60" stroke="#f44336" stroke-width="2"/>
+      <polygon points="190,42 207,49 190,56" fill="#f44336" opacity="0.8"/>
+      <text x="212" y="52" fill="#f44336" font-size="13" font-weight="bold">CIBLE</text>
+
+      <!-- BALL -->
+      <circle cx="190" cy="310" r="8" fill="white" stroke="#333" stroke-width="1.5"/>
+      <text x="155" y="330" fill="white" font-size="12" font-weight="bold">Balle</text>
+
+      <!-- FEET – DRAW = closed stance for lefty = feet aligned LEFT of target -->
+      <!-- Front foot (right foot, lead) -->
+      <rect x="250" y="270" width="52" height="16" rx="8" fill="white" opacity="0.9" transform="rotate(-8, 276, 278)"/>
+      <text x="310" y="275" fill="#aaa" font-size="10">pied droit</text>
+      <text x="310" y="287" fill="#aaa" font-size="10">(avant / lead)</text>
+
+      <!-- Back foot (left foot, trail) -->
+      <rect x="262" y="340" width="52" height="16" rx="8" fill="white" opacity="0.9" transform="rotate(-8, 288, 348)"/>
+      <text x="322" y="345" fill="#aaa" font-size="10">pied gauche</text>
+      <text x="322" y="357" fill="#aaa" font-size="10">(arriere / trail)</text>
+
+      <!-- Stance alignment line -->
+      <line x1="240" y1="262" x2="310" y2="360" stroke="white" stroke-width="1.2" stroke-dasharray="5,4" opacity="0.35"/>
+
+      <!-- Extended stance direction (feet point LEFT of target) -->
+      <line x1="275" y1="308" x2="155" y2="170" stroke="#aaa" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.4"/>
+      <text x="108" y="168" fill="#aaa" font-size="9" opacity="0.6">direction pieds</text>
+      <text x="105" y="180" fill="#aaa" font-size="9" opacity="0.6">(a gauche de la cible)</text>
+
+      <defs>
+        <marker id="ap1" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" fill="#4fc3f7">
+          <polygon points="0 0, 10 3.5, 0 7"/>
+        </marker>
+        <marker id="af1" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto" fill="#ff9800">
+          <polygon points="0 0, 8 3, 0 6"/>
+        </marker>
+      </defs>
+
+      <!-- Club path: in-to-out = from near body (right) toward upper-left -->
+      <line x1="250" y1="350" x2="138" y2="248" stroke="#4fc3f7" stroke-width="3.5" marker-end="url(#ap1)"/>
+      <text x="90" y="245" fill="#4fc3f7" font-size="12" font-weight="bold">Chemin club</text>
+      <text x="100" y="259" fill="#4fc3f7" font-size="10">(in-to-out)</text>
+
+      <!-- Club face: points between path and target line -->
+      <line x1="200" y1="325" x2="178" y2="240" stroke="#ff9800" stroke-width="2.5" marker-end="url(#af1)" stroke-dasharray="6,4"/>
+      <text x="120" y="230" fill="#ff9800" font-size="11">Face club</text>
+
+      <!-- Ball flight: starts LEFT then curves RIGHT to target -->
+      <path d="M 190 300 Q 148 180, 190 42" stroke="#e0e0e0" stroke-width="2.5" fill="none" stroke-dasharray="5,3"/>
+      <text x="108" y="195" fill="#e0e0e0" font-size="10" opacity="0.8">Trajectoire</text>
+      <text x="163" y="138" fill="#81d4fa" font-size="20" opacity="0.7">&#8618;</text>
+    </svg>
+
+    <div class="legend">
+      <b>Comment faire un Draw (gaucher) :</b><br>
+      <span class="dot" style="background:#fff"></span> <b>Pieds :</b> Alignes a gauche de la cible (stance "ferme")<br>
+      <span class="dot" style="background:#fff; border: 2px solid #333"></span> <b>Balle :</b> Au centre ou legerement en arriere du stance<br>
+      <span class="dot" style="background:#4fc3f7"></span> <b>Chemin du club :</b> De l'interieur vers l'exterieur (in-to-out)<br>
+      <span class="dot" style="background:#ff9800"></span> <b>Face du club :</b> Fermee par rapport au chemin, ouverte par rapport a la cible<br>
+      <span class="dot" style="background:#e0e0e0"></span> <b>Trajectoire :</b> Depart a gauche, courbe a droite vers la cible
+    </div>
+  </div>
+
+  <!-- ============ FADE ============ -->
+  <div class="card fade-card">
+    <h2>FADE</h2>
+    <p class="effect">La balle part a droite de la cible puis courbe vers la gauche</p>
+    <svg width="420" height="420" viewBox="0 0 420 420">
+      <rect x="0" y="0" width="420" height="420" rx="12" fill="#2e7d32"/>
+
+      <!-- Target line -->
+      <line x1="190" y1="370" x2="190" y2="30" stroke="white" stroke-width="1.5" stroke-dasharray="8,6" opacity="0.35"/>
+      <text x="196" y="24" fill="white" font-size="10" opacity="0.4">Ligne cible</text>
+
+      <!-- TARGET -->
+      <circle cx="190" cy="42" r="7" fill="#f44336"/>
+      <line x1="190" y1="42" x2="190" y2="60" stroke="#f44336" stroke-width="2"/>
+      <polygon points="190,42 207,49 190,56" fill="#f44336" opacity="0.8"/>
+      <text x="212" y="52" fill="#f44336" font-size="13" font-weight="bold">CIBLE</text>
+
+      <!-- BALL -->
+      <circle cx="190" cy="310" r="8" fill="white" stroke="#333" stroke-width="1.5"/>
+      <text x="155" y="330" fill="white" font-size="12" font-weight="bold">Balle</text>
+
+      <!-- FEET – FADE = open stance for lefty = feet aligned RIGHT of target -->
+      <!-- Front foot (right foot, lead) -->
+      <rect x="250" y="270" width="52" height="16" rx="8" fill="white" opacity="0.9" transform="rotate(8, 276, 278)"/>
+      <text x="310" y="275" fill="#aaa" font-size="10">pied droit</text>
+      <text x="310" y="287" fill="#aaa" font-size="10">(avant / lead)</text>
+
+      <!-- Back foot (left foot, trail) -->
+      <rect x="262" y="340" width="52" height="16" rx="8" fill="white" opacity="0.9" transform="rotate(8, 288, 348)"/>
+      <text x="322" y="345" fill="#aaa" font-size="10">pied gauche</text>
+      <text x="322" y="357" fill="#aaa" font-size="10">(arriere / trail)</text>
+
+      <!-- Stance alignment line -->
+      <line x1="310" y1="262" x2="240" y2="360" stroke="white" stroke-width="1.2" stroke-dasharray="5,4" opacity="0.35"/>
+
+      <!-- Extended stance direction (feet point RIGHT of target) -->
+      <line x1="275" y1="308" x2="340" y2="170" stroke="#aaa" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.4"/>
+      <text x="342" y="168" fill="#aaa" font-size="9" opacity="0.6">direction pieds</text>
+      <text x="342" y="180" fill="#aaa" font-size="9" opacity="0.6">(a droite de la cible)</text>
+
+      <defs>
+        <marker id="ap2" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto" fill="#ffb74d">
+          <polygon points="0 0, 10 3.5, 0 7"/>
+        </marker>
+        <marker id="af2" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto" fill="#9c27b0">
+          <polygon points="0 0, 8 3, 0 6"/>
+        </marker>
+      </defs>
+
+      <!-- Club path: out-to-in = from far side (left) toward upper-right -->
+      <line x1="135" y1="350" x2="252" y2="248" stroke="#ffb74d" stroke-width="3.5" marker-end="url(#ap2)"/>
+      <text x="258" y="245" fill="#ffb74d" font-size="12" font-weight="bold">Chemin club</text>
+      <text x="258" y="259" fill="#ffb74d" font-size="10">(out-to-in)</text>
+
+      <!-- Club face: points between path and target -->
+      <line x1="185" y1="325" x2="204" y2="240" stroke="#9c27b0" stroke-width="2.5" marker-end="url(#af2)" stroke-dasharray="6,4"/>
+      <text x="210" y="232" fill="#9c27b0" font-size="11">Face club</text>
+
+      <!-- Ball flight: starts RIGHT then curves LEFT to target -->
+      <path d="M 190 300 Q 236 180, 190 42" stroke="#e0e0e0" stroke-width="2.5" fill="none" stroke-dasharray="5,3"/>
+      <text x="240" y="195" fill="#e0e0e0" font-size="10" opacity="0.8">Trajectoire</text>
+      <text x="203" y="138" fill="#ffe082" font-size="20" opacity="0.7">&#8617;</text>
+    </svg>
+
+    <div class="legend">
+      <b>Comment faire un Fade (gaucher) :</b><br>
+      <span class="dot" style="background:#fff"></span> <b>Pieds :</b> Alignes a droite de la cible (stance "ouvert")<br>
+      <span class="dot" style="background:#fff; border: 2px solid #333"></span> <b>Balle :</b> Legerement en avant du centre du stance<br>
+      <span class="dot" style="background:#ffb74d"></span> <b>Chemin du club :</b> De l'exterieur vers l'interieur (out-to-in)<br>
+      <span class="dot" style="background:#9c27b0"></span> <b>Face du club :</b> Ouverte par rapport au chemin, fermee par rapport a la cible<br>
+      <span class="dot" style="background:#e0e0e0"></span> <b>Trajectoire :</b> Depart a droite, courbe a gauche vers la cible
+    </div>
+  </div>
+
+</div>
+
+<!-- Explications -->
+<div class="footer">
+  <b>Le principe cle pour un gaucher (lois de la balle) :</b><br><br>
+  1. La balle <b>demarre</b> dans la direction ou pointe la <b>face du club</b> a l'impact.<br>
+  2. La balle <b>courbe</b> a cause de la difference entre la face du club et le <b>chemin du club</b>.<br><br>
+  <b>Draw (gaucher) :</b> Face fermee / chemin → rotation gauche-droite<br>
+  <b>Fade (gaucher) :</b> Face ouverte / chemin → rotation droite-gauche<br><br>
+  <b>Astuce :</b> Alignez vos pieds dans la direction ou vous voulez que la balle <b>demarre</b>,<br>
+  puis orientez la face du club entre vos pieds et la cible. Swinguez le long de vos pieds !
+</div>
+
+<div class="vocab">
+  <b>Petit lexique :</b><br>
+  <b>Stance</b> = position de vos pieds au sol avant de frapper.<br>
+  <b>Stance ferme</b> (closed) = pieds pointes a gauche de la cible (pour un gaucher). Favorise le draw.<br>
+  <b>Stance ouvert</b> (open) = pieds pointes a droite de la cible (pour un gaucher). Favorise le fade.<br>
+  <b>Lead / Avant</b> = le pied le plus proche de la cible (pied droit pour un gaucher).<br>
+  <b>Trail / Arriere</b> = le pied le plus eloigne de la cible (pied gauche pour un gaucher).<br>
+  <b>In-to-out</b> = le club vient de l'interieur (pres du corps) et sort vers l'exterieur. Produit du draw.<br>
+  <b>Out-to-in</b> = le club vient de l'exterieur et rentre vers l'interieur (pres du corps). Produit du fade.<br>
+  <b>Face du club</b> = la surface plate qui frappe la balle. Son angle a l'impact decide ou la balle part.<br>
+  <b>Chemin du club</b> = la direction que suit la tete du club pendant le swing.
+</div>
+
+<div class="sources">
+  Sources : Left-Side Golf, Foresight Sports, Decathlon Conseils Sport, Golf du Belvedere
+</div>
+
+</body>
+</html>

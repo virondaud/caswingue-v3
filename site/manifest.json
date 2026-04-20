@@ -1,0 +1,19 @@
+{
+  "name": "Ça Swingue Manager",
+  "short_name": "Ça Swingue",
+  "description": "Votre compagnon de golf",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#166534",
+  "theme_color": "#166534",
+  "icons": [
+    {
+      "src": "./index.html",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

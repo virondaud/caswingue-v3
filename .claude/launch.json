@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "ca_swingue_3",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8093", "-d", "/Users/mathieuvirondaud/claude/golf/ça_swingue_3/site"],
+      "port": 8093,
+      "autoPort": true
+    }
+  ]
+}

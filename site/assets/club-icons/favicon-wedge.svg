@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Tête Wedge - Jaune -->
+  <!-- Lame du wedge (plus de loft que le fer, face plus ouverte) -->
+  <path d="M52 8 L48 48 Q46 54 40 56 L12 58 Q6 58 6 52 L7 46 Q9 38 16 34 L50 8 Q52 6 52 8 Z"
+        fill="url(#wedgeGrad)" stroke="#a08000" stroke-width="1.5"/>
+  <!-- Rainures profondes -->
+  <line x1="18" y1="38" x2="47" y2="16" stroke="#b09020" stroke-width="1" opacity="0.6"/>
+  <line x1="16" y1="42" x2="46" y2="22" stroke="#b09020" stroke-width="1" opacity="0.6"/>
+  <line x1="14" y1="46" x2="46" y2="28" stroke="#b09020" stroke-width="1" opacity="0.6"/>
+  <line x1="12" y1="50" x2="45" y2="34" stroke="#b09020" stroke-width="1" opacity="0.6"/>
+  <line x1="11" y1="53" x2="44" y2="38" stroke="#b09020" stroke-width="1" opacity="0.6"/>
+  <line x1="10" y1="56" x2="42" y2="42" stroke="#b09020" stroke-width="1" opacity="0.6"/>
+  <!-- Bounce (semelle épaisse du wedge) -->
+  <path d="M8 52 Q15 60 40 56" fill="none" stroke="#907000" stroke-width="2" opacity="0.5"/>
+  <!-- Reflet -->
+  <path d="M48 12 L46 28 Q38 32 28 36" fill="white" opacity="0.08"/>
+  <defs>
+    <linearGradient id="wedgeGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffd740"/>
+      <stop offset="40%" stop-color="#e0b820"/>
+      <stop offset="100%" stop-color="#c09800"/>
+    </linearGradient>
+  </defs>
+</svg>

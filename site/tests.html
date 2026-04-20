@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Tests — Ça Swingue Manager</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;max-width:900px;margin:0 auto;padding:20px;background:#f8fafc}
+h1{color:#006039}
+.test{padding:10px 14px;margin:6px 0;border-radius:8px;border-left:4px solid #ddd;background:#fff}
+.test.pass{border-left-color:#16a34a;background:#f0fdf4}
+.test.fail{border-left-color:#dc2626;background:#fef2f2}
+.test-name{font-weight:700;font-size:14px}
+.test-detail{font-size:12px;color:#64748b;margin-top:4px;font-family:monospace}
+.summary{padding:16px;border-radius:10px;margin:16px 0;text-align:center;font-weight:700;font-size:16px}
+.summary.ok{background:#d1fae5;color:#065f46}
+.summary.ko{background:#fee2e2;color:#991b1b}
+</style>
+</head>
+<body>
+<h1>🧪 Tests Ça Swingue Manager</h1>
+<p style="color:#64748b">Tests unitaires des fonctions critiques (hcpStr, teamRunTotals, sfPoints, champRoundPoints, autoTeamName, etc.)</p>
+<div id="summary"></div>
+<div id="results"></div>
+
+<!-- Charge l'app principale en iframe pour accéder aux fonctions -->
+<iframe id="app-frame" src="golf_manager.html" style="display:none" onload="runTests()"></iframe>
+
+<script>
+const tests=[];
+function test(name,fn){tests.push({name,fn});}
+function assertEq(actual,expected,msg){
+  if(JSON.stringify(actual)!==JSON.stringify(expected)){
+    throw new Error((msg||'assertion failed')+' — attendu '+JSON.stringify(expected)+', reçu '+JSON.stringify(actual));
+  }
+}
+function assert(cond,msg){if(!cond)throw new Error(msg||'assertion failed');}
+
+function runTests(){
+  const win=document.getElementById('app-frame').contentWindow;
+  // Vérifie que les fonctions exposées existent
+  const need=['hcpStr','hdj','sfPoints','holeStroke','teamHdjFor','teamRunTotals','autoTeamName','champRoundPoints','champStandings','computeAchievements','h2hCompare'];
+  for(const f of need){
+    if(typeof win[f]!=='function'){
+      document.getElementById('summary').innerHTML='<div class="summary ko">❌ Fonction manquante : '+f+'</div>';
+      return;
+    }
+  }
+
+  // Course factice
+  const fakeCourse={id:'c1',name:'Test',slope:113,sss:72,holes:Array.from({length:18},(_,i)=>({par:i%3===0?3:(i%3===1?4:5),handicap:i+1,distance:300})),blanc:{slope:113,sss:72},jaune:{slope:113,sss:72}};
+  // Joueurs factices
+  win.DB.courses=[fakeCourse];
+  win.DB.players=[
+    {id:'p1',name:'Alice',index:5},
+    {id:'p2',name:'Bob',index:15},
+    {id:'p3',name:'Charlie',index:18},
+    {id:'p4',name:'Diane',index:25}
+  ];
+
+  // ══ Tests hdj ══
+  test('hdj standard (slope 113, sss=par)',()=>{
+    const res=win.hdj(10,fakeCourse,'jaune');
+    assertEq(res,round(10*113/113+(72-72)),'HdJ idx 10');
+  });
+  test('hdj avec slope différent',()=>{
+    const course2={...fakeCourse,blanc:{slope:130,sss:73},jaune:{slope:130,sss:73},slope:130,sss:73};
+    const res=win.hdj(18,course2,'blanc');
+    // idx 18 * 130/113 + (73-72) = 20.71 + 1 = 21.71 → 22
+    assertEq(res,22,'HdJ idx 18 slope 130');
+  });
+
+  // ══ Tests sfPoints ══
+  test('Stableford : eagle = 4 pts',()=>assertEq(win.sfPoints(3,5,0),4,'eagle'));
+  test('Stableford : birdie = 3 pts',()=>assertEq(win.sfPoints(3,4,0),3,'birdie'));
+  test('Stableford : par = 2 pts',()=>assertEq(win.sfPoints(4,4,0),2,'par'));
+  test('Stableford : bogey = 1 pt',()=>assertEq(win.sfPoints(5,4,0),1,'bogey'));
+  test('Stableford : double = 0 pt',()=>assertEq(win.sfPoints(6,4,0),0,'double'));
+  test('Stableford : net via coups reçus',()=>{
+    // brut 6 sur par 4 avec 1 coup = net 5 = bogey = 1 pt
+    assertEq(win.sfPoints(6,4,1),1,'net bogey');
+  });
+  test('Stableford : brut 0 = 0 pt',()=>assertEq(win.sfPoints(0,4,0),0));
+
+  // ══ Tests holeStroke ══
+  test('holeStroke : HdJ 0 = 0 coup',()=>assertEq(win.holeStroke(0,1),0));
+  test('holeStroke : HdJ 12 sur trou hcp 1 = 1 coup',()=>assertEq(win.holeStroke(12,1),1));
+  test('holeStroke : HdJ 12 sur trou hcp 13 = 0 coup',()=>assertEq(win.holeStroke(12,13),0));
+  test('holeStroke : HdJ 20 sur trou hcp 1 = 2 coups',()=>assertEq(win.holeStroke(20,1),2));
+  test('holeStroke : HdJ 20 sur trou hcp 3 = 1 coup',()=>assertEq(win.holeStroke(20,3),1));
+
+  // ══ Tests teamHdjFor (scramble) ══
+  test('Scramble 2 joueurs : 35% A + 15% B (ex PDF idx 5+15)',()=>{
+    const g={useHandicap:true,tee:'jaune',playerTees:{}};
+    // idx 5 → hdj 5 ; idx 15 → hdj 16 (si slope 113 sss 72 ça donne 15 actually)
+    // Let's use the known ex: hdj 5 + 15 → 35%*5 + 15%*15 = 1.75 + 2.25 = 4
+    const course={...fakeCourse,slope:113,sss:72};
+    win.DB.players=[{id:'pa',name:'A',index:5},{id:'pb',name:'B',index:15}];
+    const res=win.teamHdjFor(g,course,['pa','pb'],'scramble');
+    // hdj(5)=5, hdj(15)=15, tri [5,15], 35%*5 + 15%*15 = 1.75+2.25=4
+    assertEq(res,4,'Scramble 2 joueurs');
+  });
+  test('Scramble 3 joueurs : 20% A + 15% B + 10% C (ex PDF idx 5+8+12)',()=>{
+    const g={useHandicap:true,tee:'jaune',playerTees:{}};
+    const course={...fakeCourse,slope:113,sss:72};
+    win.DB.players=[{id:'pa',name:'A',index:5},{id:'pb',name:'B',index:8},{id:'pc',name:'C',index:12}];
+    const res=win.teamHdjFor(g,course,['pa','pb','pc'],'scramble');
+    // 20%*5 + 15%*8 + 10%*12 = 1 + 1.2 + 1.2 = 3.4 → 3
+    assertEq(res,3,'Scramble 3 joueurs');
+  });
+  test('Scramble 4 joueurs : 20/15/10/5% (ex PDF idx 5+8+12+16)',()=>{
+    const g={useHandicap:true,tee:'jaune',playerTees:{}};
+    const course={...fakeCourse,slope:113,sss:72};
+    win.DB.players=[{id:'pa',name:'A',index:5},{id:'pb',name:'B',index:8},{id:'pc',name:'C',index:12},{id:'pd',name:'D',index:16}];
+    const res=win.teamHdjFor(g,course,['pa','pb','pc','pd'],'scramble');
+    // 20%*5 + 15%*8 + 10%*12 + 5%*16 = 1+1.2+1.2+0.8 = 4.2 → 4
+    assertEq(res,4,'Scramble 4 joueurs');
+  });
+
+  // ══ Tests autoTeamName ══
+  test('autoTeamName : format "Prénom1 & Prénom2"',()=>{
+    win.S.setup={playerIds:['p1','p2','p3','p4'],teamAssign:{p1:0,p2:1,p3:0,p4:1}};
+    win.DB.players=[{id:'p1',name:'Alice Martin',index:5},{id:'p2',name:'Bob Dupont',index:10},{id:'p3',name:'Charlie Roux',index:15},{id:'p4',name:'Diane Petit',index:20}];
+    assertEq(win.autoTeamName(0),'Alice & Charlie','Équipe 0');
+    assertEq(win.autoTeamName(1),'Bob & Diane','Équipe 1');
+  });
+  test('autoTeamName : pas de joueurs assigné = fallback',()=>{
+    win.S.setup={playerIds:['p1','p2'],teamAssign:{}};
+    win.DB.players=[{id:'p1',name:'Alice',index:5},{id:'p2',name:'Bob',index:10}];
+    assertEq(win.autoTeamName(0),'Équipe A');
+    assertEq(win.autoTeamName(1),'Équipe B');
+  });
+
+  // ══ Tests hcpStr avec fourball 85% ══
+  test('hcpStr fourball : 85% du HdJ',()=>{
+    const course={...fakeCourse,slope:113,sss:72};
+    win.DB.players=[{id:'p1',name:'A',index:20}];
+    const g={
+      gameType:'fourball',useHandicap:true,tee:'jaune',playerTees:{},
+      courseId:course.id,playerIds:['p1'],
+      scores:Array.from({length:18},()=>[0])
+    };
+    win.DB.courses=[course];
+    // HdJ 20 * 0.85 = 17
+    // Sur trou hcp 1 → 17 >= 1 → 1 coup
+    // Sur trou hcp 18 → 17 >= 18 ? non → 0
+    assertEq(win.hcpStr(g,0,0),1,'trou hcp 1 avec HdJ 17');// holes[0].handicap = 1
+    assertEq(win.hcpStr(g,0,17),0,'trou hcp 18');// holes[17].handicap = 18
+  });
+
+  // ══ Tests hcpStr DBB ¾ ══
+  test('hcpStr DBB ¾ FFGolf : diff × 0.75 arrondi',()=>{
+    const course={...fakeCourse,slope:113,sss:72};
+    win.DB.courses=[course];
+    win.DB.players=[{id:'p1',name:'A',index:5},{id:'p2',name:'B',index:15}];
+    const g={
+      gameType:'dbb',useHandicap:true,tee:'jaune',playerTees:{},
+      courseId:course.id,playerIds:['p1','p2'],
+      dbbHcpMode:'weighted75',
+      scores:Array.from({length:18},()=>[0,0])
+    };
+    // HdJ 5 et 15. Best=5. Joueur B : diff=10, ×0.75=7.5 → 8 coups
+    // Sur trou hcp 1 (holes[0]) : 8>=1 → 1 coup pour B
+    assertEq(win.hcpStr(g,1,0),1,'Joueur B trou hcp 1');
+    // Sur trou hcp 9 (index 8 dans holes) : 8>=9 ? non → 0
+    assertEq(win.hcpStr(g,1,8),0,'Joueur B trou hcp 9');
+    // Joueur A (best) : 0 coups partout
+    assertEq(win.hcpStr(g,0,0),0,'Joueur A trou hcp 1');
+  });
+
+  // ══ Tests computeAchievements ══
+  test('computeAchievements : premier birdie débloque le badge',()=>{
+    win.DB.players=[{id:'pt',name:'Tester',index:18}];
+    const course={...fakeCourse,slope:113,sss:72};
+    win.DB.courses=[course];
+    win.DB.history=[{
+      courseId:course.id,playerIds:['pt'],gameType:'strokeplay',
+      useHandicap:true,tee:'jaune',playerTees:{},
+      scores:Array.from({length:18},(_,i)=>{
+        const par=course.holes[i].par;
+        // trou 0 = par 3, on fait birdie (2)
+        return [i===0?par-1:par];
+      }),
+      startedAt:Date.now(),finishedAt:Date.now()+3600000
+    }];
+    const a=win.computeAchievements('pt');
+    const firstBirdie=a.items.find(i=>i.id==='first_birdie');
+    assert(firstBirdie&&firstBirdie.cond,'first_birdie doit être débloqué');
+    assert(a.stats.totalBirdies>=1,'totalBirdies >= 1');
+  });
+
+  test('computeAchievements : sub90 = partie < 90 coups',()=>{
+    win.DB.players=[{id:'pt',name:'Tester',index:10}];
+    const course={...fakeCourse,slope:113,sss:72};
+    win.DB.courses=[course];
+    // 18 trous par moyen ~4, si tous 4 → 72 (sub 90 oui)
+    win.DB.history=[{
+      courseId:course.id,playerIds:['pt'],gameType:'strokeplay',
+      useHandicap:true,tee:'jaune',playerTees:{},
+      scores:Array.from({length:18},(_,i)=>[course.holes[i].par]),
+      startedAt:Date.now()
+    }];
+    const a=win.computeAchievements('pt');
+    const sub90=a.items.find(i=>i.id==='sub90');
+    assert(sub90.cond,'sub90 doit être débloqué');
+  });
+
+  // ══ Tests h2hCompare ══
+  test('h2hCompare : compte les victoires correctement',()=>{
+    const course={...fakeCourse,slope:113,sss:72};
+    win.DB.courses=[course];
+    win.DB.players=[{id:'pa',name:'A',index:10},{id:'pb',name:'B',index:20}];
+    // 2 parties : A gagne les 2 (scores plus bas net)
+    win.DB.history=[
+      {courseId:course.id,playerIds:['pa','pb'],gameType:'strokeplay',useHandicap:true,tee:'jaune',playerTees:{},
+       scores:Array.from({length:18},(_,i)=>[course.holes[i].par,course.holes[i].par+3]),startedAt:Date.now()-86400000},
+      {courseId:course.id,playerIds:['pa','pb'],gameType:'strokeplay',useHandicap:true,tee:'jaune',playerTees:{},
+       scores:Array.from({length:18},(_,i)=>[course.holes[i].par,course.holes[i].par+2]),startedAt:Date.now()-172800000}
+    ];
+    const r=win.h2hCompare('pa','pb');
+    assertEq(r.nGames,2,'2 parties communes');
+    assert(r.p1Wins+r.p2Wins+r.ties===2,'somme v/d/e = 2');
+    assert(r.p1Wins>=1,'A a gagné au moins 1 fois');
+  });
+
+  // ══ Exécution ══
+  const container=document.getElementById('results');
+  let pass=0,fail=0;
+  tests.forEach(t=>{
+    const div=document.createElement('div');
+    div.className='test';
+    try{
+      t.fn();
+      div.className+=' pass';
+      div.innerHTML='<div class="test-name">✅ '+t.name+'</div>';
+      pass++;
+    }catch(e){
+      div.className+=' fail';
+      div.innerHTML='<div class="test-name">❌ '+t.name+'</div><div class="test-detail">'+e.message+'</div>';
+      fail++;
+    }
+    container.appendChild(div);
+  });
+
+  const s=document.getElementById('summary');
+  s.className='summary '+(fail===0?'ok':'ko');
+  s.textContent=(fail===0?'✅ ':'❌ ')+pass+' / '+tests.length+' tests passés'+(fail>0?' · '+fail+' échec(s)':'');
+}
+
+function round(n){return Math.round(n);}
+</script>
+</body>
+</html>

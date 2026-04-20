@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>🏌️ Suivi en live — Ça Swingue Manager</title>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
+<style>
+:root{--g:#16a34a;--gdk:#006039;--gold:#d4af37;--bg:#f8fafc;--mu:#64748b;--red:#dc2626}
+*{box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);margin:0;padding:0;color:#1e293b}
+.hdr{background:linear-gradient(135deg,var(--gdk),var(--g));color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.hdr h1{margin:0;font-size:16px;font-weight:800}
+.status{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;padding:4px 10px;border-radius:12px}
+.status.online{background:rgba(255,255,255,.2);color:#fff}
+.status.offline{background:#fee2e2;color:#991b1b}
+.status .dot{width:8px;height:8px;border-radius:50%;animation:blink 1.5s infinite}
+.online .dot{background:#86efac}
+.offline .dot{background:#dc2626;animation:none}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+.content{padding:16px;max-width:900px;margin:0 auto}
+.card{background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.card-title{font-weight:800;font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.sc-table{width:100%;border-collapse:collapse;font-size:14px}
+.sc-table th{background:var(--gdk);color:#fff;font-weight:600;padding:8px 4px;font-size:12px;min-width:28px}
+.sc-table td{padding:8px 4px;text-align:center;border-bottom:1px solid #f1f5f9}
+.sc-table td:first-child,.sc-table th:first-child{text-align:left;padding-left:8px;min-width:90px;font-weight:700}
+.sc-table .pr{background:rgba(0,96,57,.04);font-weight:600}
+.sc-table .sep{border-left:2px solid var(--gdk);font-weight:800;background:#f8fafc}
+.sc-table .total{background:#f0fdf4;font-weight:800}
+.ci{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;font-weight:700;font-size:14px;position:relative}
+.ce{background:#e67e22;color:#fff;border-radius:50%}.cbi{background:var(--gold);color:#fff;border-radius:50%}.cpar{background:rgba(0,96,57,.08);border-radius:50%}.cbo{color:#c0392b}.cdb{color:#8b1a1a;font-weight:800}
+.hcp-dot{position:absolute;top:-4px;right:-4px;color:#b91c1c;font-size:10px;font-weight:900;text-shadow:0 0 2px #fff,0 0 2px #fff}
+.tm{color:var(--mu)}
+.sub{font-size:12px;color:var(--mu);text-align:center;margin-top:10px}
+.empty{text-align:center;padding:40px 20px;color:var(--mu)}
+.err{background:#fee2e2;color:#991b1b;padding:14px;border-radius:10px;margin:16px;font-size:14px}
+.pill{display:inline-block;padding:3px 10px;border-radius:12px;background:#f1f5f9;color:#334155;font-size:11px;font-weight:600;margin-right:6px;margin-bottom:4px}
+
+/* Team layout */
+.team-card{border-radius:14px;padding:14px;margin-bottom:10px;color:#fff}
+.team-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.team-name{font-weight:800;font-size:16px}
+.team-score{font-weight:900;font-size:28px}
+.team-sub{font-size:12px;opacity:.9}
+.team-stat{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.team-stat span{background:rgba(255,255,255,.2);padding:2px 10px;border-radius:12px;font-size:11px;font-weight:700}
+
+.vs-head{text-align:center;font-size:12px;color:var(--mu);font-weight:700;padding:4px 0;text-transform:uppercase;letter-spacing:1px}
+
+.match-row{display:flex;align-items:center;padding:10px;background:#f8fafc;border-radius:10px;margin-bottom:8px}
+.match-label{flex:1;font-weight:700;font-size:13px}
+.match-score{font-weight:800;font-size:15px}
+.match-score.lead{color:var(--g)}
+
+.evo-table{width:100%;border-collapse:collapse;font-size:11px}
+.evo-table th{background:var(--gdk);color:#fff;padding:4px 2px;font-size:10px}
+.evo-table td{padding:4px 2px;text-align:center;border-bottom:1px solid #f1f5f9}
+.evo-table td:first-child{text-align:left;padding-left:6px;font-weight:700;white-space:nowrap}
+.evo-pos{color:var(--g);font-weight:700}
+.evo-neg{color:var(--red);font-weight:700}
+.evo-sep{border-left:2px solid var(--gdk);background:#f8fafc;font-weight:800}
+
+.leader{background:linear-gradient(135deg,#059669,#10b981)}
+.second{background:linear-gradient(135deg,#475569,#64748b)}
+.tie{background:linear-gradient(135deg,#d97706,#f59e0b)}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <h1 id="title">🏌️ Suivi en live</h1>
+  <span id="status" class="status offline"><span class="dot"></span><span id="status-txt">Connexion…</span></span>
+</div>
+<div id="content" class="content">
+  <div class="card"><div class="empty">⏳ Chargement de la partie…</div></div>
+</div>
+
+<script>
+const params=new URLSearchParams(location.search);
+const gameId=params.get('id');
+
+if(!gameId){
+  document.getElementById('content').innerHTML='<div class="err">❌ ID de partie manquant.<br>URL attendue : <code>spectator.html?id=g-xxxxxx</code></div>';
+}else if(typeof FIREBASE_CONFIG==='undefined'||!FIREBASE_CONFIG.databaseURL||FIREBASE_CONFIG.databaseURL.includes('ton-projet')){
+  document.getElementById('content').innerHTML='<div class="err">⚠️ Firebase non configuré.</div>';
+}else{
+  try{
+    firebase.initializeApp(FIREBASE_CONFIG);
+    const db=firebase.database();
+    const ref=db.ref('games/'+gameId);
+    db.ref('.info/connected').on('value',(s)=>{
+      if(s.val()===true){
+        document.getElementById('status').className='status online';
+        document.getElementById('status-txt').textContent='En ligne';
+      }else{
+        document.getElementById('status').className='status offline';
+        document.getElementById('status-txt').textContent='Hors ligne';
+      }
+    });
+    ref.on('value',(snap)=>{
+      const data=snap.val();
+      if(!data){
+        document.getElementById('content').innerHTML='<div class="empty"><div style="font-size:48px">🔍</div>Partie introuvable</div>';return;
+      }
+      render(data);
+    },(err)=>{
+      document.getElementById('content').innerHTML='<div class="err">Erreur : '+err.message+'</div>';
+    });
+  }catch(e){
+    document.getElementById('content').innerHTML='<div class="err">Erreur : '+e.message+'</div>';
+  }
+}
+
+function render(data){
+  document.getElementById('title').textContent=(data.gameIcon||'🏌️')+' '+(data.courseName||'Partie');
+  const nHoles=(data.holes||[]).length||18;
+  const hn=data.currentHole||0;
+  const dt=new Date(data.startedAt||Date.now());
+  const date=dt.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+  const heure=dt.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  const teeLabel=data.tee==='jaune'?'🟡 Jaune':'⚪ Blanc';
+  const pls=data.players||[];
+  const scores=data.scores||[];
+  const holes=data.holes||[];
+  const parTotal=holes.reduce((s,h)=>s+h.par,0);
+  const gameColor=data.gameColor||'#16a34a';
+  const isTeam=!!data.teamData;
+  const isFbStbl=data.gameType==='fourball'&&data.fourballMode==='stableford';
+
+  let html=`<div class="card" style="border-left:4px solid ${gameColor}">
+    <div style="font-weight:800;font-size:17px">${esc(data.courseName||'Parcours')}</div>
+    <div style="color:#64748b;font-size:13px;margin:4px 0 6px">${date} · ${heure} · ${teeLabel}</div>
+    <span class="pill" style="background:${gameColor}20;color:${gameColor}">${esc(data.gameTypeLabel||'')}</span>
+    <span class="pill">Par ${parTotal}</span>
+    <span class="pill">Trou ${hn+1}/${nHoles}</span>
+    ${isFbStbl?'<span class="pill">Mode Stableford</span>':''}
+    ${data.dbbHcpMode==='weighted75'?'<span class="pill">¾ FFGolf</span>':''}
+  </div>`;
+
+  // ══ SECTION ÉQUIPES (si jeu par équipe) ══
+  if(isTeam&&data.teamData){
+    html+=renderTeamSection(data);
+  }
+
+  // ══ SECTION MATCH PLAY ══
+  if(data.gameType==='matchplay'&&data.matchState){
+    html+=renderMatchPlay(data);
+  }
+
+  // ══ CLASSEMENT INDIVIDUEL ══
+  if(pls.length){
+    html+=renderIndividualRanking(data,holes,scores,pls,nHoles);
+  }
+
+  // ══ CARTE DE SCORE ══
+  if(holes.length&&pls.length){
+    html+=renderScorecard(data,holes,scores,pls,nHoles);
+  }
+
+  // ══ ÉVOLUTION ÉQUIPE (si team game) ══
+  if(data.gameType==='dbb'&&data.dbbEvolution?.length){
+    html+=renderDbbEvolution(data,nHoles);
+  }else if(isTeam&&data.teamData?.evolution?.length&&data.teamData.totals.length>0){
+    html+=renderTeamEvolution(data,nHoles);
+  }
+
+  html+=`<div class="sub">Dernière mise à jour : ${new Date(data.updatedAt||Date.now()).toLocaleTimeString('fr-FR')}</div>`;
+  document.getElementById('content').innerHTML=html;
+}
+
+function renderTeamSection(data){
+  const td=data.teamData;const color=data.gameColor||'#16a34a';
+  const totals=td.totals||[];
+  const gameType=td.mode;
+  const isFbStbl=gameType==='fourball'&&td.fourballMode==='stableford';
+  const isDBB=gameType==='dbb';
+
+  // Pour DBB : score combiné + détail 2 matches
+  if(isDBB&&data.dbbState){
+    const t0=data.teams?.names?.[0]||'Équipe A';
+    const t1=data.teams?.names?.[1]||'Équipe B';
+    const m1=data.dbbState.m1||{hw:[0,0],score:0};
+    const m2=data.dbbState.m2||{hw:[0,0],score:0};
+    const tot=data.dbbState.total||[(m1.hw[0]||0)+(m2.hw[0]||0),(m1.hw[1]||0)+(m2.hw[1]||0)];
+    const lead=tot[0]>tot[1]?0:(tot[1]>tot[0]?1:-1);
+    const isTie=lead===-1;
+    const gap=Math.abs(tot[0]-tot[1]);
+
+    let html=`<div class="card"><div class="card-title">🏅 Double Best Ball</div>`;
+    // Score en "up/down" selon la différence + total trous gagnés en sous-titre
+    [0,1].forEach(ti=>{
+      const cls=isTie?'team-card tie':(lead===ti?'team-card leader':'team-card second');
+      const tname=ti===0?t0:t1;
+      const mainLbl=isTie?'All square':(lead===ti?`${gap} up`:`${gap} down`);
+      html+=`<div class="${cls}">
+        <div class="team-head">
+          <div>
+            <div class="team-name">${!isTie&&lead===ti?'🏆 ':''}${esc(tname)}</div>
+            <div class="team-sub">${tot[ti]} trou${tot[ti]>1?'s':''} gagné${tot[ti]>1?'s':''}</div>
+          </div>
+          <div class="team-score" style="font-size:24px;line-height:1.2">${mainLbl}</div>
+        </div>
+        <div class="team-stat">
+          <span>Match 1 · ${m1.hw[ti]||0} tr.</span>
+          <span>Match 2 · ${m2.hw[ti]||0} tr.</span>
+        </div>
+      </div>`;
+    });
+    html+=`<div class="sub" style="margin-top:8px">🎯 2 trous en jeu à chaque trou · 1 pour Match 1 (meilleurs nets) + 1 pour Match 2 (2<sup>es</sup> nets)</div>
+    </div>`;
+    return html;
+  }
+
+  // Tri pour trouver qui mène
+  const sorted=[...totals];
+  if(isFbStbl)sorted.sort((a,b)=>(b.pts||0)-(a.pts||0));
+  else sorted.sort((a,b)=>(a.diff||0)-(b.diff||0));
+
+  const lead=sorted.length>=2?sorted[0]:null;
+  const second=sorted.length>=2?sorted[1]:null;
+  const isTie=lead&&second&&(isFbStbl?lead.pts===second.pts:lead.diff===second.diff);
+
+  let html=`<div class="card"><div class="card-title">👥 Score par équipe — Évolution en temps réel</div>`;
+  sorted.forEach((r,i)=>{
+    const cls=sorted.length===1?'team-card leader':(isTie?'team-card tie':(i===0?'team-card leader':'team-card second'));
+    const bg=sorted.length===1?`background:linear-gradient(135deg,${color},${color}cc)`:'';
+    if(isFbStbl){
+      html+=`<div class="${cls}" style="${bg}">
+        <div class="team-head">
+          <div>
+            <div class="team-name">${i===0?'🏆 ':''}${esc(r.name)}</div>
+            <div class="team-sub">${sorted.length===1?'Score Stableford':(i===0?'En tête':'Au classement')}</div>
+          </div>
+          <div class="team-score">${r.pts||0} <span style="font-size:13px;opacity:.8">pts</span></div>
+        </div>
+        <div class="team-stat">
+          <span>Brut ${r.tot||'–'}</span>
+          <span>Net ${r.net||'–'}</span>
+        </div>
+      </div>`;
+    }else{
+      const main=r.useNet?r.net:r.tot;
+      const diffStr=r.diff===0?'au par':(r.diff>0?'+'+r.diff:r.diff)+' / par';
+      html+=`<div class="${cls}" style="${bg}">
+        <div class="team-head">
+          <div>
+            <div class="team-name">${i===0&&sorted.length>1?'🏆 ':''}${esc(r.name)}</div>
+            <div class="team-sub">${sorted.length===1?'Score équipe':(isTie?'Ex-aequo':(i===0?'En tête':'Au classement'))}</div>
+          </div>
+          <div class="team-score">${main||'–'}</div>
+        </div>
+        <div class="team-stat">
+          ${r.useNet?`<span>Brut ${r.tot}</span>`:''}
+          <span>${diffStr}</span>
+          <span>Par ${r.par}</span>
+        </div>
+      </div>`;
+    }
+  });
+  html+=`</div>`;
+  return html;
+}
+
+function renderMatchPlay(data){
+  const ms=data.matchState;const pls=data.players||[];
+  const t0=pls[0]?.name||'J1';const t1=pls[1]?.name||'J2';
+  const lead=ms.lead!=null?pls[ms.lead]?.name:null;
+  const amt=Math.abs(ms.score||0);
+  let status=amt===0?'🤝 All square':`${esc(lead||'?')} mène ${amt} up`;
+  return `<div class="card"><div class="card-title">⚔️ Match Play</div>
+    <div style="text-align:center;padding:10px;font-size:16px;font-weight:700">${status}</div>
+    <div class="team-stat" style="justify-content:center">
+      <span>${esc(t0)}: ${ms.hw?.[0]||0} trous</span>
+      <span>${esc(t1)}: ${ms.hw?.[1]||0} trous</span>
+    </div>
+  </div>`;
+}
+
+function renderIndividualRanking(data,holes,scores,pls,nHoles){
+  const strokes=data.strokes||pls.map(()=>[]);
+  const isStableford=data.gameType==='stableford';
+  const tots=pls.map((p,pi)=>{
+    let gr=0,net=0,pts=0,played=0;
+    for(let h=0;h<nHoles;h++){
+      const s=scores[h]?.[pi]||0;
+      if(s>0){
+        played++;
+        gr+=s;
+        const st=strokes[pi]?.[h]||0;
+        net+=s-st;
+        pts+=data.stableford?.[pi]?.[h]||0;
+      }
+    }
+    return {name:p.name,idx:p.index,gr,net,pts,played};
+  });
+  if(isStableford)tots.sort((a,b)=>b.pts-a.pts);
+  else tots.sort((a,b)=>(a.net||99999)-(b.net||99999));
+  const medals=['🥇','🥈','🥉','4️⃣'];
+  let html=`<div class="card"><div class="card-title">👤 Classement individuel ${data.useHandicap?'(net)':'(brut)'}</div>`;
+  tots.forEach((t,i)=>{
+    const main=isStableford?t.pts+' pts':(data.useHandicap&&t.net?'Net '+t.net:t.gr||'–');
+    const sub=isStableford?`Brut ${t.gr||'–'}`:(data.useHandicap?`Brut ${t.gr}`:'');
+    html+=`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9">
+      <span style="font-size:20px;width:28px">${medals[i]||'•'}</span>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:14px">${esc(t.name)}</div>
+        <div style="color:#64748b;font-size:11px">Index ${t.idx} · ${t.played} trou${t.played>1?'s':''}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-weight:800;font-size:17px;color:var(--gdk)">${main}</div>
+        ${sub?`<div style="color:#64748b;font-size:11px">${sub}</div>`:''}
+      </div>
+    </div>`;
+  });
+  html+=`</div>`;
+  return html;
+}
+
+function renderScorecard(data,holes,scores,pls,nHoles){
+  const strokes=data.strokes||pls.map(()=>[]);
+  const aller=holes.slice(0,9);
+  const retour=holes.slice(9,nHoles);
+  const parAl=aller.reduce((s,h)=>s+h.par,0);
+  const parRet=retour.reduce((s,h)=>s+h.par,0);
+  let html=`<div class="card"><div class="card-title">📋 Carte de score</div>
+  <div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table class="sc-table"><tr><th>Trou</th>`;
+  for(let i=0;i<aller.length;i++)html+=`<th>${i+1}</th>`;
+  if(retour.length)html+=`<th class="sep">Al.</th>`;
+  for(let i=0;i<retour.length;i++)html+=`<th>${i+10}</th>`;
+  html+=`${retour.length?'<th class="sep">Ret.</th>':''}<th>Tot.</th></tr>
+    <tr class="pr"><td>Par</td>`;
+  aller.forEach(h=>html+=`<td>${h.par}</td>`);
+  if(retour.length)html+=`<td class="sep">${parAl}</td>`;
+  retour.forEach(h=>html+=`<td>${h.par}</td>`);
+  html+=`${retour.length?`<td class="sep">${parRet}</td>`:''}<td>${parAl+parRet}</td></tr>`;
+  pls.forEach((p,pi)=>{
+    let totAl=0,totRet=0,rowAl='',rowRet='';
+    for(let hi=0;hi<9&&hi<holes.length;hi++){
+      const s=scores[hi]?.[pi]||0;totAl+=s;
+      const str=data.useHandicap?(strokes[pi]?.[hi]||0):0;
+      rowAl+=cellHtml(s,holes[hi]?.par,str);
+    }
+    for(let hi=9;hi<holes.length;hi++){
+      const s=scores[hi]?.[pi]||0;totRet+=s;
+      const str=data.useHandicap?(strokes[pi]?.[hi]||0):0;
+      rowRet+=cellHtml(s,holes[hi]?.par,str);
+    }
+    const tot=totAl+totRet;
+    html+=`<tr><td>${esc(p.name)}</td>${rowAl}${retour.length?`<td class="sep">${totAl||'–'}</td>`:''}${rowRet}${retour.length?`<td class="sep">${totRet||'–'}</td>`:''}<td class="total">${tot||'–'}</td></tr>`;
+  });
+  html+=`</table></div>
+    ${data.useHandicap?'<div class="sub">💡 Les points <span style="color:#b91c1c;font-weight:900">•</span> indiquent les coups de handicap reçus</div>':''}
+  </div>`;
+  return html;
+}
+
+function renderDbbEvolution(data,nHoles){
+  const evo=data.dbbEvolution||[];
+  const t0=data.teams?.names?.[0]||'Équipe A';
+  const t1=data.teams?.names?.[1]||'Équipe B';
+  const hn=data.currentHole||0;
+  const maxH=Math.min(hn+1,nHoles,evo.length);
+  // Trouver dernier trou joué
+  let lastPlayed=0;
+  for(let h=0;h<evo.length;h++){
+    if((evo[h].gainA||0)+(evo[h].gainB||0)>0||(h>0&&(evo[h].a!==evo[h-1].a||evo[h].b!==evo[h-1].b)))lastPlayed=h+1;
+  }
+  if(lastPlayed===0&&hn>0)lastPlayed=hn;
+  if(lastPlayed===0)return '';
+
+  let html=`<div class="card"><div class="card-title">📈 Évolution trou par trou</div>
+  <div style="overflow-x:auto"><table class="evo-table"><tr><th>Équipe</th>`;
+  for(let h=1;h<=lastPlayed;h++){
+    const cls=h===9||h===18?'evo-sep':'';
+    html+=`<th class="${cls}">T${h}</th>`;
+  }
+  html+=`<th class="evo-sep" style="background:#10b981">Tot</th></tr>`;
+  // Ligne A
+  html+=`<tr><td>${esc(t0)}</td>`;
+  for(let h=0;h<lastPlayed;h++){
+    const cls=(h+1)===9||(h+1)===18?'evo-sep':'';
+    const e=evo[h];if(!e){html+=`<td class="${cls}">–</td>`;continue;}
+    const gain=e.gainA||0;
+    const cellCls=gain>0?'evo-pos':'';
+    html+=`<td class="${cls} ${cellCls}">${e.a||0}${gain>0?`<sup>+${gain}</sup>`:''}</td>`;
+  }
+  html+=`<td class="evo-sep" style="font-size:14px;color:var(--g)">${(evo[lastPlayed-1]?.a||0)}</td></tr>`;
+  // Ligne B
+  html+=`<tr><td>${esc(t1)}</td>`;
+  for(let h=0;h<lastPlayed;h++){
+    const cls=(h+1)===9||(h+1)===18?'evo-sep':'';
+    const e=evo[h];if(!e){html+=`<td class="${cls}">–</td>`;continue;}
+    const gain=e.gainB||0;
+    const cellCls=gain>0?'evo-pos':'';
+    html+=`<td class="${cls} ${cellCls}">${e.b||0}${gain>0?`<sup>+${gain}</sup>`:''}</td>`;
+  }
+  html+=`<td class="evo-sep" style="font-size:14px;color:var(--g)">${(evo[lastPlayed-1]?.b||0)}</td></tr>`;
+  html+=`</table></div>
+  <div class="sub">"Up" cumulés · chiffre = total · <sup>+N</sup> = trous gagnés au trou</div></div>`;
+  return html;
+}
+
+function renderTeamEvolution(data,nHoles){
+  const td=data.teamData;
+  const evo=td.evolution||[];
+  const totals=td.totals||[];
+  const names=totals.map(t=>t.name);
+  const isFbStbl=td.mode==='fourball'&&td.fourballMode==='stableford';
+  const hn=data.currentHole||0;
+  const maxH=Math.min(hn,nHoles);
+  if(maxH===0)return '';
+  let html=`<div class="card"><div class="card-title">📈 Évolution du score équipe</div>
+  <div style="overflow-x:auto"><table class="evo-table"><tr><th>Équipe</th>`;
+  for(let h=1;h<=maxH;h++){
+    const cls=h===9||h===18?'evo-sep':'';
+    html+=`<th class="${cls}">T${h}</th>`;
+  }
+  html+=`</tr>`;
+  totals.forEach((t,ti)=>{
+    html+=`<tr><td>${esc(t.name)}</td>`;
+    for(let h=1;h<=maxH;h++){
+      const e=evo[h-1]?.[ti];
+      const cls=h===9||h===18?'evo-sep':'';
+      if(!e){html+=`<td class="${cls}">–</td>`;continue;}
+      if(isFbStbl){
+        html+=`<td class="${cls}">${e.pts||0}</td>`;
+      }else{
+        const val=(e.diff>0?'+':'')+(e.diff||0);
+        const dcls=e.diff<0?'evo-pos':(e.diff>0?'evo-neg':'');
+        html+=`<td class="${cls} ${dcls}">${val}</td>`;
+      }
+    }
+    html+=`</tr>`;
+  });
+  html+=`</table></div>`;
+  html+=`<div class="sub">${isFbStbl?'Points Stableford cumulés':'Écart vs par cumulé'} trou par trou</div></div>`;
+  return html;
+}
+
+function cellHtml(s,par,strokes){
+  const dots=strokes>0?`<span class="hcp-dot">${'•'.repeat(Math.min(strokes,3))}</span>`:'';
+  if(!s)return `<td>${dots?'<span style="position:relative;display:inline-block">'+dots+'</span>':''}–</td>`;
+  if(!par)return `<td>${s}</td>`;
+  const d=s-par;
+  let cl=d<=-2?'ce':d===-1?'cbi':d===0?'cpar':d===1?'cbo':'cdb';
+  return `<td><span class="ci ${cl}">${s}${dots}</span></td>`;
+}
+function esc(s){return String(s||'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'})[c]);}
+</script>
+</body>
+</html>

@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Le Release avec les Bois – Golfeur Gaucher</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #2d1a3d;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 20px;
+    min-height: 100vh;
+  }
+  h1 { font-size: 26px; margin-bottom: 4px; letter-spacing: 1px; text-transform: uppercase; text-align: center; }
+  .subtitle { font-size: 14px; opacity: 0.7; margin-bottom: 28px; text-align: center; }
+  .section {
+    max-width: 960px; width: 100%; margin-bottom: 22px;
+    background: rgba(255,255,255,0.06); border-radius: 14px;
+    padding: 22px 24px; border: 1px solid rgba(255,255,255,0.1);
+  }
+  .section h2 { font-size: 18px; margin-bottom: 14px; color: #ce93d8; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; }
+  .section p { font-size: 14px; line-height: 1.8; margin-bottom: 10px; }
+  .key { color: #e1bee7; font-weight: bold; }
+  .warn { color: #ff8a65; font-weight: bold; }
+  .good { color: #a5d6a7; font-weight: bold; }
+  .num-badge {
+    display: inline-block; width: 28px; height: 28px; border-radius: 50%;
+    background: #6a1b9a; color: #fff; text-align: center; line-height: 28px;
+    font-weight: bold; font-size: 14px; margin-right: 8px; vertical-align: middle;
+  }
+  .phases {
+    display: flex; gap: 14px; flex-wrap: wrap; justify-content: center;
+    max-width: 960px; width: 100%; margin-bottom: 22px;
+  }
+  .phase-card {
+    flex: 1; min-width: 170px; max-width: 200px;
+    background: rgba(255,255,255,0.07); border-radius: 14px;
+    padding: 14px; border: 2px solid rgba(255,255,255,0.12); text-align: center;
+  }
+  .phase-card h3 { font-size: 12px; margin-bottom: 6px; color: #ffb74d; text-transform: uppercase; letter-spacing: 0.5px; }
+  .phase-card .num { font-size: 28px; font-weight: bold; color: #ce93d8; margin-bottom: 4px; }
+  .phase-card p { font-size: 12px; line-height: 1.5; opacity: 0.85; }
+
+  .schema-row {
+    display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;
+    max-width: 960px; width: 100%; margin-bottom: 22px;
+  }
+  .schema-card {
+    background: rgba(255,255,255,0.06); border-radius: 14px;
+    padding: 18px; border: 1px solid rgba(255,255,255,0.1); text-align: center;
+    flex: 1; min-width: 280px;
+  }
+  .schema-card h3 { font-size: 15px; margin-bottom: 12px; }
+  .schema-card svg { display: block; margin: 0 auto; }
+  .schema-card .caption { font-size: 12px; opacity: 0.7; margin-top: 8px; line-height: 1.5; }
+
+  /* Comparatif */
+  .compare {
+    max-width: 960px; width: 100%; margin-bottom: 22px;
+    background: rgba(255,255,255,0.06); border-radius: 14px;
+    padding: 22px 24px; border: 2px solid rgba(206,147,216,0.3);
+  }
+  .compare h2 { font-size: 18px; margin-bottom: 14px; color: #f48fb1; text-align: center; }
+  .compare table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .compare th { background: rgba(255,255,255,0.08); padding: 10px; text-align: left; color: #ce93d8; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  .compare td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); line-height: 1.5; }
+  .compare .col-fer { color: #90caf9; }
+  .compare .col-bois { color: #e1bee7; }
+
+  .keypoints {
+    max-width: 960px; width: 100%; margin-bottom: 22px;
+    background: rgba(206,147,216,0.08); border-radius: 14px;
+    padding: 22px 24px; border: 1px solid rgba(206,147,216,0.2);
+  }
+  .keypoints h2 { font-size: 18px; margin-bottom: 14px; color: #e1bee7; }
+  .keypoints p { font-size: 14px; line-height: 1.8; margin-bottom: 8px; }
+
+  .mistakes {
+    max-width: 960px; width: 100%; margin-bottom: 22px;
+    background: rgba(255,80,80,0.08); border-radius: 14px;
+    padding: 22px 24px; border: 1px solid rgba(255,80,80,0.2);
+  }
+  .mistakes h2 { font-size: 18px; margin-bottom: 14px; color: #ef9a9a; }
+  .mistakes p { font-size: 14px; line-height: 1.8; margin-bottom: 8px; }
+
+  .tips {
+    max-width: 960px; width: 100%; margin-bottom: 22px;
+    background: rgba(100,200,100,0.08); border-radius: 14px;
+    padding: 22px 24px; border: 1px solid rgba(100,200,100,0.2);
+  }
+  .tips h2 { font-size: 18px; margin-bottom: 14px; color: #a5d6a7; }
+  .tips p { font-size: 14px; line-height: 1.8; margin-bottom: 8px; }
+
+  .vocab {
+    max-width: 960px; width: 100%; font-size: 12.5px; line-height: 1.7;
+    padding: 14px 18px; background: rgba(255,255,255,0.05);
+    border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); margin-bottom: 16px;
+  }
+  .vocab b { color: #ce93d8; }
+  .sources { font-size: 11px; opacity: 0.4; text-align: center; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<h1>Le Release avec les Bois</h1>
+<p class="subtitle">Driver & bois de parcours – Golfeur gaucher – Frappe montante/neutre, sweep, distance maximale</p>
+
+<!-- ===== PRINCIPE ===== -->
+<div class="section">
+  <h2>Le principe du release aux bois</h2>
+  <p>Avec un bois (driver ou bois de parcours), l'objectif est tres different des fers. Le driver se frappe <span class="key">en montant</span> (angle d'attaque positif, environ +3 a +5°) car la balle est sur un tee. Les bois de parcours se frappent avec un angle <span class="key">neutre a tres legerement descendant</span> (comme un "balayage").</p>
+  <p>La grande difference : <span class="key">le shaft lean est quasi nul</span> avec le driver. Les mains reviennent pratiquement au niveau de la balle (ou a peine devant) a l'impact, PAS nettement en avance comme avec un fer. Cela permet de <span class="key">conserver le loft</span> du club et de lancer la balle haut.</p>
+  <p>Le release aux bois est donc <span class="key">plus complet et plus libre</span> : les poignets se relachent plus tot et plus pleinement qu'avec un fer, ce qui maximise la vitesse de la tete du club (= distance).</p>
+</div>
+
+<!-- ===== 5 PHASES ===== -->
+<div class="phases">
+  <div class="phase-card" style="border-color: #78909c;">
+    <h3>Adresse</h3>
+    <div class="num">1</div>
+    <p>Balle <b>en avant</b> du stance (au niveau du pied avant = pied droit pour gaucher). Stance large. Mains quasiment au niveau de la balle ou a peine devant. Epaule arriere plus basse.</p>
+  </div>
+  <div class="phase-card" style="border-color: #ce93d8;">
+    <h3>Backswing</h3>
+    <div class="num">2</div>
+    <p>Arc plus <b>large et ample</b> qu'aux fers. Grande rotation du buste. Armement complet des poignets. Le club va plus loin derriere car le shaft est plus long.</p>
+  </div>
+  <div class="phase-card" style="border-color: #ffb74d;">
+    <h3>Transition</h3>
+    <div class="num">3</div>
+    <p>Hanches demarrent + <b>glissement lateral</b> (hip slide) plus marque qu'aux fers. Le lag se conserve mais le corps se deplace davantage vers la cible.</p>
+  </div>
+  <div class="phase-card" style="border-color: #f44336;">
+    <h3>Impact</h3>
+    <div class="num">4</div>
+    <p>Poignet avant <b>plat</b>. Mains au niveau de la balle (pas tres en avance). Shaft quasi vertical. Driver : frappe <b>montante</b>. Bois parcours : frappe en <b>balayage</b>.</p>
+  </div>
+  <div class="phase-card" style="border-color: #81c784;">
+    <h3>Release</h3>
+    <div class="num">5</div>
+    <p>Release <b>complet et libre</b>. Rotation complete des avant-bras. Le club s'etend pleinement. Extension totale des bras vers la cible. Le corps tourne jusqu'au finish.</p>
+  </div>
+</div>
+
+<!-- ===== SCHEMAS ===== -->
+<div class="schema-row">
+
+  <!-- Driver : impact montant -->
+  <div class="schema-card" style="border-color: #ce93d8;">
+    <h3 style="color: #e1bee7;">Impact avec le Driver (vue de face, gaucher)</h3>
+    <svg width="300" height="300" viewBox="0 0 300 300">
+      <rect x="0" y="0" width="300" height="300" rx="10" fill="#2d1a3d"/>
+
+      <!-- Ground -->
+      <line x1="20" y1="230" x2="280" y2="230" stroke="#3a5a3a" stroke-width="2"/>
+      <rect x="20" y="230" width="260" height="10" fill="#2e5a3a" opacity="0.2" rx="2"/>
+
+      <!-- Tee -->
+      <line x1="130" y1="218" x2="130" y2="230" stroke="#deb887" stroke-width="3"/>
+      <!-- Ball on tee (higher than ground) -->
+      <circle cx="130" cy="211" r="9" fill="white" stroke="#555" stroke-width="1"/>
+      <text x="142" y="210" fill="white" font-size="9">balle</text>
+      <text x="142" y="220" fill="white" font-size="9">sur tee</text>
+
+      <!-- NO divot! -->
+      <text x="90" y="255" fill="#a5d6a7" font-size="9" opacity="0.6">PAS de divot</text>
+      <text x="90" y="265" fill="#a5d6a7" font-size="9" opacity="0.6">avec le driver</text>
+
+      <!-- Shoulder -->
+      <circle cx="185" cy="95" r="5" fill="#666" opacity="0.5"/>
+
+      <!-- Lead arm -->
+      <line x1="185" y1="95" x2="160" y2="165" stroke="#ce93d8" stroke-width="3"/>
+
+      <!-- Wrist (FLAT) -->
+      <circle cx="160" cy="165" r="5" fill="#e1bee7"/>
+
+      <!-- Shaft - nearly vertical (minimal shaft lean) -->
+      <line x1="160" y1="165" x2="135" y2="215" stroke="#ce93d8" stroke-width="3"/>
+
+      <!-- Club head (big driver head) -->
+      <ellipse cx="128" cy="212" rx="14" ry="8" fill="#ce93d8" transform="rotate(-15, 128, 212)" opacity="0.8"/>
+
+      <!-- Shaft lean indicator : almost zero -->
+      <line x1="130" y1="175" x2="130" y2="215" stroke="white" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.3"/>
+      <text x="162" y="180" fill="#ffeb3b" font-size="10" font-weight="bold">0-2°</text>
+      <text x="162" y="192" fill="#ffeb3b" font-size="9">shaft lean</text>
+      <text x="162" y="203" fill="#ffeb3b" font-size="9">quasi nul</text>
+
+      <!-- "Hands level with ball" -->
+      <line x1="160" y1="167" x2="160" y2="215" stroke="#ff9800" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.3"/>
+      <text x="167" y="150" fill="#ff9800" font-size="10">Mains au</text>
+      <text x="167" y="162" fill="#ff9800" font-size="10">niveau balle</text>
+
+      <!-- Angle of attack arrow (ASCENDING!) -->
+      <defs>
+        <marker id="arrUp2" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto" fill="#81c784">
+          <polygon points="0 0, 8 3, 0 6"/>
+        </marker>
+      </defs>
+      <line x1="170" y1="225" x2="135" y2="205" stroke="#81c784" stroke-width="2" marker-end="url(#arrUp2)" opacity="0.7"/>
+      <text x="175" y="225" fill="#81c784" font-size="9">angle d'attaque</text>
+      <text x="175" y="236" fill="#81c784" font-size="9" font-weight="bold">MONTANT (+3 a +5°)</text>
+
+      <!-- Wrist annotation -->
+      <text x="15" y="163" fill="#e1bee7" font-size="10">Poignet avant</text>
+      <text x="15" y="175" fill="#e1bee7" font-size="10" font-weight="bold">PLAT</text>
+      <text x="15" y="187" fill="#e1bee7" font-size="9" opacity="0.7">(meme regle que fers)</text>
+
+      <!-- Title -->
+      <text x="15" y="28" fill="#ce93d8" font-size="12" font-weight="bold">DRIVER : frappe montante</text>
+      <text x="15" y="44" fill="#ce93d8" font-size="11">Balle sur tee, club remonte a l'impact</text>
+    </svg>
+    <p class="caption">Avec le driver, le shaft lean est quasi nul. Le club arrive en <b>montant</b> sur la balle (angle positif).<br>Les mains sont au niveau de la balle, pas nettement en avance. Pas de divot.</p>
+  </div>
+
+  <!-- Bois de parcours : balayage -->
+  <div class="schema-card" style="border-color: #ce93d8;">
+    <h3 style="color: #e1bee7;">Impact Bois de parcours (vue de face, gaucher)</h3>
+    <svg width="300" height="300" viewBox="0 0 300 300">
+      <rect x="0" y="0" width="300" height="300" rx="10" fill="#2d1a3d"/>
+
+      <!-- Ground -->
+      <line x1="20" y1="230" x2="280" y2="230" stroke="#3a5a3a" stroke-width="2"/>
+      <rect x="20" y="230" width="260" height="10" fill="#2e5a3a" opacity="0.2" rx="2"/>
+
+      <!-- Ball ON ground (no tee) -->
+      <circle cx="140" cy="222" r="8" fill="white" stroke="#555" stroke-width="1"/>
+      <text x="152" y="222" fill="white" font-size="9">balle au sol</text>
+
+      <!-- Very slight brush mark (not a real divot) -->
+      <line x1="120" y1="231" x2="140" y2="231" stroke="#a5d6a7" stroke-width="2" opacity="0.5"/>
+      <text x="90" y="255" fill="#a5d6a7" font-size="9" opacity="0.6">leger effleurage</text>
+      <text x="90" y="265" fill="#a5d6a7" font-size="9" opacity="0.6">du gazon (pas de divot profond)</text>
+
+      <!-- Shoulder -->
+      <circle cx="190" cy="98" r="5" fill="#666" opacity="0.5"/>
+
+      <!-- Lead arm -->
+      <line x1="190" y1="98" x2="164" y2="168" stroke="#ce93d8" stroke-width="3"/>
+
+      <!-- Wrist -->
+      <circle cx="164" cy="168" r="5" fill="#e1bee7"/>
+
+      <!-- Shaft - very slight lean forward -->
+      <line x1="164" y1="168" x2="142" y2="222" stroke="#ce93d8" stroke-width="3"/>
+
+      <!-- Club head (fairway wood, smaller than driver) -->
+      <ellipse cx="137" cy="221" rx="12" ry="7" fill="#ce93d8" transform="rotate(-18, 137, 221)" opacity="0.8"/>
+
+      <!-- Shaft lean indicator : minimal -->
+      <line x1="140" y1="178" x2="140" y2="222" stroke="white" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.3"/>
+      <text x="168" y="182" fill="#ffeb3b" font-size="10" font-weight="bold">2-4°</text>
+      <text x="168" y="194" fill="#ffeb3b" font-size="9">shaft lean</text>
+      <text x="168" y="205" fill="#ffeb3b" font-size="9">tres leger</text>
+
+      <!-- Angle of attack arrow (nearly flat / sweeping) -->
+      <defs>
+        <marker id="arrSweep" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto" fill="#ffb74d">
+          <polygon points="0 0, 8 3, 0 6"/>
+        </marker>
+      </defs>
+      <line x1="180" y1="222" x2="142" y2="218" stroke="#ffb74d" stroke-width="2" marker-end="url(#arrSweep)" opacity="0.7"/>
+      <text x="183" y="218" fill="#ffb74d" font-size="9">angle d'attaque</text>
+      <text x="183" y="229" fill="#ffb74d" font-size="9" font-weight="bold">NEUTRE (balayage)</text>
+
+      <!-- Title -->
+      <text x="15" y="28" fill="#ce93d8" font-size="12" font-weight="bold">BOIS PARCOURS : balayage</text>
+      <text x="15" y="44" fill="#ce93d8" font-size="11">Balle au sol, club rase le gazon</text>
+    </svg>
+    <p class="caption">Le bois de parcours "balaie" la balle. Angle d'attaque quasi neutre, shaft lean minimal (2-4°).<br>Le club effleure le gazon sans creuser de vrai divot.</p>
+  </div>
+</div>
+
+<!-- ===== TABLEAU COMPARATIF FER vs BOIS ===== -->
+<div class="compare">
+  <h2>Comparatif : Release Fers vs Bois (gaucher)</h2>
+  <table>
+    <tr>
+      <th width="25%">Critere</th>
+      <th width="37%" class="col-fer">Fers</th>
+      <th width="38%" class="col-bois">Bois / Driver</th>
+    </tr>
+    <tr>
+      <td><b>Position balle</b></td>
+      <td class="col-fer">Centre du stance (fers courts) a legerement en avant (fers longs)</td>
+      <td class="col-bois">Tres en avant du stance, au niveau du pied avant (droit pour gaucher)</td>
+    </tr>
+    <tr>
+      <td><b>Shaft lean a l'impact</b></td>
+      <td class="col-fer">Prononce : 6 a 12°</td>
+      <td class="col-bois">Quasi nul : 0-2° (driver) / 2-4° (bois parcours)</td>
+    </tr>
+    <tr>
+      <td><b>Angle d'attaque</b></td>
+      <td class="col-fer">Descendant (negatif) : -3 a -5°</td>
+      <td class="col-bois">Montant (driver) : +3 a +5° / Neutre (bois parcours)</td>
+    </tr>
+    <tr>
+      <td><b>Contact</b></td>
+      <td class="col-fer">Balle PUIS gazon (divot apres la balle)</td>
+      <td class="col-bois">Driver : balle seulement. Bois : effleurage du gazon</td>
+    </tr>
+    <tr>
+      <td><b>Poignet avant a l'impact</b></td>
+      <td class="col-fer">Plat a legerement flechi (identique)</td>
+      <td class="col-bois">Plat a legerement flechi (identique)</td>
+    </tr>
+    <tr>
+      <td><b>Position des mains</b></td>
+      <td class="col-fer">Nettement en avance sur la balle</td>
+      <td class="col-bois">Au niveau de la balle ou a peine devant</td>
+    </tr>
+    <tr>
+      <td><b>Type de release</b></td>
+      <td class="col-fer">Controle et retarde. Release complet seulement APRES la balle</td>
+      <td class="col-bois">Plus libre et complet. Le club se relache plus pleinement pour maximiser la vitesse</td>
+    </tr>
+    <tr>
+      <td><b>Amplitude du swing</b></td>
+      <td class="col-fer">Plus court, plus compact</td>
+      <td class="col-bois">Plus large, plus ample (shaft plus long)</td>
+    </tr>
+    <tr>
+      <td><b>Objectif principal</b></td>
+      <td class="col-fer">Precision + controle de distance</td>
+      <td class="col-bois">Distance maximale + launch optimal</td>
+    </tr>
+    <tr>
+      <td><b>Point commun essentiel</b></td>
+      <td colspan="2" style="text-align: center; color: #a5d6a7; font-weight: bold;">Le poignet avant reste PLAT a l'impact. JAMAIS de flip. Le corps mene, les bras suivent.</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ===== POINTS CLES ===== -->
+<div class="keypoints">
+  <h2>Points cles du release aux bois (gaucher)</h2>
+  <p><span class="num-badge">1</span> <span class="key">Le swing ne change pas fondamentalement :</span> c'est le MEME mouvement qu'aux fers. Ce qui change, c'est le setup (balle en avant, stance large) qui modifie naturellement l'angle d'attaque.</p>
+  <p><span class="num-badge">2</span> <span class="key">Ne pas forcer la montee :</span> avec le driver, on ne "scoope" pas pour monter la balle. C'est la position de balle en avant + le tee qui creent naturellement la frappe montante.</p>
+  <p><span class="num-badge">3</span> <span class="key">Le release est plus libre :</span> aux bois, la priorite est la VITESSE de la tete du club. Laissez le club se relacher pleinement apres l'impact. Le mouvement est plus ample et plus fluide.</p>
+  <p><span class="num-badge">4</span> <span class="key">Le hip slide est plus important :</span> pour que le club arrive en montant, le corps doit se decaler davantage vers la cible pendant la descente. Les hanches glissent lateralement en plus de tourner.</p>
+  <p><span class="num-badge">5</span> <span class="key">Le poignet avant reste plat :</span> c'est la SEULE regle qui ne change JAMAIS, quel que soit le club. Poignet plat a l'impact = face de club stable = trajectoire previsible.</p>
+  <p><span class="num-badge">6</span> <span class="key">Sweep, ne frappez pas "sur" la balle :</span> avec un bois de parcours au sol, pensez a "balayer" la balle. Pas de geste agressif vers le bas. Le club rase le gazon et emporte la balle.</p>
+</div>
+
+<!-- ===== ERREURS ===== -->
+<div class="mistakes">
+  <h2>Erreurs frequentes aux bois</h2>
+  <p><span class="warn">1. Appliquer la technique des fers :</span> frapper en descendant avec le driver deslofte le club (9-10° de loft deviennent 5°). La balle part en "missile" trop bas, perd du carry et de la distance.</p>
+  <p><span class="warn">2. Scooper pour monter la balle :</span> le reflexe de "soulever" la balle. Le poignet se casse, le club remonte avant l'impact → tops et grattes, exactement comme avec les fers.</p>
+  <p><span class="warn">3. Balle trop en arriere du stance :</span> si la balle est trop au centre avec le driver, l'angle d'attaque sera descendant. La balle trop en avant = frappe montante naturelle.</p>
+  <p><span class="warn">4. Retenir le release :</span> bloquer les poignets et les bras apres l'impact pour "controler" le driver. Cela tue la vitesse. Aux bois, laissez le club filer librement vers la cible.</p>
+  <p><span class="warn">5. Swinguer plus fort = plus loin :</span> faux. La distance vient de la TECHNIQUE (angle d'attaque, centrage) et du TEMPO, pas de la force brute. Un swing fluide a 80% d'effort va souvent plus loin qu'un swing force a 100%.</p>
+</div>
+
+<!-- ===== ASTUCES ===== -->
+<div class="tips">
+  <h2>Exercices pratiques</h2>
+  <p><span class="good">Le tee haut au practice :</span> au practice, mettez le tee plus haut que d'habitude. Cela vous force a monter sur la balle au lieu de frapper dessus. Bon entrainement pour le driver.</p>
+  <p><span class="good">Le "swoosh" inversé :</span> retournez le club (tenez-le par la tete) et faites des swings. Le "swoosh" (bruit de l'air) doit se produire APRES la position de la balle, pas avant. Cela entraine un release complet au bon moment.</p>
+  <p><span class="good">Bois de parcours sans tee :</span> entrainez-vous avec un bois 3 ou 5 au sol, sans tee. Le but : effleurer le gazon sans le creuser. C'est l'exercice parfait pour apprendre le balayage.</p>
+  <p><span class="good">Tempo 3-1 :</span> comptez "1-2-3" pendant le backswing et "1" pendant la descente. Ce ratio 3:1 empeche de forcer la descente et favorise un release fluide et complet.</p>
+</div>
+
+<!-- ===== LEXIQUE ===== -->
+<div class="vocab">
+  <b>Lexique specifique aux bois :</b><br>
+  <b>Sweep / Balayage</b> = technique ou le club rase le sol et "balaie" la balle au lieu de frapper dessus. Utilise avec les bois de parcours.<br>
+  <b>Launch angle</b> = l'angle de decollage de la balle. Avec le driver, on vise 12-15° de launch pour maximiser le carry (la distance en vol).<br>
+  <b>Carry</b> = la distance parcourue par la balle en l'air (avant qu'elle ne touche le sol). Le driver est le club avec le plus de carry.<br>
+  <b>Dynamic loft</b> = le loft reel du club au moment de l'impact. Un driver de 10° frappe en montant (+4°) = dynamic loft d'environ 14°, ce qui est ideal.<br>
+  <b>Hip slide</b> = glissement lateral des hanches vers la cible pendant la descente. Plus marque avec le driver qu'avec les fers.<br>
+  <b>Angle d'attaque positif</b> = le club remonte au moment de toucher la balle. C'est l'inverse des fers. Specifique au driver sur tee.<br>
+  <b>Spin rate</b> = vitesse de rotation de la balle. Au driver, on veut peu de spin (2000-2500 rpm) pour maximiser la distance. Trop de shaft lean = trop de spin.
+</div>
+
+<div class="sources">
+  Sources : HackMotion, Golf Insider UK, RotarySwing, Swing Align, Me And My Golf, Golf Smart Academy
+</div>
+
+</body>
+</html>

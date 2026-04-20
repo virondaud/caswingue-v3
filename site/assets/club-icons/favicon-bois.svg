@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Tête de Bois (fairway wood) - Marron - Plus petit que le driver -->
+  <path d="M18 12 Q10 16 8 26 Q6 34 8 42 Q12 50 20 54 Q30 58 40 56 Q50 52 54 44 Q56 38 54 30 Q52 22 46 18 Q40 14 32 12 Q24 10 18 12 Z"
+        fill="url(#boisGrad)" stroke="#3a1a08" stroke-width="1.5"/>
+  <!-- Face de frappe visible à gauche -->
+  <path d="M18 14 Q11 18 9 28 Q7 34 9 42 Q12 48 18 52"
+        fill="url(#faceGrad)" stroke="#2a0a00" stroke-width="2.5"/>
+  <!-- Surface de la face -->
+  <path d="M19 16 Q13 20 11 28 Q9 34 11 42 Q13 47 19 50"
+        fill="#6a4020" opacity="0.3"/>
+  <!-- Rainures sur la face -->
+  <line x1="12" y1="26" x2="18" y2="23" stroke="#4a2a10" stroke-width="0.8" opacity="0.5"/>
+  <line x1="11" y1="31" x2="18" y2="28" stroke="#4a2a10" stroke-width="0.8" opacity="0.5"/>
+  <line x1="10" y1="36" x2="18" y2="33" stroke="#4a2a10" stroke-width="0.8" opacity="0.5"/>
+  <line x1="11" y1="41" x2="18" y2="38" stroke="#4a2a10" stroke-width="0.8" opacity="0.5"/>
+  <!-- Couronne -->
+  <path d="M20 14 Q30 14 40 16 Q48 20 52 24"
+        fill="none" stroke="#2a0a00" stroke-width="0.8" opacity="0.4"/>
+  <!-- Reflet couronne -->
+  <ellipse cx="36" cy="24" rx="9" ry="5" fill="white" opacity="0.1"/>
+  <!-- Point d'alignement -->
+  <line x1="36" y1="14" x2="36" y2="18" stroke="#5a3a1a" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+  <!-- Hosel -->
+  <ellipse cx="18" cy="12" rx="3" ry="3.5" fill="#4a2a10" stroke="#3a1a08" stroke-width="1"/>
+  <defs>
+    <linearGradient id="boisGrad" x1="0.8" y1="0" x2="0.2" y2="1">
+      <stop offset="0%" stop-color="#a07040"/>
+      <stop offset="30%" stop-color="#8a5a2a"/>
+      <stop offset="60%" stop-color="#6a4018"/>
+      <stop offset="100%" stop-color="#4a2810"/>
+    </linearGradient>
+    <linearGradient id="faceGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#4a2008"/>
+      <stop offset="100%" stop-color="#6a4020"/>
+    </linearGradient>
+  </defs>
+</svg>

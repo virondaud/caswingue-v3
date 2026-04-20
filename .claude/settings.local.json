@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls *)",
+      "Bash(mkdir *)",
+      "Bash(cp *)",
+      "Bash(python3 *)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Read(/Users/mathieuvirondaud/claude/golf/ça_swingue_3/**)",
+      "Read(/Users/mathieuvirondaud/claude/golf/ça_swingue/**)",
+      "Write(/Users/mathieuvirondaud/claude/golf/ça_swingue_3/**)",
+      "Edit(/Users/mathieuvirondaud/claude/golf/ça_swingue_3/**)"
+    ],
+    "deny": [
+      "Write(/Users/mathieuvirondaud/claude/golf/ça_swingue/**)",
+      "Edit(/Users/mathieuvirondaud/claude/golf/ça_swingue/**)",
+      "Bash(git push *)"
+    ]
+  }
+}

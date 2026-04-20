@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Le Release avec les Fers – Golfeur Gaucher</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #1a2d3d;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 20px;
+    min-height: 100vh;
+  }
+  h1 { font-size: 26px; margin-bottom: 4px; letter-spacing: 1px; text-transform: uppercase; text-align: center; }
+  .subtitle { font-size: 14px; opacity: 0.7; margin-bottom: 28px; text-align: center; }
+  .section {
+    max-width: 960px; width: 100%; margin-bottom: 22px;
+    background: rgba(255,255,255,0.06); border-radius: 14px;
+    padding: 22px 24px; border: 1px solid rgba(255,255,255,0.1);
+  }
+  .section h2 { font-size: 18px; margin-bottom: 14px; color: #64b5f6; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; }
+  .section p { font-size: 14px; line-height: 1.8; margin-bottom: 10px; }
+  .key { color: #4fc3f7; font-weight: bold; }
+  .warn { color: #ff8a65; font-weight: bold; }
+  .good { color: #a5d6a7; font-weight: bold; }
+  .num-badge {
+    display: inline-block; width: 28px; height: 28px; border-radius: 50%;
+    background: #1565c0; color: #fff; text-align: center; line-height: 28px;
+    font-weight: bold; font-size: 14px; margin-right: 8px; vertical-align: middle;
+  }
+  .phases {
+    display: flex; gap: 14px; flex-wrap: wrap; justify-content: center;
+    max-width: 960px; width: 100%; margin-bottom: 22px;
+  }
+  .phase-card {
+    flex: 1; min-width: 170px; max-width: 200px;
+    background: rgba(255,255,255,0.07); border-radius: 14px;
+    padding: 14px; border: 2px solid rgba(255,255,255,0.12); text-align: center;
+  }
+  .phase-card h3 { font-size: 12px; margin-bottom: 6px; color: #ce93d8; text-transform: uppercase; letter-spacing: 0.5px; }
+  .phase-card .num { font-size: 28px; font-weight: bold; color: #64b5f6; margin-bottom: 4px; }
+  .phase-card p { font-size: 12px; line-height: 1.5; opacity: 0.85; }
+
+  .schema-row {
+    display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;
+    max-width: 960px; width: 100%; margin-bottom: 22px;
+  }
+  .schema-card {
+    background: rgba(255,255,255,0.06); border-radius: 14px;
+    padding: 18px; border: 1px solid rgba(255,255,255,0.1); text-align: center;
+    flex: 1; min-width: 280px;
+  }
+  .schema-card h3 { font-size: 15px; margin-bottom: 12px; }
+  .schema-card svg { display: block; margin: 0 auto; }
+  .schema-card .caption { font-size: 12px; opacity: 0.7; margin-top: 8px; line-height: 1.5; }
+
+  .keypoints {
+    max-width: 960px; width: 100%; margin-bottom: 22px;
+    background: rgba(100,181,246,0.08); border-radius: 14px;
+    padding: 22px 24px; border: 1px solid rgba(100,181,246,0.2);
+  }
+  .keypoints h2 { font-size: 18px; margin-bottom: 14px; color: #90caf9; border-bottom: 1px solid rgba(100,181,246,0.15); padding-bottom: 8px; }
+  .keypoints p { font-size: 14px; line-height: 1.8; margin-bottom: 8px; }
+
+  .mistakes {
+    max-width: 960px; width: 100%; margin-bottom: 22px;
+    background: rgba(255,80,80,0.08); border-radius: 14px;
+    padding: 22px 24px; border: 1px solid rgba(255,80,80,0.2);
+  }
+  .mistakes h2 { font-size: 18px; margin-bottom: 14px; color: #ef9a9a; }
+  .mistakes p { font-size: 14px; line-height: 1.8; margin-bottom: 8px; }
+
+  .tips {
+    max-width: 960px; width: 100%; margin-bottom: 22px;
+    background: rgba(100,200,100,0.08); border-radius: 14px;
+    padding: 22px 24px; border: 1px solid rgba(100,200,100,0.2);
+  }
+  .tips h2 { font-size: 18px; margin-bottom: 14px; color: #a5d6a7; }
+  .tips p { font-size: 14px; line-height: 1.8; margin-bottom: 8px; }
+
+  .vocab {
+    max-width: 960px; width: 100%; font-size: 12.5px; line-height: 1.7;
+    padding: 14px 18px; background: rgba(255,255,255,0.05);
+    border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); margin-bottom: 16px;
+  }
+  .vocab b { color: #ce93d8; }
+  .sources { font-size: 11px; opacity: 0.4; text-align: center; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<h1>Le Release avec les Fers</h1>
+<p class="subtitle">Technique pour golfeur gaucher – Frappe descendante, compression, shaft lean</p>
+
+<!-- ===== PRINCIPE ===== -->
+<div class="section">
+  <h2>Le principe du release aux fers</h2>
+  <p>Avec un fer, l'objectif est de frapper la balle <span class="key">en descendant</span> (angle d'attaque negatif). Le club touche d'abord la balle, PUIS le gazon (creation d'un leger divot apres la balle). C'est ce qu'on appelle la <span class="key">compression</span> : la balle est "ecrasee" entre la face du club et le sol.</p>
+  <p>Pour y parvenir, les mains doivent etre <span class="key">en avance sur la tete du club a l'impact</span>. Le manche du club penche vers la cible : c'est le <span class="key">shaft lean</span> (inclinaison du manche vers l'avant). Avec les fers, on vise environ <span class="key">6 a 12 degres</span> de shaft lean a l'impact.</p>
+  <p>Le release aux fers est donc un release <span class="key">controle et retarde</span> : le poignet avant (droit pour un gaucher) reste plat ou legerement flechis a l'impact, puis se relache APRES la balle.</p>
+</div>
+
+<!-- ===== 5 PHASES ===== -->
+<div class="phases">
+  <div class="phase-card" style="border-color: #78909c;">
+    <h3>Adresse</h3>
+    <div class="num">1</div>
+    <p>Balle au <b>centre</b> du stance (fer court) ou legerement en avant (fer long). Mains un rien devant la balle. Poids 55-60% sur pied avant (droit).</p>
+  </div>
+  <div class="phase-card" style="border-color: #64b5f6;">
+    <h3>Backswing</h3>
+    <div class="num">2</div>
+    <p>Rotation du buste + armement des poignets (radial deviation). Le poignet avant reste <b>plat</b>. Le poignet arriere se plie vers l'arriere (extension).</p>
+  </div>
+  <div class="phase-card" style="border-color: #ffb74d;">
+    <h3>Transition</h3>
+    <div class="num">3</div>
+    <p>Le bas du corps demarre en premier (hanches). Les poignets <b>gardent leur angle</b> (= "lag"). Le poids se transfere sur le pied avant.</p>
+  </div>
+  <div class="phase-card" style="border-color: #f44336;">
+    <h3>Impact</h3>
+    <div class="num">4</div>
+    <p><b>CLE.</b> Poignet avant PLAT/FLECHI. Mains devant la balle. Shaft penche vers la cible. Frappe descendante. Contact balle-gazon.</p>
+  </div>
+  <div class="phase-card" style="border-color: #81c784;">
+    <h3>Release</h3>
+    <div class="num">5</div>
+    <p>APRES la balle, le poignet avant passe en extension. L'avant-bras tourne (rotation, pas "flip"). Le club s'etend naturellement vers la cible.</p>
+  </div>
+</div>
+
+<!-- ===== SCHEMAS ===== -->
+<div class="schema-row">
+
+  <!-- Vue de face : impact fer -->
+  <div class="schema-card" style="border-color: #64b5f6;">
+    <h3 style="color: #90caf9;">Impact avec un Fer (vue de face, gaucher)</h3>
+    <svg width="300" height="300" viewBox="0 0 300 300">
+      <rect x="0" y="0" width="300" height="300" rx="10" fill="#1a3347"/>
+
+      <!-- Ground -->
+      <line x1="20" y1="230" x2="280" y2="230" stroke="#3a6a5a" stroke-width="2"/>
+      <rect x="20" y="230" x2="280" width="260" height="12" fill="#2e5a3a" opacity="0.3" rx="2"/>
+
+      <!-- Ball on ground -->
+      <circle cx="145" cy="223" r="8" fill="white" stroke="#555" stroke-width="1"/>
+
+      <!-- Divot AFTER ball (to the left for lefty) -->
+      <ellipse cx="120" cy="232" rx="20" ry="4" fill="#1a3a2a" stroke="#2e5a3a" stroke-width="1"/>
+      <text x="95" y="255" fill="#a5d6a7" font-size="9">divot APRES</text>
+      <text x="95" y="265" fill="#a5d6a7" font-size="9">la balle</text>
+
+      <!-- Shoulder -->
+      <circle cx="195" cy="100" r="5" fill="#666" opacity="0.5"/>
+
+      <!-- Lead arm -->
+      <line x1="195" y1="100" x2="168" y2="170" stroke="#90caf9" stroke-width="3"/>
+
+      <!-- Wrist (FLAT) -->
+      <circle cx="168" cy="170" r="5" fill="#4fc3f7"/>
+
+      <!-- Shaft - continues SAME LINE as arm (hands ahead!) -->
+      <line x1="168" y1="170" x2="140" y2="225" stroke="#90caf9" stroke-width="3"/>
+
+      <!-- Club head -->
+      <rect x="130" y="220" width="22" height="8" rx="2" fill="#90caf9" transform="rotate(-22, 141, 224)"/>
+
+      <!-- Shaft lean indicator -->
+      <!-- Vertical line from ball -->
+      <line x1="145" y1="180" x2="145" y2="225" stroke="white" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.3"/>
+      <!-- Shaft lean angle arc -->
+      <path d="M 145 195 A 20 20 0 0 0 155 178" stroke="#ffeb3b" stroke-width="1.5" fill="none" opacity="0.7"/>
+      <text x="157" y="185" fill="#ffeb3b" font-size="10" font-weight="bold">6-12°</text>
+      <text x="157" y="197" fill="#ffeb3b" font-size="9">shaft lean</text>
+
+      <!-- "Hands ahead" indicator -->
+      <line x1="168" y1="172" x2="168" y2="230" stroke="#ff9800" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.4"/>
+      <text x="173" y="155" fill="#ff9800" font-size="10" font-weight="bold">Mains</text>
+      <text x="173" y="167" fill="#ff9800" font-size="10">DEVANT</text>
+
+      <!-- Angle of attack arrow (descending) -->
+      <defs>
+        <marker id="arrAtk" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto" fill="#f44336">
+          <polygon points="0 0, 8 3, 0 6"/>
+        </marker>
+      </defs>
+      <line x1="185" y1="195" x2="148" y2="220" stroke="#f44336" stroke-width="2" marker-end="url(#arrAtk)" opacity="0.7"/>
+      <text x="188" y="210" fill="#f44336" font-size="9">angle d'attaque</text>
+      <text x="188" y="221" fill="#f44336" font-size="9">DESCENDANT</text>
+
+      <!-- Wrist annotation -->
+      <text x="15" y="168" fill="#4fc3f7" font-size="10">Poignet avant</text>
+      <text x="15" y="180" fill="#4fc3f7" font-size="10" font-weight="bold">PLAT</text>
+
+      <!-- Check -->
+      <text x="15" y="30" fill="#81c784" font-size="24">&#10003;</text>
+      <text x="42" y="28" fill="#90caf9" font-size="12" font-weight="bold">FER : frappe descendante</text>
+      <text x="42" y="44" fill="#90caf9" font-size="11">Balle d'abord, gazon ensuite</text>
+    </svg>
+    <p class="caption">Avec un fer, les mains sont nettement en avance. Le shaft penche vers la cible (6-12°).<br>Le club descend a travers la balle et cree un divot <b>apres</b> la position de la balle.</p>
+  </div>
+
+  <!-- Vue chronologique : avant / impact / apres -->
+  <div class="schema-card" style="border-color: #64b5f6;">
+    <h3 style="color: #90caf9;">Le poignet avant a travers l'impact (fer)</h3>
+    <svg width="300" height="300" viewBox="0 0 300 300">
+      <rect x="0" y="0" width="300" height="300" rx="10" fill="#1a3347"/>
+
+      <!-- 3 positions -->
+
+      <!-- POS 1: Before impact (lag) -->
+      <text x="50" y="30" fill="#64b5f6" font-size="11" text-anchor="middle">AVANT</text>
+      <text x="50" y="44" fill="#64b5f6" font-size="9" text-anchor="middle" opacity="0.7">lag conserve</text>
+      <!-- Arm -->
+      <line x1="65" y1="70" x2="50" y2="130" stroke="#64b5f6" stroke-width="2.5" opacity="0.6"/>
+      <!-- Wrist -->
+      <circle cx="50" cy="130" r="3" fill="#4fc3f7" opacity="0.7"/>
+      <!-- Shaft (angled = lag) -->
+      <line x1="50" y1="130" x2="65" y2="195" stroke="#64b5f6" stroke-width="2" opacity="0.6"/>
+      <!-- Angle indicator -->
+      <path d="M 55 115 A 12 12 0 0 1 57 140" stroke="#ffeb3b" stroke-width="1.2" fill="none" opacity="0.5"/>
+      <text x="62" y="132" fill="#ffeb3b" font-size="8" opacity="0.6">lag</text>
+
+      <!-- POS 2: Impact (flat wrist, shaft lean) -->
+      <text x="150" y="30" fill="#a5d6a7" font-size="11" text-anchor="middle" font-weight="bold">IMPACT</text>
+      <text x="150" y="44" fill="#a5d6a7" font-size="9" text-anchor="middle" opacity="0.7">poignet plat</text>
+      <!-- Arm -->
+      <line x1="168" y1="70" x2="150" y2="140" stroke="#a5d6a7" stroke-width="3"/>
+      <!-- Wrist (FLAT = same line) -->
+      <circle cx="150" cy="140" r="4" fill="#4fc3f7"/>
+      <!-- Shaft continues straight -->
+      <line x1="150" y1="140" x2="130" y2="200" stroke="#a5d6a7" stroke-width="2.5"/>
+      <!-- Ball -->
+      <circle cx="137" cy="198" r="6" fill="white" stroke="#333" stroke-width="1"/>
+      <!-- Flat wrist indicator -->
+      <line x1="165" y1="80" x2="133" y2="195" stroke="#81c784" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.3"/>
+      <text x="105" y="140" fill="#81c784" font-size="9" font-weight="bold">LIGNE</text>
+      <text x="105" y="152" fill="#81c784" font-size="9" font-weight="bold">DROITE</text>
+
+      <!-- POS 3: After impact (release) -->
+      <text x="250" y="30" fill="#ff9800" font-size="11" text-anchor="middle">APRES</text>
+      <text x="250" y="44" fill="#ff9800" font-size="9" text-anchor="middle" opacity="0.7">release naturel</text>
+      <!-- Arm -->
+      <line x1="265" y1="70" x2="248" y2="130" stroke="#ff9800" stroke-width="2.5" opacity="0.6"/>
+      <!-- Wrist -->
+      <circle cx="248" cy="130" r="3" fill="#ff9800" opacity="0.7"/>
+      <!-- Shaft (now released = extends past) -->
+      <line x1="248" y1="130" x2="218" y2="185" stroke="#ff9800" stroke-width="2" opacity="0.6"/>
+      <!-- Club extending -->
+      <line x1="218" y1="185" x2="208" y2="195" stroke="#ff9800" stroke-width="3" opacity="0.4"/>
+      <!-- Rotation indicator -->
+      <path d="M 255 145 A 15 15 0 0 0 235 155" stroke="#ff9800" stroke-width="1.2" fill="none" opacity="0.6"/>
+      <text x="220" y="152" fill="#ff9800" font-size="8">rotation</text>
+      <text x="218" y="162" fill="#ff9800" font-size="8">avant-bras</text>
+
+      <!-- Timeline arrow -->
+      <line x1="30" y1="270" x2="270" y2="270" stroke="white" stroke-width="1" opacity="0.2"/>
+      <text x="50" y="285" fill="white" font-size="9" opacity="0.3" text-anchor="middle">-0.1s</text>
+      <text x="150" y="285" fill="white" font-size="9" opacity="0.3" text-anchor="middle">0s</text>
+      <text x="250" y="285" fill="white" font-size="9" opacity="0.3" text-anchor="middle">+0.1s</text>
+
+    </svg>
+    <p class="caption"><b>Avant</b> l'impact : le lag est conserve (angle poignet-shaft). <b>A</b> l'impact : poignet plat, ligne droite bras-club.<br><b>Apres</b> l'impact : le release se fait naturellement par rotation de l'avant-bras.</p>
+  </div>
+
+</div>
+
+<!-- ===== POINTS CLES ===== -->
+<div class="keypoints">
+  <h2>Les points cles du release aux fers (gaucher)</h2>
+  <p><span class="num-badge">1</span> <span class="key">Frappe descendante obligatoire :</span> le point bas du swing est APRES la balle (cote cible). C'est ce qui cree le divot apres la balle et la compression.</p>
+  <p><span class="num-badge">2</span> <span class="key">Shaft lean de 6 a 12° :</span> le manche penche vers la cible a l'impact. Plus le fer est court, plus le shaft lean est important. Fer 9 ≈ 10-12°. Fer 5 ≈ 6-8°.</p>
+  <p><span class="num-badge">3</span> <span class="key">Poignet avant (droit) plat ou flechi :</span> jamais en extension (casse vers l'arriere). C'est la condition pour maintenir le shaft lean et ne pas "flipper".</p>
+  <p><span class="num-badge">4</span> <span class="key">Le lag se conserve jusqu'a l'impact :</span> l'angle entre le bras et le shaft est maintenu le plus longtemps possible pendant la descente. Il se relache naturellement a l'impact, pas avant.</p>
+  <p><span class="num-badge">5</span> <span class="key">Le release est une ROTATION, pas un flip :</span> apres l'impact, les avant-bras tournent naturellement. Le poignet avant passe de flexion a extension progressivement. Ce n'est PAS un mouvement de "cuillere" ou de "scoop".</p>
+  <p><span class="num-badge">6</span> <span class="key">Le corps mene, les bras suivent :</span> les hanches tournent en premier, puis le buste, puis les bras. Les mains ne "jettent" pas le club. C'est la rotation du corps qui entraine le release.</p>
+</div>
+
+<!-- ===== ERREURS ===== -->
+<div class="mistakes">
+  <h2>Erreurs frequentes aux fers</h2>
+  <p><span class="warn">1. Le flip :</span> le poignet avant se casse en arriere (extension) avant l'impact. La tete du club depasse les mains. Le shaft penche en arriere (= shaft lean negatif). Resultat : la semelle du club touche le sol avant la balle → gratte ou top.</p>
+  <p><span class="warn">2. Perdre le lag trop tot :</span> les poignets se relachent des le debut de la descente ("casting" = lancer le club comme une canne a peche). Perte de puissance et contact imprecis.</p>
+  <p><span class="warn">3. Trop de shaft lean :</span> vouloir trop pencher le manche deslofte excessivement le club (un fer 7 devient un fer 4). La balle part tres basse et perd en controle. Il faut un equilibre.</p>
+  <p><span class="warn">4. Retenir le release :</span> garder les bras et poignets completement bloques apres l'impact ("block release"). Le mouvement devient rigide, on perd en vitesse et en sensation.</p>
+  <p><span class="warn">5. Aider la balle a monter :</span> le reflexe de "ramasser" la balle en scoopant. Avec un fer, le loft fait le travail. Il faut frapper VERS LE BAS pour que la balle monte.</p>
+</div>
+
+<!-- ===== ASTUCES ===== -->
+<div class="tips">
+  <h2>Exercices pratiques</h2>
+  <p><span class="good">Exercice du tee devant la balle :</span> plantez un tee 10 cm devant la balle (cote cible). Votre objectif : frapper la balle ET le tee. Si vous touchez le tee, votre point bas est au bon endroit.</p>
+  <p><span class="good">Exercice de la serviette :</span> placez une serviette 5 cm derriere la balle. Si vous frappez la serviette en premier, c'est que le club remonte avant la balle (flip). Vous devez eviter la serviette et toucher la balle proprement.</p>
+  <p><span class="good">Demi-swings avec fer 8 :</span> faites des demi-swings en vous concentrant uniquement sur le contact balle-gazon. Ecoutez le son : "clic" puis leger bruissement du gazon = parfait.</p>
+  <p><span class="good">Le badge du gant :</span> le logo de votre gant (main droite, gaucher) pointe vers le sol a l'impact, puis tourne lentement vers la cible. Il ne pointe JAMAIS vers le ciel a l'impact.</p>
+</div>
+
+<!-- ===== LEXIQUE ===== -->
+<div class="vocab">
+  <b>Lexique specifique aux fers :</b><br>
+  <b>Compression</b> = la balle est "ecrasee" entre la face du club et le sol. C'est ce qui donne la trajectoire tendue et le backspin (rotation arriere) aux fers.<br>
+  <b>Shaft lean</b> = inclinaison du manche vers la cible a l'impact. Aux fers, il doit etre positif (6-12°). C'est la marque d'une bonne frappe.<br>
+  <b>Lag</b> = l'angle conserve entre le bras et le shaft pendant la descente. Plus on garde le lag, plus on a de puissance a l'impact.<br>
+  <b>Casting</b> = perdre le lag trop tot en relachant les poignets des le debut de la descente. Comme si on lancait une canne a peche. Perte de puissance et de precision.<br>
+  <b>Divot</b> = morceau de gazon arrache apres l'impact. Avec un fer, le divot doit commencer APRES la position initiale de la balle.<br>
+  <b>De-loft</b> = reduire le loft effectif du club en penchant le manche vers l'avant. Un fer 7 (34°) avec 8° de shaft lean frappe comme un club a 26°.<br>
+  <b>Angle d'attaque</b> = l'angle avec lequel le club arrive sur la balle. Negatif = descendant (bon pour les fers). Positif = montant (bon pour le driver).
+</div>
+
+<div class="sources">
+  Sources : HackMotion, Golf Insider UK, The Left Rough, RotarySwing, Golf Smart Academy
+</div>
+
+</body>
+</html>
