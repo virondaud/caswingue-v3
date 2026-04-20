@@ -7206,7 +7206,6 @@ function playing(){
     </div>
     <div class="hpb"><div class="hpf" style="width:${pct}%"></div></div>
     <div class="f12 tm tc" style="margin-bottom:10px">${hn} trou${hn!==1?'s':''} joué${hn!==1?'s':''} sur 18</div>
-    ${(function(){try{return renderPlayingNotebookCard(g.courseId,hn);}catch(e){console.warn('notebook card err',e);return '<div class="card" style="background:#fee2e2;color:#991b1b;padding:8px">❌ Carnet : '+e.message+'</div>';}})()}
     ${gameStatus(g,pls,hole,hn)}
     ${g.gameType==='loup'?loupPickUI(g,pls,hn):''}
     <div class="card"><div class="ct">Scores — Trou ${hn+1}</div>
@@ -7214,9 +7213,9 @@ function playing(){
     </div>
     ${g.gameType==='bbb'?bbbUI(g,pls,hn):''}
   </div>
+  ${renderNotebookFab(g.courseId,hn)}
   <div class="navbar">
     <button class="btn bo mb0" style="width:auto;padding:11px 12px" onclick="prevH()" ${hn===0?'disabled style="opacity:.35"':''}>‹</button>
-    <button class="btn bo mb0" style="width:auto;padding:11px 10px;font-size:18px" onclick="openHoleEdit('${g.courseId}',${hn})" title="Carnet de parcours">📓</button>
     <button class="btn bo mb0" style="width:auto;padding:11px 10px;font-size:18px;background:rgba(22,163,74,.15);color:#16a34a" onclick="openAdvisorFromGame()" title="Quel club ?">🎯</button>
     <button class="btn bo mb0" style="width:auto;padding:11px 10px;font-size:18px" onclick="go('scorecard')" title="Carte de score">📊</button>
     <div class="hctr" style="flex:1;text-align:center"><span style="display:inline-flex;align-items:center;justify-content:center;min-width:36px;height:36px;padding:0 10px;border-radius:18px;background:#1f2937;color:rgba(255,255,255,.9);font-weight:800;font-size:16px">${hn+1}</span></div>
@@ -11165,6 +11164,20 @@ function deleteHoleNote(){
     S._noteForm=null;
     render();
   });
+}
+
+// FAB flottant (bottom-right) pour ouvrir/éditer les notes du trou courant
+function renderNotebookFab(courseId,holeIdx){
+  var note=getHoleNote(courseId,holeIdx);
+  var hasNote=!!note && (note.strategy||note.notes||note.type||note.difficulty||(note.teeShot&&(note.teeShot.targetDistance||(note.teeShot.dangers&&note.teeShot.dangers.length)||note.teeShot.usualClub))||(note.approach&&(note.approach.strategy||note.approach.usualClub)));
+  var title=hasNote?'Voir / modifier mes notes':'Ajouter mes notes pour ce trou';
+  return '<button class="nb-fab" onclick="openHoleEdit(\''+courseId+'\','+holeIdx+')" title="'+esc(title)+'" '+
+    'style="position:fixed;bottom:72px;right:18px;z-index:50;width:54px;height:54px;border-radius:50%;'+
+    'background:#0891b2;color:#fff;border:none;box-shadow:0 4px 14px rgba(8,145,178,.45);cursor:pointer;'+
+    'display:flex;align-items:center;justify-content:center;font-size:22px">'+
+    '✏️'+
+    (hasNote?'<span style="position:absolute;top:4px;right:4px;width:12px;height:12px;border-radius:50%;background:#16a34a;border:2px solid #fff"></span>':'')+
+    '</button>';
 }
 
 // Rend une carte compacte « Mes notes de ce trou » dans la vue Playing.
