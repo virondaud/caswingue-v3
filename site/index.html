@@ -3123,6 +3123,9 @@ function clubNantesView(){
       <div class="rules-title">Golf Club de Nantes</div>
       <div class="rules-sub">Vigneux-de-Bretagne — Fondé en 1921</div>
     </div>
+    <input type="hidden" id="gcn_date" value="${new Date(Date.now()+3*86400000).toISOString().slice(0,10)}">
+    <input type="hidden" id="gcn_time" value="09:00">
+    ${render7dayPicker('Nantes Vigneux','gcn_date','gcn_time')}
     ${nt('<img src="'+ASSETS["app_waze"]+'" width="28" height="28" style="border-radius:6px">','Y aller avec Waze','Itinéraire vers le Golf Club de Nantes','https://waze.com/ul?ll=47.290906,-1.699960&navigate=yes&z=15','linear-gradient(135deg,#33ccff,#00aaff)')}
 
     <div class="sec-lbl mt8">📱 Accès rapide</div>
@@ -3147,9 +3150,6 @@ function clubNantesView(){
     ${nt('✉️','Envoyer un email','accueil@golfclubdenantes.com','mailto:accueil@golfclubdenantes.com','linear-gradient(135deg,#8b6f3a,#b8956a)')}
     ${nt('📘','Page Facebook','Actualités & photos du club','https://www.facebook.com/golfclubdenantes/','linear-gradient(135deg,#a6894f,#c8a96e)')}
 
-    <input type="hidden" id="gcn_date" value="${new Date(Date.now()+3*86400000).toISOString().slice(0,10)}">
-    <input type="hidden" id="gcn_time" value="09:00">
-    ${render7dayPicker('Nantes Vigneux','gcn_date','gcn_time')}
     <div class="card mt8" style="border-left:4px solid #25D366">
       <div class="ct">📲 Prévenir les copains</div>
       <div class="fg mb8">
@@ -4165,15 +4165,15 @@ function bookingDetailView(){
       <div class="rules-title">${esc(c.name)}</div>
       <div class="rules-sub">Réserver un départ</div>
     </div>
+    <input type="hidden" id="inv_date" value="${defaultDate}">
+    <input type="hidden" id="inv_time" value="09:00">
+    ${render7dayPicker(c.name,'inv_date','inv_time')}
     ${bk.length?`<div class="card mt8">
       <div class="ct">⛳ Options de réservation</div>
       <div class="f g8" style="flex-direction:column">
         ${(()=>{const cl=clubLogo(c.name);return bk.map(b=>`<a ${calAttrs(b.url)} style="text-decoration:none;display:flex;align-items:center;gap:12px;padding:10px 8px;border-radius:10px;margin-bottom:4px;background:#f8fafc">${favi(b.url,'🔗',32,bookIcon(b.url)||cl)}<div style="flex:1;font-weight:700;font-size:14px;color:#1e293b">${b.label}</div><div style="color:${b.color};font-size:18px">›</div></a>`).join('');})()}
       </div>
     </div>`:`<div class="empty" style="padding:32px 0"><div class="ei">🔗</div>Pas de lien de réservation disponible pour ce parcours.</div>`}
-    <input type="hidden" id="inv_date" value="${defaultDate}">
-    <input type="hidden" id="inv_time" value="09:00">
-    ${render7dayPicker(c.name,'inv_date','inv_time')}
     <div class="card mt8" style="border-left:4px solid #25D366">
       <div class="ct">📲 Prévenir les copains</div>
       <div class="fg mb8">
