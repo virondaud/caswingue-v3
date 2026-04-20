@@ -7620,6 +7620,13 @@ function gameStatus(g,pls,hole,hn){
 function fourballStatus(g,pls,hn){
   if(hn===0)return`<div class="card"><p class="f13 tm tc">4 Ball Aggregate — chacun joue sa balle, on additionne les nets ! 🧩</p></div>`;
   return teamStatusCard(g,pls,hn,'🧩','#be185d',`4 Ball Aggregate · ${hn} trou${hn>1?'s':''}`);}
+// Gradient HSL vert→amber→rouge pour un diff vs par (clamp ±6)
+function diffColorHSL(d){
+  var c=Math.max(-6,Math.min(6,d));
+  return 'hsl('+(60-c*10)+',72%,42%)';
+}
+function fmtDiff(d){return d===0?'E':(d>0?'+'+d:String(d));}
+
 function runTotals(g,pls,hn){
   if(hn===0)return`<div class="card"><p class="f13 tm tc">Premier trou — bonne chance ! 🍀</p></div>`;
   const course=cById(g.courseId);
@@ -7637,14 +7644,7 @@ function runTotals(g,pls,hn){
     }
     return{gr,net,pts,parPlayed,diff:gr-parPlayed,diffNet:net-parPlayed};
   });
-  const fmtDiff=(d)=>d===0?'E':(d>0?'+'+d:String(d));
-  // Gradient HSL : vert sombre (-6 ou mieux) → amber (par) → rouge (+6 ou pire)
-  // Hue 120° (vert) à 0° (rouge), stepping par unité de diff.
-  const diffColor=(d)=>{
-    var c=Math.max(-6,Math.min(6,d));
-    var hue=60-c*10; // -6→120, 0→60, +6→0
-    return 'hsl('+hue+',72%,42%)';
-  };
+  // Utilise les helpers globaux diffColorHSL + fmtDiff
   const refDiff=(t)=>g.useHandicap?t.diffNet:t.diff;
   return`<div class="card"><div class="ct">${hn} trou${hn>1?'s':''} joués</div>
     ${pls.map((p,pi)=>{
@@ -7652,7 +7652,7 @@ function runTotals(g,pls,hn){
       if(!t.gr)return`<div class="sr"><div class="f fc g8" style="flex:1">
         <div class="av avs" style="background:${gc(pi)};color:#fff">${ini(p.name)}</div><span class="fw7">${esc(p.name)}</span></div>
         <span class="f12 tm">–</span></div>`;
-      const col=diffColor(refDiff(t));
+      const col=diffColorHSL(refDiff(t));
       if(g.gameType==='stableford'){
         return`<div class="sr"><div class="f fc g8" style="flex:1">
           <div class="av avs" style="background:${gc(pi)};color:#fff">${ini(p.name)}</div><span class="fw7">${esc(p.name)}</span></div>
@@ -7667,7 +7667,7 @@ function runTotals(g,pls,hn){
         <div class="av avs" style="background:${gc(pi)};color:#fff">${ini(p.name)}</div><span class="fw7">${esc(p.name)}</span></div>
         <div style="text-align:right">
           <div class="f13 fw7">Brut ${t.gr}${g.useHandicap?' · Net '+t.net:''} <span style="color:${col};font-weight:800">${fmtDiff(refDiff(t))}</span></div>
-          ${g.useHandicap?`<div class="f11 tm">Brut diff <span style="color:${diffColor(t.diff)}">${fmtDiff(t.diff)}</span></div>`:''}
+          ${g.useHandicap?`<div class="f11 tm">Brut diff <span style="color:${diffColorHSL(t.diff)}">${fmtDiff(t.diff)}</span></div>`:''}
         </div>
       </div>`;
     }).join('')}
@@ -7772,12 +7772,17 @@ function nassauStatus(g,pls,hn){const ns=g.nassauState;if(!ns)return'';
     </div>`).join('')}
   </div>`}
 function npStatus(g,pls){const np=g.neufptsState;if(!np)return'';
+  // Classement : 1er vert, 2e amber, 3e rouge (gestion ex-aequo : même couleur)
+  const allPts=pls.map((_,pi)=>np.points[pi]||0);
+  const sorted=[...new Set(allPts)].sort((a,b)=>b-a); // pts uniques du plus haut au plus bas
+  const rankColors=['hsl(120,72%,42%)','hsl(45,85%,48%)','hsl(0,72%,48%)']; // green, amber, red
+  const colorFor=(pts)=>{const r=sorted.indexOf(pts);return rankColors[Math.min(r,2)]||'#64748b';};
   return`<div class="gsc" style="background:#3730a3"><div class="gsci">🎯</div>
     <div><div class="gscl">9 Points</div><div class="gscn">5 – 3 – 1</div></div>
   </div><div class="card"><div class="ct">Points cumulés</div>
-    ${pls.map((p,pi)=>{const pts=np.points[pi]||0;return`<div class="sr">
+    ${pls.map((p,pi)=>{const pts=np.points[pi]||0;const col=colorFor(pts);return`<div class="sr">
       <div class="f fc g8"><div class="av avs" style="background:${gc(pi)};color:#fff">${ini(p.name)}</div><span class="fw7">${esc(p.name)}</span></div>
-      <span class="fw7" style="font-size:18px;color:var(--gold)">${pts} pts</span>
+      <span class="fw7" style="font-size:16px;background:${col};color:#fff;padding:4px 12px;border-radius:14px">${pts} pts</span>
     </div>`}).join('')}
   </div>`}
 function bbbStatus(g,pls){const bbs=g.bbbState;if(!bbs)return'';
@@ -7863,7 +7868,7 @@ function meilleurscoreStatus(g,pls,hn){
   const onTrack=margin>=0;
   return`<div class="gsc" style="background:#0891b2"><div class="gsci">🎯</div>
     <div style="flex:1"><div class="gscl">Nico Score · ${hn} trou${hn>1?'s':''} / ${totalHoles}</div>
-    <div class="gscn">${teamTotal} coup${teamTotal>1?'s':''} · ${diff===0?'Au par':diff>0?'+'+diff:diff} / par</div>
+    <div class="gscn">${teamTotal} coup${teamTotal>1?'s':''} <span style="background:${diffColorHSL(diff)};color:#fff;padding:2px 8px;border-radius:10px;font-size:12px;margin-left:4px">${fmtDiff(diff)} par</span></div>
     <div class="gscs" style="color:${onTrack?'#a7f3d0':'#fca5a5'}">
       Objectif ${obj>0?'+':''}${obj} : ${onTrack?'✅ En avance de '+margin+' coup'+(margin>1?'s':''):'⚠️ En retard de '+Math.abs(margin)+' coup'+(Math.abs(margin)>1?'s':'')}
     </div></div>
@@ -7882,11 +7887,11 @@ function meilleurscoreStatus(g,pls,hn){
         <div class="f11 tm">Objectif</div>
       </div>
       <div style="text-align:center;flex:1">
-        <div class="fw8 f14" style="color:${onTrack?'#16a34a':'#dc2626'}">${diff>0?'+':''}${diff}</div>
+        <div class="fw8 f14" style="color:${diffColorHSL(diff)}">${fmtDiff(diff)}</div>
         <div class="f11 tm">Actuel / par</div>
       </div>
       <div style="text-align:center;flex:1">
-        <div class="fw8 f14" style="color:${projDiff<=obj?'#16a34a':'#dc2626'}">${projDiff>0?'+':''}${projDiff}</div>
+        <div class="fw8 f14" style="color:${diffColorHSL(projDiff)}">${fmtDiff(projDiff)}</div>
         <div class="f11 tm">Projection</div>
       </div>
     </div>
@@ -7946,9 +7951,10 @@ function teamStatusCard(g,pls,hn,icon,color,title){
         <div><div class="gscl">${title}</div><div class="gscn">${esc(r.tName)} : ${r.pts} pts</div></div></div>`;
     }
     const scoreDisp=r.useNet?`Brut ${r.tot} · Net ${r.net}`:`${r.tot} coup${r.tot>1?'s':''}`;
+    const _d1=r.useNet?(r.net-r.par):r.diff;
     return`<div class="gsc" style="background:${color}"><div class="gsci">${icon}</div>
-      <div><div class="gscl">${title}</div><div class="gscn">${esc(r.tName)} : ${scoreDisp}</div>
-      <div class="gscs">${r.diff===0?'Au par':r.diff>0?'+'+r.diff+' / par':r.diff+' / par'}${r.useNet?' (net)':''}</div></div></div>`;}
+      <div><div class="gscl">${title}</div><div class="gscn">${esc(r.tName)} : ${scoreDisp} <span style="background:${diffColorHSL(_d1)};color:#fff;padding:2px 8px;border-radius:10px;font-size:12px;margin-left:4px">${fmtDiff(_d1)}</span></div>
+      <div class="gscs">${r.useNet?'Net vs par':'vs par'}${r.useNet?' · Brut diff '+fmtDiff(r.diff):''}</div></div></div>`;}
   // 2 teams
   const [rA,rB]=rows;
   let lead,margin,leadTxt;
@@ -7964,14 +7970,16 @@ function teamStatusCard(g,pls,hn,icon,color,title){
   return`<div class="gsc" style="background:${color}"><div class="gsci">${icon}</div>
     <div style="flex:1"><div class="gscl">${title}</div><div class="gscn">${leadTxt}</div></div></div>
   <div class="card">
-    ${rows.map((r,ti)=>`<div class="sr">
+    ${rows.map((r,ti)=>{
+      const _d=r.useNet?(r.net-r.par):r.diff;
+      return`<div class="sr">
       <div class="f fc g8"><div class="av avs" style="background:${ti===0?color:'#059669'};color:#fff">${String.fromCharCode(65+ti)}</div>
         <span class="fw7">${esc(r.tName)}</span></div>
       <div style="text-align:right">
-        ${isFbStbl?`<div class="fw7 f14">${r.pts} pts</div>`:`<div class="fw7 f14">${r.useNet?`Net ${r.net}`:`${r.tot||'–'} coups`}</div>
-        <div class="f11 tm">${r.useNet?`Brut ${r.tot} · `:''}${r.diff===0?'Au par':r.diff>0?'+'+r.diff:r.diff} / par</div>`}
+        ${isFbStbl?`<div class="fw7 f14">${r.pts} pts</div>`:`<div class="fw7 f14">${r.useNet?`Net ${r.net}`:`${r.tot||'–'} coups`} <span style="background:${diffColorHSL(_d)};color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px">${fmtDiff(_d)}</span></div>
+        <div class="f11 tm">${r.useNet?`Brut ${r.tot} · ${fmtDiff(r.diff)} par`:'vs par'}</div>`}
       </div>
-    </div>`).join('')}
+    </div>`;}).join('')}
   </div>`;}
 function scrambleStatus(g,pls,hn){
   if(hn===0)return`<div class="card"><p class="f13 tm tc">Scramble — tous jouent, on retient le meilleur coup ! 🍀</p></div>`;
