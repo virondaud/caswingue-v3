@@ -3153,6 +3153,11 @@ function clubNantesView(){
     <div class="card mt8" style="border-left:4px solid #25D366">
       <div class="ct">📲 Prévenir les copains</div>
       <div class="fg mb8">
+        <label class="lbl">Affiner l'heure de départ (optionnel)</label>
+        <input type="time" class="inp" id="gcn_time_refine" value="09:00" onchange="document.getElementById('gcn_time').value=this.value">
+        <div class="f11 tm" style="margin-top:4px">La météo du widget est basée sur le créneau sélectionné (7h-19h tous les 2h)</div>
+      </div>
+      <div class="fg mb8">
         <label class="lbl">Message personnalisé (optionnel)</label>
         <input type="text" class="inp" id="gcn_msg" placeholder="Ex : Après on mange au club !">
       </div>
@@ -3938,6 +3943,28 @@ function render7dayPicker(courseName,dateInputId,timeInputId){
   var geo=courseGeo(courseName);
   if(!geo)return ''; // pas de GPS = pas de widget
   var slot='fc-'+Math.random().toString(36).slice(2,8);
+  // CSS adaptatif injecté 1x par document (pour responsive iPhone/Mac fenêtre étroite)
+  if(!document.getElementById('wx-grid-css')){
+    var st=document.createElement('style');st.id='wx-grid-css';
+    st.textContent=
+      '.wx-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}'+
+      '.wx-card{min-width:0;overflow:hidden;border-radius:8px;padding:5px 2px;text-align:center;'+
+      '  cursor:pointer;font-family:inherit;background:#fff;border:2px solid #e2e8f0}'+
+      '.wx-card.sel{background:#f0fdf4;border-color:#16a34a}'+
+      '.wx-l{font-size:9px;font-weight:700;color:#64748b;line-height:1.1;white-space:nowrap}'+
+      '.wx-d{font-size:9px;color:#334155;line-height:1.1;margin-bottom:1px;white-space:nowrap}'+
+      '.wx-i{font-size:18px;line-height:1;margin:1px 0}'+
+      '.wx-t{font-size:11px;font-weight:700;color:#dc2626;line-height:1.1;white-space:nowrap}'+
+      '.wx-tm{font-size:9px;color:#64748b;line-height:1.1}'+
+      '.wx-p{font-size:9px;line-height:1.2;white-space:nowrap}'+
+      '.wx-wind{font-size:8px;color:#64748b;line-height:1.1;white-space:nowrap}'+
+      '@media (min-width:480px){'+
+      '  .wx-card{padding:7px 3px}'+
+      '  .wx-l{font-size:10px}.wx-d{font-size:11px}.wx-i{font-size:22px}'+
+      '  .wx-t{font-size:12px}.wx-tm{font-size:10px}.wx-p{font-size:10px}.wx-wind{font-size:10px}'+
+      '}';
+    document.head.appendChild(st);
+  }
   // Footer discret : 3 liens externes (on reprend courseMeteoUrls)
   var mu=courseMeteoUrls(courseName);
   var footer=
@@ -3973,8 +4000,8 @@ function renderDayGrid(slotId,courseName,dateInputId,timeInputId){
   var d=fc.daily;
   var selectedDate=document.getElementById(dateInputId)?.value||'';
   var selectedTime=document.getElementById(timeInputId)?.value||'';
-  // Grille jours : grid 7 colonnes qui s'étirent pour s'adapter à toutes les largeurs
-  var html='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:2px 0">';
+  // Grille jours : classes CSS responsives (cf. #wx-grid-css)
+  var html='<div class="wx-grid">';
   for(var i=0;i<d.time.length;i++){
     var dt=new Date(d.time[i]+'T12:00:00');
     var isSel=d.time[i]===selectedDate;
@@ -3983,14 +4010,13 @@ function renderDayGrid(slotId,courseName,dateInputId,timeInputId){
     var tmin=Math.round(d.temperature_2m_min[i]);
     var precip=Math.round(d.precipitation_probability_max[i]||0);
     var dayKey=d.time[i];
-    html+='<button type="button" onclick="selectForecastDay(\''+slotId+'\',\''+dayKey+'\')" '+
-      'style="background:'+(isSel?'#f0fdf4':'#fff')+';border:2px solid '+(isSel?'#16a34a':'#e2e8f0')+';border-radius:10px;padding:6px 2px;text-align:center;cursor:pointer;font-family:inherit;min-width:0;overflow:hidden">'+
-      '<div style="font-size:10px;color:#64748b;font-weight:700">'+jours[dt.getDay()]+'</div>'+
-      '<div style="font-size:10px;color:#334155;margin-bottom:2px">'+dt.getDate()+'/'+(dt.getMonth()+1)+'</div>'+
-      '<div style="font-size:20px;margin:2px 0;line-height:1">'+icon+'</div>'+
-      '<div style="font-size:11px;font-weight:700;color:#dc2626">'+tmax+'°</div>'+
-      '<div style="font-size:10px;color:#64748b">'+tmin+'°</div>'+
-      '<div style="font-size:9px;color:'+(precip>30?'#0891b2':'#94a3b8')+';margin-top:1px">'+precip+'%</div>'+
+    html+='<button type="button" onclick="selectForecastDay(\''+slotId+'\',\''+dayKey+'\')" class="wx-card'+(isSel?' sel':'')+'">'+
+      '<div class="wx-l">'+jours[dt.getDay()]+'</div>'+
+      '<div class="wx-d">'+dt.getDate()+'/'+(dt.getMonth()+1)+'</div>'+
+      '<div class="wx-i">'+icon+'</div>'+
+      '<div class="wx-t">'+tmax+'°</div>'+
+      '<div class="wx-tm">'+tmin+'°</div>'+
+      '<div class="wx-p" style="color:'+(precip>30?'#0891b2':'#94a3b8')+'">'+precip+'%</div>'+
     '</button>';
   }
   html+='</div>';
@@ -4012,7 +4038,7 @@ function renderHourlyStrip(fc,dateStr,selectedTime,slotId){
   var lbl=formatDayLabel(dateStr);
   var html='<div style="margin-top:10px;padding-top:10px;border-top:1px dashed #cbd5e1">';
   html+='<div style="font-size:11px;color:#64748b;margin-bottom:6px;font-weight:700">'+lbl+' — horaires</div>';
-  html+='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">';
+  html+='<div class="wx-grid">';
   hours.forEach(function(h){
     // Find hour index in fc.hourly.time
     var target=dateStr+'T'+String(h).padStart(2,'0')+':00';
@@ -4033,13 +4059,12 @@ function renderHourlyStrip(fc,dateStr,selectedTime,slotId){
     var icon=idx>=0?wmoIcon(fc.hourly.weather_code[idx]):'–';
     var timeStr=String(h).padStart(2,'0')+':00';
     var isSel=selectedTime===timeStr;
-    html+='<button type="button" onclick="selectForecastHour(\''+slotId+'\',\''+timeStr+'\')" '+
-      'style="background:'+(isSel?'#f0fdf4':'#fff')+';border:2px solid '+(isSel?'#16a34a':'#e2e8f0')+';border-radius:10px;padding:6px 2px;text-align:center;cursor:pointer;font-family:inherit;min-width:0;overflow:hidden">'+
-      '<div style="font-size:11px;font-weight:700;color:#334155">'+h+'h</div>'+
-      '<div style="font-size:17px;margin:2px 0;line-height:1">'+icon+'</div>'+
-      '<div style="font-size:11px;font-weight:700;color:#dc2626">'+temp+'°</div>'+
-      '<div style="font-size:9px;color:#64748b">💨'+wind+'</div>'+
-      '<div style="font-size:9px;color:'+(precip>30?'#0891b2':'#94a3b8')+'">'+precip+'%</div>'+
+    html+='<button type="button" onclick="selectForecastHour(\''+slotId+'\',\''+timeStr+'\')" class="wx-card'+(isSel?' sel':'')+'">'+
+      '<div class="wx-l">'+h+'h</div>'+
+      '<div class="wx-i">'+icon+'</div>'+
+      '<div class="wx-t">'+temp+'°</div>'+
+      '<div class="wx-wind">💨'+wind+'</div>'+
+      '<div class="wx-p" style="color:'+(precip>30?'#0891b2':'#94a3b8')+'">'+precip+'%</div>'+
     '</button>';
   });
   html+='</div></div>';
@@ -4067,6 +4092,9 @@ function selectForecastHour(slotId,timeStr){
   var courseName=el.dataset.course;
   var inp=document.getElementById(timeInputId);
   if(inp){inp.value=timeStr;inp.dispatchEvent(new Event('change'));}
+  // Synchronise le champ "Affiner l'heure" si présent (suffixe _refine)
+  var refineInp=document.getElementById(timeInputId+'_refine');
+  if(refineInp)refineInp.value=timeStr;
   renderDayGrid(slotId,courseName,dateInputId,timeInputId);
 }
 function courseGeo(name){
@@ -4148,6 +4176,11 @@ function bookingDetailView(){
     ${render7dayPicker(c.name,'inv_date','inv_time')}
     <div class="card mt8" style="border-left:4px solid #25D366">
       <div class="ct">📲 Prévenir les copains</div>
+      <div class="fg mb8">
+        <label class="lbl">Affiner l'heure de départ (optionnel)</label>
+        <input type="time" class="inp" id="inv_time_refine" value="09:00" onchange="document.getElementById('inv_time').value=this.value">
+        <div class="f11 tm" style="margin-top:4px">La météo du widget est basée sur le créneau sélectionné (7h-19h tous les 2h)</div>
+      </div>
       <div class="fg mb8">
         <label class="lbl">Message personnalisé (optionnel)</label>
         <input type="text" class="inp" id="inv_msg" placeholder="Ex : Après on mange ensemble !">
