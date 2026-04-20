@@ -4000,22 +4000,21 @@ function renderDayGrid(slotId,courseName,dateInputId,timeInputId){
   var d=fc.daily;
   var selectedDate=document.getElementById(dateInputId)?.value||'';
   var selectedTime=document.getElementById(timeInputId)?.value||'';
-  // Grille jours : classes CSS responsives (cf. #wx-grid-css)
+  // Grille jours : structure identique aux cartes horaires (5 lignes)
   var html='<div class="wx-grid">';
   for(var i=0;i<d.time.length;i++){
     var dt=new Date(d.time[i]+'T12:00:00');
     var isSel=d.time[i]===selectedDate;
     var icon=wmoIcon(d.weather_code[i]);
     var tmax=Math.round(d.temperature_2m_max[i]);
-    var tmin=Math.round(d.temperature_2m_min[i]);
+    var wind=Math.round(d.wind_speed_10m_max[i]);
     var precip=Math.round(d.precipitation_probability_max[i]||0);
     var dayKey=d.time[i];
     html+='<button type="button" onclick="selectForecastDay(\''+slotId+'\',\''+dayKey+'\')" class="wx-card'+(isSel?' sel':'')+'">'+
-      '<div class="wx-l">'+jours[dt.getDay()]+'</div>'+
-      '<div class="wx-d">'+dt.getDate()+'/'+(dt.getMonth()+1)+'</div>'+
+      '<div class="wx-l">'+jours[dt.getDay()]+' '+dt.getDate()+'/'+(dt.getMonth()+1)+'</div>'+
       '<div class="wx-i">'+icon+'</div>'+
       '<div class="wx-t">'+tmax+'°</div>'+
-      '<div class="wx-tm">'+tmin+'°</div>'+
+      '<div class="wx-wind">💨'+wind+'</div>'+
       '<div class="wx-p" style="color:'+(precip>30?'#0891b2':'#94a3b8')+'">'+precip+'%</div>'+
     '</button>';
   }
