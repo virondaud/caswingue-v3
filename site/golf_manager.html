@@ -12319,11 +12319,6 @@ function renderHoleMapFullscreen(){
   html+='</div>';
   // Container image + SVG (flex-grow pour remplir tout l'espace dispo)
   html+='<div style="flex:1;min-height:0;width:100%;max-width:700px;margin:0 auto;display:flex;align-items:center;justify-content:center;overflow:auto">';
-  // Bandeau d'instruction en mode placement
-  if(st.placeMode){
-    var lbl=st.placeMode==='tee'?'🚩 Tape sur le départ jaune':'⛳ Tape sur le centre du green';
-    html+='<div style="background:#f59e0b;color:#0f172a;padding:8px 14px;border-radius:8px;margin-bottom:6px;font-size:13px;font-weight:700;text-align:center;max-width:700px;margin-left:auto;margin-right:auto;width:100%">'+lbl+'</div>';
-  }
   html+='<div id="hm-wrap" style="position:relative;display:inline-block;line-height:0;max-width:100%'+(st.placeMode?';cursor:crosshair':'')+'"'+(st.placeMode?' onclick="handleImgTap(event)"':'')+'>';
   html+='<img id="hm-img" src="'+safeSrc+'" alt="Carte trou" style="display:block;max-width:100%;max-height:82vh;width:auto;height:auto;background:#fff;border-radius:6px" onload="onHoleMapImgLoad()" onerror="this.style.display=\'none\';document.getElementById(\'hm-err\').style.display=\'block\'">';
   html+='<div id="hm-err" style="display:none;color:#fca5a5;padding:20px;text-align:center;font-size:12px">Image introuvable :<br>'+safeSrc+'</div>';
