@@ -10861,12 +10861,19 @@ function seedDemoDataV3(){
     profile:{
       version:1,
       handedness:'left',
-      tendencies:{drive:'straight',irons:'unknown',putting:'unknown',missDirection:'left'},
-      strengths:['wedges'],
-      weaknesses:['driver_pressure','long_irons'],
+      // Inventé en cohérence : pull aux fers (même sens de miss que le drive),
+      // putting plutôt long (style agressif = tend à dépasser)
+      tendencies:{drive:'straight',irons:'pull',putting:'long',missDirection:'left'},
+      // Inventé : wedges (donné) + mental (style agressif/challenging) + short_game (cohérent avec bons wedges)
+      strengths:['wedges','short_game','mental'],
+      // Inventé : driver_pressure + long_irons (donnés) + bunker (typique index 16) + long_putts (putting long = manque de contrôle longues distances)
+      weaknesses:['driver_pressure','long_irons','bunker','long_putts'],
       style:'aggressive',
       notes:"Gaucher. Drive droit mais pas très long (~190m). Tendance draw sinon. Miss en slice à gauche (slice de gaucher). Jeu à ¾ de coup à encourager. Challenging, pas toujours raisonnable."
     },
+    // Étalonnage putting : intérieur pied donné (4m), autres inventés
+    // cohérents (écarts typiques entre les 3 amplitudes)
+    puttCal:{inside:4,outside:7,outside1:12},
     clubs:[
       {id:'drv',name:'Driver',icon:'🏌️',full:190,threeQ:null,half:null},
       {id:'b5',name:'Bois 5',icon:'🪵',full:160,threeQ:null,half:null},
