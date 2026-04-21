@@ -11354,6 +11354,28 @@ var CADDY_RULES=[
     say:function(ctx){return '🧠 Reviens aux bases : grip, posture, alignement. Une routine complète avant chaque coup.';}
   },
 
+  // ── Chemin de club : draw & fade ──
+  {id:'path_draw_lefty',skill:'prebrief',priority:5,
+    when:function(ctx){return ctx.profile && ctx.profile.handedness==='left' && ctx.profile.tendencies && ctx.profile.tendencies.drive==='draw' && ctx.currentHole.idx===0;},
+    say:function(ctx){return '↩️ Draw gaucher : chemin in-to-out (club vient de l\'intérieur, sort vers la droite de la cible), face légèrement fermée par rapport au chemin. Balle part droite et revient.';}
+  },
+  {id:'path_fade_lefty',skill:'prebrief',priority:5,
+    when:function(ctx){return ctx.profile && ctx.profile.handedness==='left' && ctx.profile.tendencies && ctx.profile.tendencies.drive==='fade' && ctx.currentHole.idx===0;},
+    say:function(ctx){return '↪️ Fade gaucher : chemin out-to-in (club vient de l\'extérieur, sort vers la gauche de la cible), face légèrement ouverte par rapport au chemin. Balle part gauche et revient.';}
+  },
+  {id:'path_antislice_lefty',skill:'prebrief',priority:6,
+    when:function(ctx){return ctx.profile && ctx.profile.handedness==='left' && ctx.profile.tendencies && ctx.profile.tendencies.missDirection==='left' && (ctx.currentHole.idx===3 || ctx.currentHole.idx===10);},
+    say:function(ctx){return '🛠️ Anti-slice gaucher : sens le club partir de l\'intérieur (in-to-out), relâche les mains pour fermer la face. Si la balle part à gauche, c\'est que la face est ouverte au contact.';}
+  },
+  {id:'path_draw_righty',skill:'prebrief',priority:5,
+    when:function(ctx){return ctx.profile && ctx.profile.handedness!=='left' && ctx.profile.tendencies && ctx.profile.tendencies.drive==='draw' && ctx.currentHole.idx===0;},
+    say:function(ctx){return '↪️ Draw droitier : chemin in-to-out (club vient de l\'intérieur, sort vers la droite de la cible), face légèrement fermée par rapport au chemin. Balle part droite et revient.';}
+  },
+  {id:'path_fade_righty',skill:'prebrief',priority:5,
+    when:function(ctx){return ctx.profile && ctx.profile.handedness!=='left' && ctx.profile.tendencies && ctx.profile.tendencies.drive==='fade' && ctx.currentHole.idx===0;},
+    say:function(ctx){return '↩️ Fade droitier : chemin out-to-in (club vient de l\'extérieur, sort vers la gauche de la cible), face légèrement ouverte par rapport au chemin. Balle part gauche et revient.';}
+  },
+
   // ── Pré-coup : direction de dispersion vs dangers ──
   // Priorité sur missDirection (= où ta balle va si tu rates)
   {id:'miss_right_danger_right',skill:'prebrief',priority:9,
