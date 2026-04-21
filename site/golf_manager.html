@@ -12550,7 +12550,7 @@ function renderNotebookFab(courseId,holeIdx){
     caddyBar+='<button type="button" onclick="event.stopPropagation();S.caddyBarOpen='+(!cdOpen)+';render()" style="width:100%;background:transparent;border:none;padding:6px 14px;display:flex;align-items:center;gap:8px;cursor:pointer;color:#166534;font-size:12px;font-weight:700;font-family:inherit">';
     caddyBar+='<span>🎩 Caddy</span>';
     caddyBar+='<span style="background:#16a34a;color:#fff;border-radius:10px;padding:1px 8px;font-size:10px">'+n+'</span>';
-    caddyBar+='<span style="margin-left:auto;font-size:16px">'+cdChev+'</span>';
+    caddyBar+='<span style="margin-left:auto;font-size:20px">'+cdChev+'</span>';
     caddyBar+='</button>';
     if(cdOpen){
       caddyBar+='<div style="padding:4px 14px 8px">';
@@ -12566,10 +12566,10 @@ function renderNotebookFab(courseId,holeIdx){
     mapButtons+
     // (Présentation du parcours accessible via le carnet général, pas pendant la partie)
     '<button type="button" onclick="S.nbDrawerOpen='+(!open)+';render()" '+
-    'style="width:100%;background:transparent;border:none;padding:8px 14px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;font-family:inherit">'+
-    '<span style="font-size:14px">'+(hasNote?'✏️':'📓')+'</span>'+
-    '<span style="color:#0891b2;font-weight:700;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:65vw">'+esc(headerText)+'</span>'+
-    '<span style="color:#0891b2;font-size:14px;line-height:1">'+chev+'</span>'+
+    'style="width:100%;background:transparent;border:none;padding:10px 14px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;font-family:inherit">'+
+    '<span style="font-size:18px">'+(hasNote?'✏️':'📓')+'</span>'+
+    '<span style="color:#0891b2;font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:65vw">'+esc(headerText)+'</span>'+
+    '<span style="color:#0891b2;font-size:26px;line-height:1">'+chev+'</span>'+
     '</button>'+
     body+
     '</div>';
