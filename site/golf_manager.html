@@ -10925,7 +10925,8 @@ function seedDemoDataV3(){
           {type:'green_left',distance:255,coords:{lat:47.29312844,lng:-1.70254038},label:'bord gauche green'},
           {type:'green_right',distance:264,coords:{lat:47.29325092,lng:-1.70252588},label:'bord droit green'},
           {type:'fairway_corner',distance:215,coords:{lat:47.29336328,lng:-1.70112747},label:'angle fairway'},
-          {type:'bunker_c',distance:268,coords:{lat:47.29327271,lng:-1.70259307},label:'avant bunker fond (milieu)'}
+          {type:'bunker_c',distance:268,coords:{lat:47.29327271,lng:-1.70259307},label:'avant bunker fond (milieu)'},
+          {type:'aim_target',distance:243,coords:{lat:47.29334052,lng:-1.70195163},label:'visée idéale (cap 325°)'}
         ],
         usualClub:''
       },
@@ -11541,7 +11542,8 @@ var DANGER_TYPES=[
   {key:'green_left',label:'Bord gauche green'},
   {key:'green_right',label:'Bord droit green'},
   {key:'layup',label:'Zone de lay-up'},
-  {key:'fairway_corner',label:'Angle de fairway'}
+  {key:'fairway_corner',label:'Angle de fairway'},
+  {key:'aim_target',label:'Visée idéale'}
 ];
 var APPROACH_STRATEGIES=[
   {key:'direct',label:'🎯 Direct — viser le drapeau'},
@@ -12245,6 +12247,7 @@ function drawHoleMapOverlay(){
       if(t.indexOf('green_')===0)return '#10b981';
       if(t==='layup')return '#8b5cf6';
       if(t==='fairway_corner')return '#64748b';
+      if(t==='aim_target')return '#ec4899';
       return '#dc2626';
     })(d.type);
     out+='<circle cx="'+p.x+'" cy="'+p.y+'" r="18" fill="'+color+'" fill-opacity="0.35" stroke="'+color+'" stroke-width="3"/>';
@@ -12264,6 +12267,7 @@ function drawHoleMapOverlay(){
       if(t.indexOf('green_')===0)return '#10b981';
       if(t==='layup')return '#8b5cf6';
       if(t==='fairway_corner')return '#64748b';
+      if(t==='aim_target')return '#ec4899';
       return '#dc2626';
     })(d.type);
     out+='<circle cx="'+p.x+'" cy="'+p.y+'" r="18" fill="'+color+'" fill-opacity="0.35" stroke="'+color+'" stroke-width="3"/>';
@@ -12273,6 +12277,13 @@ function drawHoleMapOverlay(){
       out+='<text x="'+p.x+'" y="'+(p.y+36)+'" text-anchor="middle" fill="#fff" font-size="13" font-weight="700" font-family="Inter,sans-serif">'+d.distance+'m</text>';
     }
   });
+  // Flèche tee → visée idéale (si présente)
+  var aim=((note.dangers||[]).concat((note.teeShot&&note.teeShot.dangers)||[])).find(function(d){return d.type==='aim_target'&&d.coords;});
+  if(aim){
+    var ap=gpsToPx(aim.coords.lat,aim.coords.lng,tee,green,cal);
+    out+='<defs><marker id="arrowAim" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#ec4899"/></marker></defs>';
+    out+='<line x1="'+cal.teePx.x+'" y1="'+cal.teePx.y+'" x2="'+ap.x+'" y2="'+ap.y+'" stroke="#ec4899" stroke-width="4" stroke-dasharray="0" opacity="0.85" marker-end="url(#arrowAim)"/>';
+  }
   // Marqueur tee (par-dessus)
   out+='<circle cx="'+cal.teePx.x+'" cy="'+cal.teePx.y+'" r="14" fill="#16a34a" stroke="#fff" stroke-width="3"/>';
   out+='<text x="'+cal.teePx.x+'" y="'+(cal.teePx.y+5)+'" text-anchor="middle" fill="#fff" font-size="14" font-weight="900" font-family="Inter,sans-serif">T</text>';
