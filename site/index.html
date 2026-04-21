@@ -4075,7 +4075,7 @@ function renderDayGrid(slotId,courseName,dateInputId,timeInputId){
 function renderHourlyStrip(fc,dateStr,selectedTime,slotId){
   if(!fc.hourly||!fc.hourly.time)return '';
   // Slots : 7h, 9h, 11h, 13h, 15h, 17h, 19h
-  var hours=[7,9,11,13,15,17,19];
+  var hours=[8,9,10,12,14,16,18];
   var lbl=formatDayLabel(dateStr);
   var html='<div style="margin-top:10px;padding-top:10px;border-top:1px dashed #cbd5e1">';
   html+='<div style="font-size:11px;color:#64748b;margin-bottom:6px;font-weight:700">'+lbl+' — horaires</div>';
