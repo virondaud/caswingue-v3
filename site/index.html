@@ -10861,11 +10861,11 @@ function seedDemoDataV3(){
     profile:{
       version:1,
       handedness:'left',
-      tendencies:{drive:'draw',irons:'unknown',putting:'unknown'},
-      strengths:[],
-      weaknesses:[],
+      tendencies:{drive:'straight',irons:'unknown',putting:'unknown',missDirection:'right'},
+      strengths:['wedges'],
+      weaknesses:['driver_pressure','long_irons'],
       style:'aggressive',
-      notes:"Gaucher. Jeu à ¾ de coup à encourager. Challenging, pas toujours raisonnable."
+      notes:"Gaucher. Drive droit mais pas très long (~190m). Tendance draw sinon. Miss en slice à droite. Jeu à ¾ de coup à encourager. Challenging, pas toujours raisonnable."
     },
     clubs:[
       {id:'drv',name:'Driver',icon:'🏌️',full:190,threeQ:null,half:null},
@@ -11005,12 +11005,17 @@ var CADDY_WEAKNESSES=[
 function getPlayerProfile(p){
   if(!p.profile)p.profile={
     version:1,
-    tendencies:{drive:'unknown',irons:'unknown',putting:'unknown'},
+    handedness:'right',
+    tendencies:{drive:'unknown',irons:'unknown',putting:'unknown',missDirection:'unknown'},
     strengths:[],
     weaknesses:[],
     style:'balanced',
     notes:''
   };
+  // Migration : ajoute les champs manquants si profil ancien
+  if(!p.profile.handedness)p.profile.handedness='right';
+  if(!p.profile.tendencies)p.profile.tendencies={drive:'unknown',irons:'unknown',putting:'unknown',missDirection:'unknown'};
+  if(!p.profile.tendencies.missDirection)p.profile.tendencies.missDirection='unknown';
   return p.profile;
 }
 
@@ -11031,11 +11036,29 @@ function renderProfileModal(p){
   html+='<div style="font-weight:800;font-size:17px;margin-bottom:4px">🎩 Profil de jeu</div>';
   html+='<div class="f11 tm" style="margin-bottom:12px">'+esc(p.name)+' · Index '+p.index+'</div>';
 
+  // Main
+  html+='<div class="lbl">🖐 Main dominante</div>';
+  html+='<div class="f g8 mb8">';
+  ['right','left'].forEach(function(h){
+    var lbl={right:'Droitier',left:'Gaucher'}[h];
+    var sel=f.handedness===h;
+    html+='<button type="button" class="btn bsm mb0" style="flex:1;padding:10px;'+(sel?'background:#16a34a;color:#fff;border:none':'background:#fff;color:#64748b;border:1px solid #cbd5e1')+'" onclick="S._profileForm.handedness=\''+h+'\';reopenProfileModal()">'+lbl+'</button>';
+  });
+  html+='</div>';
+
   // Tendances
-  html+='<div class="lbl">🏌️ Tendance au drive</div>';
+  html+='<div class="lbl">🏌️ Tendance au drive (forme visée)</div>';
   html+='<select class="inp mb8" onchange="S._profileForm.tendencies.drive=this.value">';
-  [['unknown','— Non défini —'],['straight','Droit'],['fade','Fade / push (droite)'],['draw','Draw / pull (gauche)']].forEach(function(o){
+  [['unknown','— Non défini —'],['straight','Droit'],['fade','Fade (courbure contrôlée)'],['draw','Draw (courbure contrôlée)']].forEach(function(o){
     html+='<option value="'+o[0]+'"'+(f.tendencies.drive===o[0]?' selected':'')+'>'+o[1]+'</option>';
+  });
+  html+='</select>';
+
+  // Direction de dispersion (miss)
+  html+='<div class="lbl">🎯 Direction de dispersion quand tu rates</div>';
+  html+='<select class="inp mb8" onchange="S._profileForm.tendencies.missDirection=this.value">';
+  [['unknown','— Non défini —'],['left','À gauche'],['right','À droite'],['both','Des deux côtés'],['short','Trop court'],['long','Trop long']].forEach(function(o){
+    html+='<option value="'+o[0]+'"'+(f.tendencies.missDirection===o[0]?' selected':'')+'>'+o[1]+'</option>';
   });
   html+='</select>';
 
@@ -11267,14 +11290,23 @@ function getCaddyContext(g,courseId,holeIdx){
 }
 
 var CADDY_RULES=[
-  // ── Pré-coup : tendance + direction dangers ──
-  {id:'fade_dangers_right',skill:'prebrief',priority:8,
-    when:function(ctx){return ctx.profile.tendencies.drive==='fade' && ctx.courseNote?.teeShot?.dangers?.some(function(d){return d.type.endsWith('_r');});},
-    say:function(ctx){return '⚠️ Tu tends à fader, or les dangers sont à droite. Vise plus à gauche ou prends un club plus court.';}
+  // ── Pré-coup : direction de dispersion vs dangers ──
+  // Priorité sur missDirection (= où ta balle va si tu rates)
+  {id:'miss_right_danger_right',skill:'prebrief',priority:9,
+    when:function(ctx){return ctx.profile.tendencies.missDirection==='right' && ctx.courseNote?.teeShot?.dangers?.some(function(d){return d.type.endsWith('_r');});},
+    say:function(ctx){return '⚠️ Tu disperses à droite quand tu rates, et il y a un piège à droite. Vise plus à gauche ou prends un club plus court pour éviter.';}
   },
-  {id:'draw_dangers_left',skill:'prebrief',priority:8,
-    when:function(ctx){return ctx.profile.tendencies.drive==='draw' && ctx.courseNote?.teeShot?.dangers?.some(function(d){return d.type.endsWith('_l');});},
-    say:function(ctx){return '⚠️ Tu tends à drawer, or les dangers sont à gauche. Vise plus à droite ou prends un club plus court.';}
+  {id:'miss_left_danger_left',skill:'prebrief',priority:9,
+    when:function(ctx){return ctx.profile.tendencies.missDirection==='left' && ctx.courseNote?.teeShot?.dangers?.some(function(d){return d.type.endsWith('_l');});},
+    say:function(ctx){return '⚠️ Tu disperses à gauche quand tu rates, et il y a un piège à gauche. Vise plus à droite ou prends un club plus court pour éviter.';}
+  },
+  {id:'miss_both_any_danger',skill:'prebrief',priority:7,
+    when:function(ctx){return ctx.profile.tendencies.missDirection==='both' && ctx.courseNote?.teeShot?.dangers?.length>0;},
+    say:function(ctx){return '⚠️ Dispersion bilatérale — vise le milieu du fairway, sécurité avant distance.';}
+  },
+  {id:'miss_short_long_par',skill:'prebrief',priority:6,
+    when:function(ctx){return (ctx.profile.tendencies.missDirection==='short'||ctx.profile.tendencies.missDirection==='long') && (ctx.currentHole.par===3 || ctx.courseNote?.teeShot?.targetDistance);},
+    say:function(ctx){var dir=ctx.profile.tendencies.missDirection==='short'?'court':'long';return '⚠️ Tu rates souvent '+dir+' — prends '+(dir==='court'?'un club de plus':'un club de moins')+' par sécurité.';}
   },
   // ── Forme basse = conseil conservateur ──
   {id:'low_form_simplify',skill:'prebrief',priority:6,
