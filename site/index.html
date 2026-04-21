@@ -12206,37 +12206,25 @@ function setHoleMapZoom(delta){
 function applyHoleMapZoom(){
   var st=S._holeMap;if(!st)return;
   var img=document.getElementById('hm-img');
-  var svg=document.getElementById('hm-svg');
   var wrap=document.getElementById('hm-wrap');
-  if(!img||!wrap)return;
+  if(!img||!wrap||!img.naturalWidth)return;
   var z=st.zoom||1;
-  // Au zoom 1 : image à sa taille max (max-width:100%; max-height:82vh).
-  // Au zoom >1 : on force width en px pour activer le scroll du conteneur.
-  if(z===1){
-    img.style.width='';
-    img.style.height='';
-    img.style.maxWidth='100%';
-    img.style.maxHeight='82vh';
-    wrap.style.width='';
-    wrap.style.height='';
-  }else{
-    // Prendre la taille actuelle rendue comme base et multiplier
-    var baseW=img.naturalWidth;
-    var baseH=img.naturalHeight;
-    // On limite la base à la taille d'affichage à zoom 1
-    var maxDispW=Math.min(document.documentElement.clientWidth-20,700);
-    var ratio=Math.min(maxDispW/baseW, (window.innerHeight*0.82)/baseH);
-    if(ratio>1)ratio=1;
-    var w=Math.round(baseW*ratio*z);
-    var h=Math.round(baseH*ratio*z);
-    img.style.maxWidth='none';
-    img.style.maxHeight='none';
-    img.style.width=w+'px';
-    img.style.height=h+'px';
-    wrap.style.width=w+'px';
-    wrap.style.height=h+'px';
-  }
-  // Le SVG suit automatiquement via width:100%;height:100% du wrap
+  var baseW=img.naturalWidth;
+  var baseH=img.naturalHeight;
+  // Taille de base à zoom 1 : contrainte par la viewport (max width 700 ou screen, max height 82vh)
+  var maxDispW=Math.min(document.documentElement.clientWidth-20,700);
+  var maxDispH=window.innerHeight*0.78;
+  var ratio=Math.min(maxDispW/baseW, maxDispH/baseH);
+  if(ratio>1)ratio=1;
+  var w=Math.round(baseW*ratio*z);
+  var h=Math.round(baseH*ratio*z);
+  img.style.maxWidth='none';
+  img.style.maxHeight='none';
+  img.style.width=w+'px';
+  img.style.height=h+'px';
+  wrap.style.maxWidth='none';
+  wrap.style.width=w+'px';
+  wrap.style.height=h+'px';
   var btn=document.getElementById('hm-zoom-lbl');
   if(btn)btn.textContent=z.toFixed(1)+'×';
 }
@@ -12576,12 +12564,12 @@ function renderNotebookFab(courseId,holeIdx){
   return '<div class="nb-drawer" style="position:sticky;bottom:60px;z-index:35;background:var(--card);border-top:1px solid var(--gray);box-shadow:0 -2px 10px rgba(0,0,0,.04)">'+
     caddyBar+
     mapButtons+
-    (hasOv?'<a href="javascript:void(0)" onclick="event.stopPropagation();openCourseOverviewEdit(\''+courseId+'\')" style="display:block;padding:6px 14px 0;font-size:11px;color:#0891b2;text-decoration:none;font-weight:600">📖 Consignes du parcours ›</a>':'')+
+    // (Présentation du parcours accessible via le carnet général, pas pendant la partie)
     '<button type="button" onclick="S.nbDrawerOpen='+(!open)+';render()" '+
-    'style="width:100%;background:transparent;border:none;padding:10px 14px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;font-family:inherit">'+
-    '<span style="font-size:18px">'+(hasNote?'✏️':'📓')+'</span>'+
-    '<span style="color:#0891b2;font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:65vw">'+esc(headerText)+'</span>'+
-    '<span style="color:#0891b2;font-size:28px;line-height:1">'+chev+'</span>'+
+    'style="width:100%;background:transparent;border:none;padding:8px 14px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;font-family:inherit">'+
+    '<span style="font-size:14px">'+(hasNote?'✏️':'📓')+'</span>'+
+    '<span style="color:#0891b2;font-weight:700;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:65vw">'+esc(headerText)+'</span>'+
+    '<span style="color:#0891b2;font-size:14px;line-height:1">'+chev+'</span>'+
     '</button>'+
     body+
     '</div>';
