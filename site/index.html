@@ -10917,8 +10917,8 @@ function seedDemoDataV3(){
         targetDistance:190,
         landingZone:'left',
         dangers:[
-          {type:'bunker_r',distance:200},
-          {type:'trees_l',distance:150}
+          {type:'bunker_r',distance:197,coords:{lat:47.29315584,lng:-1.70121443},label:'entrée bunker droite'},
+          {type:'trees_l',distance:153,coords:{lat:47.29274749,lng:-1.70112695},label:'angle dog-leg gauche (forêt)'}
         ],
         usualClub:''
       },
@@ -10932,7 +10932,8 @@ function seedDemoDataV3(){
       notes:'',
       coordsTee:{lat:47.29155674,lng:-1.70008861},
       coordsGreen:{lat:47.29318071,lng:-1.70251479},
-      mapImage:''
+      mapImage:'https://www.golfclubdenantes.com/wp-content/uploads/2018/04/t1-e1534516114822.png',
+      officialUrl:'https://www.golfclubdenantes.com/parcours/trou-1/'
     };
   }
 
@@ -11774,7 +11775,8 @@ function openHoleEdit(courseId,holeIdx){
     coordsTeeLng:(note.coordsTee&&note.coordsTee.lng)||(note.coords&&note.coords.lng)||'',
     coordsGreenLat:(note.coordsGreen&&note.coordsGreen.lat)||'',
     coordsGreenLng:(note.coordsGreen&&note.coordsGreen.lng)||'',
-    mapImage:note.mapImage||''
+    mapImage:note.mapImage||'',
+    officialUrl:note.officialUrl||''
   };
   renderHoleEditModal(c,hole);
 }
@@ -11888,7 +11890,9 @@ function renderHoleEditModal(course,hole){
   html+='<div class="f11 tm" style="margin-bottom:8px">💡 Clic-droit sur Google Maps → « Quelles sont ces coordonnées ? »</div>';
   html+='<div class="lbl">🖼️ Image carte du trou (URL ou chemin)</div>';
   html+='<input type="text" class="inp mb8" value="'+esc(f.mapImage||'')+'" placeholder="ex: pages/hole-maps/vigneux/h1.jpg" onchange="S._noteForm.mapImage=this.value">';
-  html+='<div class="f11 tm">Schéma / extrait du carnet du club, JPG ou PNG.</div>';
+  html+='<div class="f11 tm" style="margin-bottom:8px">Schéma / extrait du carnet du club, JPG ou PNG.</div>';
+  html+='<div class="lbl">🏌️ Fiche officielle du club (URL)</div>';
+  html+='<input type="url" class="inp mb8" value="'+esc(f.officialUrl||'')+'" placeholder="ex: https://www.golfclubdenantes.com/parcours/trou-1/" onchange="S._noteForm.officialUrl=this.value">';
   html+='</div>';
 
   // Notes libres
@@ -11958,7 +11962,8 @@ function saveHoleNoteFromForm(){
     notes:f.notes,
     coordsTee:(f.coordsTeeLat&&f.coordsTeeLng)?{lat:f.coordsTeeLat,lng:f.coordsTeeLng}:null,
     coordsGreen:(f.coordsGreenLat&&f.coordsGreenLng)?{lat:f.coordsGreenLat,lng:f.coordsGreenLng}:null,
-    mapImage:f.mapImage||''
+    mapImage:f.mapImage||'',
+    officialUrl:f.officialUrl||''
   };
   saveHoleNote(f.courseId,f.holeIdx,entry);
   document.getElementById('nb-mo')?.remove();
@@ -12042,6 +12047,9 @@ function renderHoleMapButtons(courseId,holeIdx){
   }
   if(hasImage){
     btns+='<button class="btn bsm mb0" style="flex:1;min-width:100px;background:#f0fdf4;color:#166534;font-size:11px;padding:6px 4px" onclick="event.stopPropagation();openHoleMapFullscreen(\''+courseId+'\','+holeIdx+')">🖼️ Carte trou</button>';
+  }
+  if(note.officialUrl){
+    btns+='<a href="'+esc(note.officialUrl)+'" target="_blank" rel="noopener" class="btn bsm mb0" style="flex:1;min-width:100px;text-decoration:none;background:#fce7f3;color:#9d174d;font-size:11px;text-align:center;padding:6px 4px" onclick="event.stopPropagation()">🏌️ Fiche club</a>';
   }
   btns+='</div>';
   return compass+btns;
