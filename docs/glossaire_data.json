@@ -1,0 +1,232 @@
+{
+  "meta": {
+    "title": "Comprendre le développement",
+    "subtitle": "Glossaire des termes techniques que tu entendras quand on travaille ensemble",
+    "author": "Virondaud",
+    "hero_image": "/Users/mathieuvirondaud/claude/golf/ça_swingue/site/assets/images/swingue.jpg"
+  },
+  "sections": [
+    {
+      "num": 1,
+      "title": "Ce qui concerne l'application",
+      "intro": "Ces mots parlent de ce que ton app SAIT FAIRE pour l'utilisateur.",
+      "color": "E6F4EA",
+      "hue": "green",
+      "terms": [
+        { "emoji": "🎯", "term": "Feature", "english": "fonctionnalité",
+          "definition": "Une capacité précise que l'app fournit. Une chose qu'un utilisateur peut faire avec.",
+          "example": "« Partager sa partie en direct via Firebase » est une feature. « Club Advisor » est une autre feature. Tu peux ajouter des features une par une." },
+        { "emoji": "📱", "term": "PWA", "english": "Progressive Web App",
+          "definition": "Une app web qui s'installe comme une vraie app (icône sur l'écran d'accueil, fonctionne offline, ressemble à une app native) mais sans passer par l'App Store.",
+          "example": "Ça Swingue Manager est une PWA. Tu l'as installée en tapant « Partager → Ajouter à l'écran d'accueil » depuis Safari." },
+        { "emoji": "💾", "term": "localStorage", "english": "stockage local (navigateur)",
+          "definition": "Un espace mémoire de 5-10 Mo dans le navigateur où l'app range ses données (clé → valeur). Accessible uniquement sur ton appareil, perdu si tu vides les caches du navigateur.",
+          "example": "Tes scores, joueurs, parcours sont dans le localStorage. Les clés sont gm_c (courses), gm_p (players), gm_h (history), etc." },
+        { "emoji": "🗄", "term": "IndexedDB", "english": "base de données locale",
+          "definition": "Version améliorée du localStorage : 50-250 Mo, structure en tables (stores), recherches par index. Utile quand on a beaucoup de données.",
+          "example": "On n'en utilise pas encore dans Ça Swingue v2. Dans v3, on la prévoyait pour stocker le cache des cartes satellite et les GPS de greens (qu'on a finalement retirés du pré-travail)." }
+      ]
+    },
+    {
+      "num": 2,
+      "title": "Ce qui concerne le code",
+      "intro": null,
+      "color": "FEF3C7",
+      "hue": "yellow",
+      "terms": [
+        { "emoji": "📄", "term": "HTML", "english": "HyperText Markup Language",
+          "definition": "Le langage qui décrit la STRUCTURE d'une page web (titres, paragraphes, boutons).",
+          "example": "golf_manager.html est un fichier HTML. Il contient tout le texte et la structure de Ça Swingue." },
+        { "emoji": "🎨", "term": "CSS", "english": "Cascading Style Sheets",
+          "definition": "Le langage qui décrit l'APPARENCE (couleurs, tailles, positions).",
+          "example": "Les fonds verts, les cartes arrondies, les boutons de Ça Swingue — tout ça, c'est du CSS. Il est mélangé avec le HTML dans golf_manager.html." },
+        { "emoji": "⚙️", "term": "JavaScript (JS)", "english": "langage de programmation navigateur",
+          "definition": "Le langage qui fait AGIR la page : calculer les scores, envoyer sur Firebase, réagir aux clics. Tout ce qui n'est pas statique.",
+          "example": "Les 15 formats de jeu, le Club Advisor, le partage live — 100% JavaScript. Écrit dans golf_manager.html." },
+        { "emoji": "🟦", "term": "TypeScript (TS)", "english": "JS avec types",
+          "definition": "JavaScript avec des types en plus (nombres, textes, listes...) pour détecter les erreurs avant de tourner. Tout TS est compilé en JS avant d'être exécuté.",
+          "example": "On envisageait d'utiliser TypeScript pour ça_swingue 4 (le projet fusion) pour plus de fiabilité. Ça_swingue v2 et v3 restent en JavaScript pur." },
+        { "emoji": "📦", "term": "Module ES", "english": "morceau de code réutilisable",
+          "definition": "Un fichier JS qu'on peut importer dans un autre fichier JS. Au lieu d'avoir 10 000 lignes dans un seul fichier, on le découpe en modules logiques (un par responsabilité).",
+          "example": "On avait créé 6 modules (geo.js, idb-wrapper.js, etc.) pour v3 puis supprimés par YAGNI (pas encore utilisés)." },
+        { "emoji": "📝", "term": "Markdown (.md)", "english": "format texte balisé léger",
+          "definition": "Format de fichier texte qui utilise quelques symboles simples pour la mise en forme : # pour un titre, ** pour gras, - pour une liste, ``` pour du code. Lisible tel quel et convertible en HTML/PDF/Word. Standard d'écriture technique (GitHub, documentation, slash commands Claude Code).",
+          "example": "Le fichier ~/.claude/commands/glossaire.md qu'on vient de créer est en Markdown — c'est lui qui définit le comportement du slash command /glossaire. Les README.md de tes projets golf sont aussi du Markdown." },
+        { "emoji": "🗃", "term": "Source unique de vérité", "english": "Single Source of Truth (SSOT)",
+          "definition": "Principe d'architecture : une seule donnée existe à un seul endroit. Si tu veux la modifier, tu édites CE fichier — et rien d'autre. Tout le reste (autres formats, exports, affichages) est régénéré depuis cette source. Évite les incohérences et les oublis de synchro.",
+          "example": "Pour ton glossaire, glossaire_data.json est la source unique de vérité. Les fichiers .docx et .html ne sont jamais édités à la main — ils sont générés depuis le JSON." },
+        { "emoji": "⚗️", "term": "Générateur", "english": "script de génération",
+          "definition": "Petit programme qui LIT des données structurées (JSON, YAML, base de données…) et PRODUIT un fichier dans un format cible (Word, HTML, PDF, image…). On peut avoir plusieurs générateurs qui partent de la même source pour produire plusieurs formats de sortie.",
+          "example": "Tu as deux générateurs : generate_glossaire_dev.py (produit le .docx pour lecture confortable) et generate_glossaire_html.py (produit le .html pour recherche rapide sur iPhone). Les deux lisent le même JSON." },
+        { "emoji": "🔌", "term": "API", "english": "Application Programming Interface",
+          "definition": "« Prise de courant » numérique qui permet à une app d'accéder aux services d'une autre sans avoir à coder le service soi-même. Tu envoies une requête avec des paramètres, tu reçois une réponse structurée (souvent en JSON). Les API sont partout : météo, cartes, paiement, IA, bases de données en ligne.",
+          "example": "Ça Swingue utilise l'API openmeteo (récupérer la météo en temps réel), l'API Firebase (partage live des parties entre joueurs), et l'API Claude (réponses du Club Advisor). Chaque API = un service externe accessible depuis ton code avec une clé d'identification." }
+      ]
+    },
+    {
+      "num": 3,
+      "title": "Git et GitHub — le gestionnaire de versions",
+      "intro": "Git enregistre toutes les modifications du code dans un historique. GitHub héberge cet historique en ligne et le partage.",
+      "color": "DBEAFE",
+      "hue": "blue",
+      "terms": [
+        { "emoji": "📚", "term": "Repo / Repository", "english": "dépôt de code",
+          "definition": "Le dossier complet d'un projet avec tout son historique. Existe en local (sur ton Mac) ET en ligne sur GitHub.",
+          "example": "Ton compte GitHub virondaud a 3 repos liés au golf : caswingue (v2 prod), caswingue-v3 (évolutions), caswinguetest (test)." },
+        { "emoji": "📸", "term": "Commit", "english": "instantané des modifications",
+          "definition": "Une photo figée de ton code à un moment précis, avec un message qui décrit ce qui a changé.",
+          "example": "Chaque fois qu'on corrige un bug, on fait un commit. Ça_swingue v2 a plus de 50 commits d'historique depuis le démarrage." },
+        { "emoji": "📤", "term": "Push", "english": "envoyer",
+          "definition": "Envoyer tes commits locaux vers GitHub pour les publier en ligne.",
+          "example": "Quand tu cliques « Push origin » dans GitHub Desktop, tu pousses tes derniers commits sur caswingue-v3 (par exemple)." },
+        { "emoji": "📥", "term": "Pull", "english": "récupérer",
+          "definition": "Télécharger les commits qui ont été ajoutés en ligne depuis ton dernier push. Utile si tu travailles depuis plusieurs Macs.",
+          "example": "Tu ne pulles pas souvent car tu es seul à pousser. Ça deviendra utile si quelqu'un d'autre contribue (par exemple sur le projet Birdie Club)." },
+        { "emoji": "🌿", "term": "Branch", "english": "branche",
+          "definition": "Une ligne parallèle de développement. Permet de travailler sur une feature sans risquer de casser la version principale.",
+          "example": "On a la branche main (principale). On a brièvement créé « docs/18birdies-recovery-guide » pour un test de PR, puis supprimée." },
+        { "emoji": "🔀", "term": "PR / Pull Request", "english": "demande de fusion",
+          "definition": "Demande formelle de fusionner une branche dans une autre (typiquement une feature dans main). Permet de vérifier le code avant qu'il ne rejoigne le projet principal.",
+          "example": "On a essayé de créer une PR pour tester, mais c'est sur-dimensionné pour un projet solo. On pousse directement sur main." }
+      ]
+    },
+    {
+      "num": 4,
+      "title": "Automatisations et déploiement",
+      "intro": null,
+      "color": "F3E8FF",
+      "hue": "purple",
+      "terms": [
+        { "emoji": "⚙️", "term": "Workflow", "english": "flux de travail auto",
+          "definition": "Une suite d'actions qui se déclenche automatiquement quand un événement se produit. Définie dans un fichier .yml sur GitHub.",
+          "example": "On a un workflow « deploy.yml » qui dit : à chaque push sur main, prends le dossier site/ et publie-le sur GitHub Pages." },
+        { "emoji": "🤖", "term": "CI (Continuous Integration)", "english": "intégration continue",
+          "definition": "Un ensemble de vérifications automatiques qui tournent à chaque modification du code (tests, qualité, compilation...). Évite de casser l'app sans s'en apercevoir.",
+          "example": "On avait un workflow CI (supprimé par YAGNI). Il lancera les tests quand on attaquera les vraies features." },
+        { "emoji": "🚀", "term": "Deploy / Déploiement", "english": "mise en ligne",
+          "definition": "L'action de publier l'app sur un serveur accessible au public.",
+          "example": "Quand le workflow deploy.yml se termine, l'app est accessible à https://virondaud.github.io/caswingue-v3/. Ça prend environ 30 secondes." },
+        { "emoji": "📄", "term": "GitHub Pages", "english": "hébergement GitHub gratuit",
+          "definition": "Un service gratuit de GitHub qui publie n'importe quel repo public comme un site web.",
+          "example": "Ton URL https://virondaud.github.io/caswingue/ est hébergée sur GitHub Pages." }
+      ]
+    },
+    {
+      "num": 5,
+      "title": "Sécurité",
+      "intro": null,
+      "color": "FEE2E2",
+      "hue": "red",
+      "terms": [
+        { "emoji": "🔒", "term": "CSP", "english": "Content Security Policy",
+          "definition": "Une liste de règles qui dit au navigateur : autorise ces sources, refuse les autres. Protège contre les scripts malveillants injectés.",
+          "example": "Dans golf_manager.html v3, il y a une balise meta CSP qui autorise Firebase, openmeteo, unpkg — et bloque tout le reste." },
+        { "emoji": "🔑", "term": "Hash SHA-256", "english": "empreinte numérique",
+          "definition": "Une \"signature\" unique de 64 caractères calculée à partir d'un fichier. Si le fichier change d'un seul octet, l'empreinte change complètement. Permet de vérifier qu'un fichier n'a pas été modifié.",
+          "example": "Dans DEV_STANDARDS on prévoyait de hasher le bundle pour s'assurer qu'un attaquant n'ait pas modifié le code entre le build et le déploiement." },
+        { "emoji": "🔐", "term": "Token / PAT", "english": "jeton d'authentification",
+          "definition": "Un mot de passe numérique à longue durée de vie qui prouve ton identité sur un service (GitHub, Firebase...). Plus pratique qu'un mot de passe mais à protéger soigneusement.",
+          "example": "Pour pousser les workflows GitHub, il fallait un PAT avec le scope « workflow ». Le terminal n'avait pas les bons droits donc on a poussé via GitHub Desktop." }
+      ]
+    },
+    {
+      "num": 6,
+      "title": "Ce qui concerne Claude / l'IA",
+      "intro": null,
+      "color": "FEF3C7",
+      "hue": "yellow",
+      "terms": [
+        { "emoji": "🧠", "term": "Skill", "english": "compétence Claude Code",
+          "definition": "Une commande préprogrammée qu'on tape dans Claude Code (précédée d'un /). L'IA suit un script précis au lieu d'improviser.",
+          "example": "Dans le projet golf-suivi, on a /onboarding, /planifier-seance, /analyser-parcours, /bilan-progression. Tu tapes la commande, Claude suit la checklist associée." },
+        { "emoji": "🤝", "term": "Claude Code", "english": "app IA développeur",
+          "definition": "L'application de bureau ou terminal d'Anthropic qui permet à Claude d'écrire et modifier du code directement dans tes dossiers.",
+          "example": "C'est avec Claude Code que tu travailles en ce moment. Je peux lire tes fichiers, exécuter des commandes bash, modifier du code." },
+        { "emoji": "📝", "term": "Prompt", "english": "consigne donnée à l'IA",
+          "definition": "Ce que tu tapes à Claude pour lui faire faire quelque chose. La qualité du prompt détermine la qualité de la réponse.",
+          "example": "« Fais-moi un Word explicatif avec des couleurs » est un prompt. Plus c'est précis, meilleur est le résultat." },
+        { "emoji": "🎭", "term": "YAGNI", "english": "You Aren't Gonna Need It",
+          "definition": "Principe de développement : « Tu n'en auras pas besoin ». Ne code pas par anticipation des besoins futurs — ajoute les choses quand elles sont vraiment nécessaires. Évite le code dormant.",
+          "example": "On a appliqué YAGNI à ça_swingue 3 : les modules prévus pour 4 futures features ont été supprimés. On les recréera seulement quand on décidera de coder ces features." },
+        { "emoji": "⏰", "term": "Cron", "english": "planificateur de tâches",
+          "definition": "Système historique Unix pour programmer des tâches qui se répètent à intervalle fixe (chaque heure, chaque jour à 20 h, tous les lundis, etc.). La « cron expression » est une syntaxe à 5 champs qui décrit le calendrier.",
+          "example": "Pour le suivi de Sophie, on peut créer un cron « tous les dimanches 20 h » qui réveille Claude pour qu'il fasse le bilan hebdo automatiquement." },
+        { "emoji": "🤖", "term": "Remote agent / Trigger", "english": "instance Claude planifiée",
+          "definition": "Une session Claude qui se lance automatiquement sur un cron, sans que tu aies besoin d'ouvrir l'app toi-même. Créée via le skill schedule. Elle exécute une tâche définie, puis se termine.",
+          "example": "Un remote agent « Sophie — bilan hebdo » peut lire l'export JSON de la semaine, analyser les tendances, te proposer 1-3 ajustements, puis s'arrêter. Résultat dans ta boîte." },
+        { "emoji": "🗂", "term": "Memory (Claude)", "english": "mémoire persistante",
+          "definition": "Fichiers que Claude écrit dans ~/.claude/projects/.../memory/ pour se souvenir entre sessions : profil utilisateur, contexte projet, retours d'expérience. Chaque projet a sa propre mémoire. Tu peux la lire, l'éditer, la supprimer.",
+          "example": "Pour le projet Sophie, j'ai trois fichiers mémoire : profil Mathieu, contexte clinique Sophie, vocabulaire informatique. Ça m'évite de repartir de zéro à chaque conversation." },
+        { "emoji": "📅", "term": "Schedule", "english": "skill de planification Claude",
+          "definition": "Skill Claude qui crée des remote agents (triggers) programmés sur un cron. Une fois configuré, l'agent s'exécute tout seul à l'heure dite, fait sa tâche, envoie le résultat à l'utilisateur — sans qu'il ait à ouvrir Claude. Nécessite une connexion au compte claude.ai.",
+          "example": "On a tenté de créer « Sophie — Bilan hebdo » (dimanche 20h Europe/Paris) qui analyse les 7 derniers jours de Sophie et propose des ajustements. Première tentative a échoué (problème de connexion claude.ai) — à relancer plus tard." }
+      ]
+    },
+    {
+      "num": 10,
+      "title": "Hébergement privé — Mac + Tailscale + iPhone",
+      "intro": "Section ajoutée avec le projet Sophie (PWA de coaching tendinopathie). Tout l'écosystème reste privé : le code tourne sur ton MacBook, les iPhones y accèdent via un VPN personnel (Tailscale), les données de santé restent sur les téléphones. Aucun cloud public (pas GitHub, pas Netlify).",
+      "color": "DBEAFE",
+      "hue": "blue",
+      "terms": [
+        { "emoji": "🌐", "term": "Tailscale", "english": "VPN personnel",
+          "definition": "Service qui crée un réseau privé chiffré entre TES appareils uniquement. Tu installes l'app sur chaque device, tu te connectes avec le même compte, et ils peuvent se voir entre eux comme s'ils étaient sur le même WiFi. Gratuit pour un usage personnel.",
+          "example": "Le MacBook sert l'app Sophie en HTTPS à l'adresse privée macbook-air-de-mathieu.tailb2f8d7.ts.net. Les 2 iPhones y accèdent via Tailscale — personne d'autre au monde ne peut." },
+        { "emoji": "🔐", "term": "WireGuard", "english": "protocole VPN moderne",
+          "definition": "Technologie de chiffrement qui sert de moteur à Tailscale. Elle est rapide, moderne, validée cryptographiquement. Tu n'as pas à la configurer — Tailscale s'en occupe.",
+          "example": "Tu n'interagis jamais avec WireGuard directement. C'est la plomberie invisible qui fait que Tailscale chiffre tout entre tes appareils." },
+        { "emoji": "📡", "term": "MagicDNS", "english": "noms lisibles pour tes machines",
+          "definition": "Fonction Tailscale qui donne à chacun de tes appareils un nom DNS propre, plutôt que d'avoir à retenir des adresses IP. À activer une fois dans l'admin Tailscale.",
+          "example": "Au lieu de taper https://100.108.23.34:443, tu tapes https://macbook-air-de-mathieu.tailb2f8d7.ts.net. Plus parlant, plus stable." },
+        { "emoji": "⚙️", "term": "Service Worker", "english": "script hors-ligne de la PWA",
+          "definition": "Petit programme JavaScript qui tourne en arrière-plan dans le navigateur. Il met en cache tous les fichiers de l'app au premier chargement, ce qui permet à la PWA de fonctionner entièrement hors-ligne ensuite. Pour forcer une mise à jour, on change le numéro de version (« bump »).",
+          "example": "L'app Sophie a un service worker sw.js avec CACHE = 'sophie-v5'. Quand on modifie le code, on passe à v6 — les iPhones téléchargent la nouvelle version au prochain refresh." },
+        { "emoji": "🍎", "term": "HealthKit", "english": "base de données santé Apple",
+          "definition": "Système iOS qui centralise toutes les données de santé (entraînements, pas, sommeil, fréquence cardiaque). Réservé aux apps iOS natives — inaccessible depuis une PWA. Pour y accéder, il faut soit une app native, soit passer par l'app Raccourcis.",
+          "example": "Pour faire remonter les entraînements Apple Watch de Sophie dans l'app Sophie, on a créé un Raccourci iOS qui lit HealthKit puis envoie les données à la PWA via une URL." },
+        { "emoji": "🔗", "term": "Raccourcis (Shortcuts)", "english": "automatisation iOS native",
+          "definition": "App native Apple qui permet de créer des automatisations sans coder : lire Santé, envoyer un SMS, ouvrir une URL, appeler une API, chaîner des actions. Les Raccourcis peuvent aussi se déclencher automatiquement (heure, lieu, ouverture d'une app).",
+          "example": "Le Raccourci « Sync Sophie » lit les entraînements du jour dans Santé, les formate en JSON, et ouvre l'URL privée de la PWA pour les importer. Déclenchable manuellement ou chaque soir 21 h." },
+        { "emoji": "🔏", "term": "Certificat HTTPS", "english": "preuve d'authenticité + chiffrement",
+          "definition": "Fichier cryptographique qui (1) atteste qu'un site est bien celui qu'il prétend être, et (2) active le chiffrement HTTPS. Nécessaire pour installer une PWA sur iPhone. Tailscale génère les certificats automatiquement pour tes machines.",
+          "example": "La commande `tailscale cert macbook-air-de-mathieu.tailb2f8d7.ts.net` a créé le certificat HTTPS qui permet à Safari d'accepter l'adresse de ton MacBook comme site sécurisé." }
+      ]
+    }
+  ],
+  "projects_table": {
+    "num": 7,
+    "title": "Comprendre la structure de tes projets",
+    "intro": "Tu as 4 projets golf en parallèle. Voici comment ils s'articulent :",
+    "rows": [
+      ["ça_swingue/", "App v2 en production, stable, utilisée", "🟢 Ne pas toucher"],
+      ["ça_swingue_3/", "Évolutions v2 (4 features prévues)", "🚧 Fondations posées"],
+      ["ça_swingue_4/", "Fusion 3 outils (PWA + Nantes + golf-suivi)", "🎯 Plan écrit, pas démarré"],
+      ["birdie_club/", "App indépendante championnats multi-user", "🆕 Plan écrit, pas démarré"]
+    ],
+    "note": "Chaque projet a sa propre roadmap et sa propre arborescence. Règle d'or : ne jamais modifier un projet depuis un autre (permissions strictes dans les settings.local.json)."
+  },
+  "commands": {
+    "num": 8,
+    "title": "Quelques commandes à connaître",
+    "intro": "Des commandes à taper dans GitHub Desktop ou que tu verras passer dans nos échanges :",
+    "items": [
+      ["📂 Pour lancer ton serveur local", "Double-clic sur Lancer_v3.command", "Ouvre un serveur Python sur le port 8093 pour tester v3 localement"],
+      ["🔄 Pour voir tes commits", "GitHub Desktop → sidebar gauche → History", "Liste tous tes commits avec leurs messages"],
+      ["📤 Pour publier des changements", "GitHub Desktop → Push origin", "Envoie tes commits locaux vers GitHub"],
+      ["👁 Pour voir ton app en prod", "Ouvrir virondaud.github.io/<nom_repo>/", "L'URL publique après déploiement"],
+      ["📊 Pour voir les workflows", "GitHub web → onglet Actions", "Statut des derniers runs (verts/rouges)"]
+    ]
+  },
+  "recap": {
+    "num": 9,
+    "title": "À retenir",
+    "items": [
+      ["🎯 Feature", "pour TOI (l'utilisateur final)"],
+      ["⚙️ Workflow", "pour l'APP (action automatique sur GitHub)"],
+      ["🧠 Skill", "pour CLAUDE (commande IA)"],
+      ["📦 Module", "pour le CODE (bloc réutilisable)"],
+      ["🚀 Deploy", "pour le DÉPLOIEMENT (mise en ligne)"],
+      ["🔒 CSP", "pour la SÉCURITÉ (règles du navigateur)"]
+    ]
+  }
+}
