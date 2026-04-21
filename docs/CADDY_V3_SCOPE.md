@@ -147,6 +147,12 @@ Le caddy respecte ces principes **systématiquement** :
    - Par 4 court (< 280m) : privilégier le placement sur la longueur
    - Règles `strategy_long_par4` / `strategy_short_par4`
 
+6. **Plan en 2 coups** — le caddy construit la stratégie depuis les clubs du joueur :
+   - Exemple : « 290m restant → 2× fer 7 (145m chacun) · Bois 5 (185m) + Wedge (105m) · Hybride 4 (170m) + Fer 9 (125m) »
+   - Fonction `caddyShotCombos(clubs, totalDist, {dangers})` génère les combos + alerte ⚠ si le landing du 1er coup tombe sur un danger du carnet
+   - Règle `shot_plan_par4_5` dans `CADDY_RULES` (priorité 9)
+   - Tri par écart à la cible + malus si danger sur la zone d'atterrissage
+
 ### 🔮 Extension v4 — préférences de jeu enrichies
 
 En v4 (Phase 4b), le caddy exploitera les données accumulées par v3 + dashboards Nantes :
