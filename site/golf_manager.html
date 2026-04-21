@@ -4935,6 +4935,7 @@ function players(){
     <div class="f g8">
       <button class="btn ${meId===p.id?'bp':'bo'} bxs" onclick="toggleMePlayer('${p.id}')" title="${meId===p.id?'Retirer':'Me désigner'}">🙋</button>
       <button class="btn bo bxs" onclick="showGlobalPlayerModal('${p.id}')" title="Code global">${p.globalCode?'🔗':'🆔'}</button>
+      <button class="btn bo bxs" onclick="openPlayerProfile('${p.id}')" title="Profil de jeu">🎩</button>
       <button class="btn bo bxs" onclick="openEditPl('${p.id}')">✏️</button>
       <button class="btn bd bxs" onclick="delPl('${p.id}')">🗑</button>
     </div>
@@ -7192,7 +7193,7 @@ function playing(){
   return`
   <div class="hdr"><button class="back" onclick="go('home')">‹</button>
   <h1 style="font-size:14px">${esc(course.name)} <span style='font-size:11px;opacity:.8'>${g.tee==='jaune'?'🟡':'⬜'}</span></h1>
-  <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><a href="https://18birdies.com" class="ha" title="18Birdies GPS" style="font-size:18px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;text-decoration:none">🐦</a><button class="ha" onclick="shareScores()" style="font-size:20px;width:44px;height:44px">📲</button><button class="ha" onclick="startLiveShare()" title="${DB.game?.liveId?'Rediffuser le lien live':'Démarrer le partage live'}" style="font-size:20px;width:44px;height:44px;${DB.game?.liveId?'background:rgba(22,163,74,.15);color:#16a34a':''}">📡</button><button class="ha" onclick="terminateGame()" title="Terminer la partie" style="font-size:20px;width:44px;height:44px">🏁</button></div></div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><a href="https://18birdies.com" class="ha" title="18Birdies GPS" style="font-size:18px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;text-decoration:none">🐦</a><button class="ha" onclick="openPreRoundModal()" title="Check-in forme / objectif" style="font-size:20px;width:44px;height:44px;${g.checkIn||g.objective?.type&&g.objective.type!=='none'?'background:rgba(22,163,74,.15);color:#16a34a':''}">🎩</button><button class="ha" onclick="shareScores()" style="font-size:20px;width:44px;height:44px">📲</button><button class="ha" onclick="startLiveShare()" title="${DB.game?.liveId?'Rediffuser le lien live':'Démarrer le partage live'}" style="font-size:20px;width:44px;height:44px;${DB.game?.liveId?'background:rgba(22,163,74,.15);color:#16a34a':''}">📡</button><button class="ha" onclick="terminateGame()" title="Terminer la partie" style="font-size:20px;width:44px;height:44px">🏁</button></div></div>
   <div class="content an" style="padding-bottom:100px">
     <div class="hh">
       <div style="font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:.5px">Trou</div>
@@ -10880,6 +10881,408 @@ async function shareGCN(){
   if(window.navigator.standalone){save();location.href=u;}else{window.open(u,'_blank');}
 }
 
+// ══ 🎩 CADDY PRO (v3 MVP) ═════════════════════════════════════════════════
+// Scope : profil durable + check-in forme + objectif + briefing pré-coup + alerte objectif.
+// Voir docs/CADDY_V3_SCOPE.md pour la spec complète.
+
+var CADDY_STRENGTHS=[
+  {key:'driver',label:'Driver'},
+  {key:'long_irons',label:'Longs fers'},
+  {key:'irons',label:'Fers médium'},
+  {key:'wedges',label:'Wedges / approches'},
+  {key:'bunker',label:'Sortie bunker'},
+  {key:'putting',label:'Putting'},
+  {key:'short_putts',label:'Putts courts'},
+  {key:'long_putts',label:'Putts longs'},
+  {key:'short_game',label:'Petit jeu global'},
+  {key:'mental',label:'Mental / constance'},
+  {key:'course_management',label:'Gestion parcours'}
+];
+var CADDY_WEAKNESSES=[
+  {key:'driver_pressure',label:'Driver sous pression'},
+  {key:'long_irons',label:'Longs fers'},
+  {key:'bunker',label:'Bunkers'},
+  {key:'rough',label:'Sortie rough'},
+  {key:'short_putts',label:'Putts courts'},
+  {key:'long_putts',label:'Putts longs'},
+  {key:'approach',label:'Approches lobées'},
+  {key:'tempo',label:'Tempo / swing'},
+  {key:'mental_recovery',label:'Récupération après erreur'},
+  {key:'concentration',label:'Concentration sur 18 trous'}
+];
+
+function getPlayerProfile(p){
+  if(!p.profile)p.profile={
+    version:1,
+    tendencies:{drive:'unknown',irons:'unknown',putting:'unknown'},
+    strengths:[],
+    weaknesses:[],
+    style:'balanced',
+    notes:''
+  };
+  return p.profile;
+}
+
+function openPlayerProfile(playerId){
+  var p=pById(playerId);if(!p)return;
+  S._profileForm=JSON.parse(JSON.stringify(getPlayerProfile(p)));
+  S._profileForm.playerId=playerId;
+  renderProfileModal(p);
+}
+
+function renderProfileModal(p){
+  var f=S._profileForm;if(!f)return;
+  var existing=document.getElementById('prof-mo');if(existing)existing.remove();
+  var div=document.createElement('div');
+  div.id='prof-mo';
+  div.style.cssText='display:flex;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:400;align-items:flex-end';
+  var html='<div style="background:#fff;border-radius:20px 20px 0 0;padding:16px;width:100%;max-height:92vh;overflow-y:auto">';
+  html+='<div style="font-weight:800;font-size:17px;margin-bottom:4px">🎩 Profil de jeu</div>';
+  html+='<div class="f11 tm" style="margin-bottom:12px">'+esc(p.name)+' · Index '+p.index+'</div>';
+
+  // Tendances
+  html+='<div class="lbl">🏌️ Tendance au drive</div>';
+  html+='<select class="inp mb8" onchange="S._profileForm.tendencies.drive=this.value">';
+  [['unknown','— Non défini —'],['straight','Droit'],['fade','Fade / push (droite)'],['draw','Draw / pull (gauche)']].forEach(function(o){
+    html+='<option value="'+o[0]+'"'+(f.tendencies.drive===o[0]?' selected':'')+'>'+o[1]+'</option>';
+  });
+  html+='</select>';
+
+  html+='<div class="lbl">🎯 Tendance aux fers</div>';
+  html+='<select class="inp mb8" onchange="S._profileForm.tendencies.irons=this.value">';
+  [['unknown','— Non défini —'],['straight','Droit'],['push','Push droite'],['pull','Pull gauche']].forEach(function(o){
+    html+='<option value="'+o[0]+'"'+(f.tendencies.irons===o[0]?' selected':'')+'>'+o[1]+'</option>';
+  });
+  html+='</select>';
+
+  html+='<div class="lbl">⛳ Tendance au putting</div>';
+  html+='<select class="inp mb8" onchange="S._profileForm.tendencies.putting=this.value">';
+  [['unknown','— Non défini —'],['accurate','Précis'],['short','Plutôt court'],['long','Plutôt long']].forEach(function(o){
+    html+='<option value="'+o[0]+'"'+(f.tendencies.putting===o[0]?' selected':'')+'>'+o[1]+'</option>';
+  });
+  html+='</select>';
+
+  // Style
+  html+='<div class="lbl">🎨 Style de jeu</div>';
+  html+='<div class="f g8 mb8">';
+  ['conservative','balanced','aggressive'].forEach(function(s){
+    var lbl={conservative:'Conservateur',balanced:'Équilibré',aggressive:'Agressif'}[s];
+    var sel=f.style===s;
+    html+='<button type="button" class="btn bsm mb0" style="flex:1;padding:10px;'+(sel?'background:#16a34a;color:#fff;border:none':'background:#fff;color:#64748b;border:1px solid #cbd5e1')+'" onclick="S._profileForm.style=\''+s+'\';reopenProfileModal()">'+lbl+'</button>';
+  });
+  html+='</div>';
+
+  // Forces
+  html+='<div class="lbl">💪 Tes forces (multi-sélection)</div>';
+  html+='<div class="f g8 mb8" style="flex-wrap:wrap">';
+  CADDY_STRENGTHS.forEach(function(s){
+    var on=f.strengths.indexOf(s.key)>=0;
+    html+='<button type="button" class="btn bxs mb0" style="padding:6px 10px;font-size:11px;'+(on?'background:#dcfce7;color:#166534;border:1px solid #16a34a':'background:#fff;color:#64748b;border:1px solid #cbd5e1')+'" onclick="toggleProfileStrength(\''+s.key+'\')">'+(on?'✓ ':'+ ')+s.label+'</button>';
+  });
+  html+='</div>';
+
+  // Faiblesses
+  html+='<div class="lbl">⚠️ Points à travailler (multi-sélection)</div>';
+  html+='<div class="f g8 mb8" style="flex-wrap:wrap">';
+  CADDY_WEAKNESSES.forEach(function(w){
+    var on=f.weaknesses.indexOf(w.key)>=0;
+    html+='<button type="button" class="btn bxs mb0" style="padding:6px 10px;font-size:11px;'+(on?'background:#fef3c7;color:#92400e;border:1px solid #f59e0b':'background:#fff;color:#64748b;border:1px solid #cbd5e1')+'" onclick="toggleProfileWeakness(\''+w.key+'\')">'+(on?'✓ ':'+ ')+w.label+'</button>';
+  });
+  html+='</div>';
+
+  // Notes
+  html+='<div class="lbl">📝 Notes perso</div>';
+  html+='<textarea class="inp mb8" rows="3" placeholder="Routines, préférences, rappels…" onchange="S._profileForm.notes=this.value">'+esc(f.notes||'')+'</textarea>';
+
+  html+='<div class="f g8 mt8">';
+  html+='<button class="btn bo mb0" style="flex:1" onclick="document.getElementById(\'prof-mo\').remove();S._profileForm=null">Annuler</button>';
+  html+='<button class="btn bp mb0" style="flex:2" onclick="savePlayerProfile()">✅ Enregistrer</button>';
+  html+='</div>';
+  html+='</div>';
+  div.innerHTML=html;
+  document.body.appendChild(div);
+}
+
+function toggleProfileStrength(key){
+  var f=S._profileForm;if(!f)return;
+  var i=f.strengths.indexOf(key);
+  if(i>=0)f.strengths.splice(i,1);else f.strengths.push(key);
+  reopenProfileModal();
+}
+function toggleProfileWeakness(key){
+  var f=S._profileForm;if(!f)return;
+  var i=f.weaknesses.indexOf(key);
+  if(i>=0)f.weaknesses.splice(i,1);else f.weaknesses.push(key);
+  reopenProfileModal();
+}
+function reopenProfileModal(){
+  var f=S._profileForm;if(!f)return;
+  var p=pById(f.playerId);if(!p)return;
+  // Sync notes textarea
+  var t=document.querySelector('#prof-mo textarea');if(t)f.notes=t.value;
+  renderProfileModal(p);
+}
+function savePlayerProfile(){
+  var f=S._profileForm;if(!f)return;
+  var t=document.querySelector('#prof-mo textarea');if(t)f.notes=t.value;
+  var p=pById(f.playerId);if(!p)return;
+  delete f.playerId;
+  p.profile=f;
+  save();
+  document.getElementById('prof-mo')?.remove();
+  S._profileForm=null;
+  render();
+}
+
+// ── Check-in forme + Objectif (skippable) ──
+function openPreRoundModal(){
+  var g=DB.game;if(!g)return;
+  S._preRoundForm={
+    sleep:g.checkIn?.sleep||'',
+    physical:g.checkIn?.physical||0,
+    mental:g.checkIn?.mental||'',
+    warmedUp:g.checkIn?.warmedUp||false,
+    objType:g.objective?.type||'',
+    objTarget:g.objective?.target||'',
+    objPriority:g.objective?.priority||'result'
+  };
+  renderPreRoundModal();
+}
+function renderPreRoundModal(){
+  var f=S._preRoundForm;if(!f)return;
+  var existing=document.getElementById('pr-mo');if(existing)existing.remove();
+  var div=document.createElement('div');
+  div.id='pr-mo';
+  div.style.cssText='display:flex;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:400;align-items:flex-end';
+  var html='<div style="background:#fff;border-radius:20px 20px 0 0;padding:16px;width:100%;max-height:92vh;overflow-y:auto">';
+  html+='<div style="font-weight:800;font-size:17px;margin-bottom:12px">🎩 Check-in avant partie</div>';
+
+  // Sommeil
+  html+='<div class="lbl">😴 Sommeil cette nuit</div>';
+  html+='<div class="f g8 mb8">';
+  [['good','Bon 😊'],['fair','Moyen 😐'],['poor','Mauvais 😴']].forEach(function(o){
+    var sel=f.sleep===o[0];
+    html+='<button type="button" class="btn bsm mb0" style="flex:1;padding:10px;'+(sel?'background:#16a34a;color:#fff;border:none':'background:#fff;color:#64748b;border:1px solid #cbd5e1')+'" onclick="S._preRoundForm.sleep=\''+o[0]+'\';renderPreRoundModal()">'+o[1]+'</button>';
+  });
+  html+='</div>';
+
+  // Physique (étoiles)
+  html+='<div class="lbl">💪 Forme physique</div>';
+  html+='<div class="f g8 mb8">';
+  for(var i=1;i<=5;i++){
+    var sel=f.physical>=i;
+    html+='<button type="button" class="btn bsm mb0" style="flex:1;padding:10px;font-size:20px;'+(sel?'background:#fef3c7;border-color:#f59e0b;color:#92400e':'background:#fff;color:#cbd5e1;border:1px solid #cbd5e1')+'" onclick="S._preRoundForm.physical='+(f.physical===i?0:i)+';renderPreRoundModal()">'+(sel?'⭐':'☆')+'</button>';
+  }
+  html+='</div>';
+
+  // Mental
+  html+='<div class="lbl">🧠 État mental</div>';
+  html+='<div class="f g8 mb8">';
+  [['sharp','Concentré 🎯'],['normal','Normal 🙂'],['distracted','Distrait 😶']].forEach(function(o){
+    var sel=f.mental===o[0];
+    html+='<button type="button" class="btn bsm mb0" style="flex:1;padding:10px;'+(sel?'background:#16a34a;color:#fff;border:none':'background:#fff;color:#64748b;border:1px solid #cbd5e1')+'" onclick="S._preRoundForm.mental=\''+o[0]+'\';renderPreRoundModal()">'+o[1]+'</button>';
+  });
+  html+='</div>';
+
+  // Échauffement
+  html+='<label class="f fc g8 mb8" style="padding:8px;background:#f8fafc;border-radius:8px;cursor:pointer">';
+  html+='<input type="checkbox" '+(f.warmedUp?'checked':'')+' onchange="S._preRoundForm.warmedUp=this.checked" style="width:20px;height:20px;accent-color:#16a34a">';
+  html+='<span class="f13">🔥 Échauffement fait (practice, putting)</span></label>';
+
+  // Objectif
+  html+='<div style="margin-top:14px;padding:10px;background:#f0fdf4;border-radius:10px;border-left:3px solid #16a34a">';
+  html+='<div class="ct" style="margin-bottom:8px;color:#16a34a">🏆 Objectif de la partie</div>';
+  html+='<select class="inp mb8" onchange="S._preRoundForm.objType=this.value">';
+  html+='<option value="">— Pas d\'objectif / juste se faire plaisir —</option>';
+  html+='<option value="stableford"'+(f.objType==='stableford'?' selected':'')+'>🎯 Stableford — cible en points</option>';
+  html+='<option value="netVsPar"'+(f.objType==='netVsPar'?' selected':'')+'>🎯 Net vs Par — cible de diff net</option>';
+  html+='<option value="grossAbs"'+(f.objType==='grossAbs'?' selected':'')+'>🎯 Score brut absolu</option>';
+  html+='<option value="personalBest"'+(f.objType==='personalBest'?' selected':'')+'>🏆 Battre mon record perso</option>';
+  html+='</select>';
+  if(f.objType&&f.objType!=='personalBest'){
+    var lbl=f.objType==='stableford'?'Points visés (ex: 32)':f.objType==='netVsPar'?'Net vs par visé (ex: -5, 0, +3)':'Score brut visé (ex: 90)';
+    html+='<div class="fg mb8"><label class="lbl">'+lbl+'</label>';
+    html+='<input type="number" class="inp" value="'+(f.objTarget||'')+'" onchange="S._preRoundForm.objTarget=parseInt(this.value)||null"></div>';
+  }
+  if(f.objType){
+    html+='<div class="lbl">Priorité</div>';
+    html+='<div class="f g8">';
+    [['result','Résultat 🏆'],['learning','Apprentissage 📚'],['fun','Plaisir 😎']].forEach(function(o){
+      var sel=f.objPriority===o[0];
+      html+='<button type="button" class="btn bsm mb0" style="flex:1;padding:10px;'+(sel?'background:#0891b2;color:#fff;border:none':'background:#fff;color:#64748b;border:1px solid #cbd5e1')+'" onclick="S._preRoundForm.objPriority=\''+o[0]+'\';renderPreRoundModal()">'+o[1]+'</button>';
+    });
+    html+='</div>';
+  }
+  html+='</div>';
+
+  html+='<div class="f g8 mt8">';
+  html+='<button class="btn bo mb0" style="flex:1" onclick="document.getElementById(\'pr-mo\').remove();S._preRoundForm=null">Plus tard</button>';
+  html+='<button class="btn bp mb0" style="flex:2" onclick="savePreRoundForm()">✅ Enregistrer</button>';
+  html+='</div>';
+  html+='</div>';
+  div.innerHTML=html;
+  document.body.appendChild(div);
+}
+function savePreRoundForm(){
+  var f=S._preRoundForm;if(!f)return;
+  var g=DB.game;if(!g)return;
+  if(f.sleep||f.physical||f.mental||f.warmedUp){
+    g.checkIn={sleep:f.sleep,physical:f.physical,mental:f.mental,warmedUp:f.warmedUp,completedAt:Date.now()};
+  }
+  if(f.objType){
+    g.objective={type:f.objType,target:f.objTarget||null,priority:f.objPriority||'result'};
+  }else{
+    g.objective={type:'none'};
+  }
+  save();
+  document.getElementById('pr-mo')?.remove();
+  S._preRoundForm=null;
+  render();
+}
+
+// ── Moteur de règles (simple) ──
+function getCaddyContext(g,courseId,holeIdx){
+  var me=getMePlayer();
+  if(!me||!g)return null;
+  var pi=g.playerIds.indexOf(me.id);
+  var course=cById(courseId);
+  if(!course||!course.holes[holeIdx])return null;
+  var hole=course.holes[holeIdx];
+  var courseNote=getHoleNote(courseId,holeIdx);
+  var profile=getPlayerProfile(me);
+  // Totaux joués
+  var brut=0,net=0,pts=0,parPlayed=0;
+  for(var h=0;h<holeIdx;h++){
+    var s=(g.scores[h]||[])[pi];
+    if(s>0){
+      brut+=s;
+      parPlayed+=course.holes[h].par;
+      var str=hcpStr(g,pi,h);
+      net+=s-str;
+      pts+=sfPoints(s,course.holes[h].par,str);
+    }
+  }
+  return {
+    profile:profile,
+    checkIn:g.checkIn||null,
+    objective:g.objective||{type:'none'},
+    currentHole:{idx:holeIdx,par:hole.par,handicap:hole.handicap,distBlanc:hole.distBlanc,distJaune:hole.distJaune},
+    courseNote:courseNote,
+    courseOverview:getCourseOverview(courseId),
+    weather:DB.roundConditions?.liveWx||null,
+    roundStats:{played:holeIdx,brut:brut,net:net,pts:pts,parPlayed:parPlayed,diff:brut-parPlayed,diffNet:net-parPlayed},
+    totalHoles:course.holes.length
+  };
+}
+
+var CADDY_RULES=[
+  // ── Pré-coup : tendance + direction dangers ──
+  {id:'fade_dangers_right',skill:'prebrief',priority:8,
+    when:function(ctx){return ctx.profile.tendencies.drive==='fade' && ctx.courseNote?.teeShot?.dangers?.some(function(d){return d.type.endsWith('_r');});},
+    say:function(ctx){return '⚠️ Tu tends à fader, or les dangers sont à droite. Vise plus à gauche ou prends un club plus court.';}
+  },
+  {id:'draw_dangers_left',skill:'prebrief',priority:8,
+    when:function(ctx){return ctx.profile.tendencies.drive==='draw' && ctx.courseNote?.teeShot?.dangers?.some(function(d){return d.type.endsWith('_l');});},
+    say:function(ctx){return '⚠️ Tu tends à drawer, or les dangers sont à gauche. Vise plus à droite ou prends un club plus court.';}
+  },
+  // ── Forme basse = conseil conservateur ──
+  {id:'low_form_simplify',skill:'prebrief',priority:6,
+    when:function(ctx){return ctx.checkIn && (ctx.checkIn.physical<=2 || ctx.checkIn.sleep==='poor');},
+    say:function(ctx){return '😴 Forme basse aujourd\'hui — simplifie, vise large et évite les coups de prestige.';}
+  },
+  {id:'mental_distracted',skill:'prebrief',priority:6,
+    when:function(ctx){return ctx.checkIn && ctx.checkIn.mental==='distracted';},
+    say:function(ctx){return '🧠 Tu es un peu distrait — fais 3 respirations et ta routine complète avant le coup.';}
+  },
+  // ── Échauffement manqué ──
+  {id:'no_warmup_first_holes',skill:'prebrief',priority:5,
+    when:function(ctx){return ctx.checkIn && !ctx.checkIn.warmedUp && ctx.currentHole.idx<3;},
+    say:function(ctx){return '🔥 Pas d\'échauffement — les 3 premiers trous : club moyen (hybride/fer 6), pas de driver.';}
+  },
+  // ── Vent face / portant ──
+  {id:'headwind_club_up',skill:'prebrief',priority:7,
+    when:function(ctx){return ctx.weather && ctx.weather.windKmh>=20;},
+    say:function(ctx){return '💨 Vent fort ('+ctx.weather.windKmh+' km/h) — prends 1 club de plus au moins, ne laisse pas court.';}
+  },
+  // ── Difficulté trou élevée + faiblesse matching ──
+  {id:'hard_hole_bunker_weakness',skill:'prebrief',priority:7,
+    when:function(ctx){
+      var dif=ctx.courseNote?.difficulty||0;
+      var hasB=ctx.courseNote?.teeShot?.dangers?.some(function(d){return d.type.startsWith('bunker');});
+      return dif>=4 && hasB && ctx.profile.weaknesses.indexOf('bunker')>=0;
+    },
+    say:function(ctx){return '🏖 Trou noté difficile et tu crains les bunkers — évite-les à tout prix, club plus court et centre du fairway.';}
+  },
+  // ── Style agressif sur par 5 ──
+  {id:'aggressive_par5',skill:'prebrief',priority:5,
+    when:function(ctx){return ctx.profile.style==='aggressive' && ctx.currentHole.par===5;},
+    say:function(ctx){return '🔥 Par 5 + style agressif : si bon drive, vise le green au 2e. Sinon layup propre à 90-110m.';}
+  },
+  // ── Style conservateur sur long par 4 ──
+  {id:'conservative_long_par4',skill:'prebrief',priority:5,
+    when:function(ctx){return ctx.profile.style==='conservative' && ctx.currentHole.par===4 && ctx.currentHole.distBlanc>=350;},
+    say:function(ctx){return '🛡 Par 4 long + style conservateur : joue bogey +1, vise le milieu du fairway et approche court.';}
+  },
+  // ── Alerte objectif ──
+  {id:'obj_stbl_on_track',skill:'objective_alert',priority:5,
+    when:function(ctx){
+      if(ctx.objective.type!=='stableford'||!ctx.objective.target||ctx.roundStats.played<3)return false;
+      var proj=Math.round(ctx.roundStats.pts/ctx.roundStats.played*ctx.totalHoles);
+      return proj>=ctx.objective.target;
+    },
+    say:function(ctx){
+      var proj=Math.round(ctx.roundStats.pts/ctx.roundStats.played*ctx.totalHoles);
+      return '✅ Tu tiens la cadence (projection '+proj+' pts, objectif '+ctx.objective.target+'). Continue comme ça.';
+    }
+  },
+  {id:'obj_stbl_behind',skill:'objective_alert',priority:7,
+    when:function(ctx){
+      if(ctx.objective.type!=='stableford'||!ctx.objective.target||ctx.roundStats.played<3)return false;
+      var proj=Math.round(ctx.roundStats.pts/ctx.roundStats.played*ctx.totalHoles);
+      return proj<ctx.objective.target-3 && ctx.roundStats.played<15;
+    },
+    say:function(ctx){
+      var proj=Math.round(ctx.roundStats.pts/ctx.roundStats.played*ctx.totalHoles);
+      var gap=ctx.objective.target-proj;
+      return '⚠️ Retard sur objectif (projection '+proj+' vs cible '+ctx.objective.target+') — il manque '+gap+' pts. Sécurise chaque trou, pas de double.';
+    }
+  },
+  {id:'obj_stbl_unreachable',skill:'objective_alert',priority:4,
+    when:function(ctx){
+      if(ctx.objective.type!=='stableford'||!ctx.objective.target||ctx.roundStats.played<12)return false;
+      var remaining=ctx.totalHoles-ctx.roundStats.played;
+      var need=ctx.objective.target-ctx.roundStats.pts;
+      return need/remaining>2.5;
+    },
+    say:function(ctx){return '🎳 Objectif hors de portée — profite des derniers trous, travaille ton rythme et ton mental.';}
+  },
+  {id:'obj_net_on_track',skill:'objective_alert',priority:5,
+    when:function(ctx){
+      if(ctx.objective.type!=='netVsPar'||ctx.objective.target==null||ctx.roundStats.played<3)return false;
+      var proj=Math.round(ctx.roundStats.diffNet/ctx.roundStats.played*ctx.totalHoles);
+      return proj<=ctx.objective.target;
+    },
+    say:function(ctx){
+      var proj=Math.round(ctx.roundStats.diffNet/ctx.roundStats.played*ctx.totalHoles);
+      return '✅ Net bien parti (projection '+(proj>=0?'+':'')+proj+', cible '+(ctx.objective.target>=0?'+':'')+ctx.objective.target+').';
+    }
+  }
+];
+
+function runCaddyRules(skill,ctx){
+  if(!ctx)return [];
+  var matches=[];
+  CADDY_RULES.forEach(function(r){
+    if(r.skill!==skill)return;
+    try{
+      if(r.when(ctx)){
+        matches.push({id:r.id,priority:r.priority,say:typeof r.say==='function'?r.say(ctx):r.say});
+      }
+    }catch(e){console.warn('caddy rule',r.id,e);}
+  });
+  return matches.sort(function(a,b){return b.priority-a.priority;}).slice(0,3);
+}
+
 // ══ 📓 CARNET DE PARCOURS (v3 — MVP Vigneux) ═════════════════════════════
 // Stockage : DB.courseNotebooks[courseId][holeIdx] = { ... } (v2 data model)
 // v2 : stratégie par distances cibles et dangers chiffrés, pas par club imposé
@@ -11377,7 +11780,19 @@ function renderNotebookFab(courseId,holeIdx){
     }
   }
   var hasOv=hasCourseOverview(courseId);
+  // Conseils du caddy (pré-coup + alerte objectif)
+  var ctx=getCaddyContext(DB.game,courseId,holeIdx);
+  var briefings=ctx?runCaddyRules('prebrief',ctx):[];
+  var objAlerts=ctx?runCaddyRules('objective_alert',ctx):[];
+  var caddyBar='';
+  if(briefings.length||objAlerts.length){
+    caddyBar='<div style="padding:8px 14px;background:#f0fdf4;border-bottom:1px solid #bbf7d0">';
+    briefings.forEach(function(b){caddyBar+='<div class="f12" style="color:#166534;margin-bottom:3px;line-height:1.4">🎩 '+esc(b.say)+'</div>';});
+    objAlerts.forEach(function(a){caddyBar+='<div class="f12" style="color:#0891b2;margin-bottom:3px;line-height:1.4">🎯 '+esc(a.say)+'</div>';});
+    caddyBar+='</div>';
+  }
   return '<div class="nb-drawer" style="position:sticky;bottom:60px;z-index:35;background:var(--card);border-top:1px solid var(--gray);box-shadow:0 -2px 10px rgba(0,0,0,.04)">'+
+    caddyBar+
     (hasOv?'<a href="javascript:void(0)" onclick="event.stopPropagation();openCourseOverviewEdit(\''+courseId+'\')" style="display:block;padding:6px 14px 0;font-size:11px;color:#0891b2;text-decoration:none;font-weight:600">📖 Consignes du parcours ›</a>':'')+
     '<button type="button" onclick="S.nbDrawerOpen='+(!open)+';render()" '+
     'style="width:100%;background:transparent;border:none;padding:10px 14px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;font-family:inherit">'+
