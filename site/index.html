@@ -12190,8 +12190,8 @@ function handleImgTap(ev){
   if(!note.calibration){
     note.calibration={version:1,imageSize:{w:img.naturalWidth,h:img.naturalHeight},teePx:p,greenPx:p};
   }
-  if(st.placeMode==='tee')note.calibration.teePx=p;
-  else if(st.placeMode==='green')note.calibration.greenPx=p;
+  if(st.placeMode==='tee'){note.calibration.teePx=p;note.calibration.placedT=true;}
+  else if(st.placeMode==='green'){note.calibration.greenPx=p;note.calibration.placedG=true;}
   saveHoleNote(st.courseId,st.holeIdx,note);
   st.placeMode=null;
   renderHoleMapFullscreen();
@@ -12267,7 +12267,9 @@ function ensureDefaultCalibration(){
     version:1,
     imageSize:{w:img.naturalWidth,h:img.naturalHeight},
     teePx:{x:Math.round(img.naturalWidth*0.7),y:Math.round(img.naturalHeight*0.82)},
-    greenPx:{x:Math.round(img.naturalWidth*0.3),y:Math.round(img.naturalHeight*0.18)}
+    greenPx:{x:Math.round(img.naturalWidth*0.3),y:Math.round(img.naturalHeight*0.18)},
+    placedT:false,
+    placedG:false
   };
   saveHoleNote(st.courseId,st.holeIdx,note);
   return true;
@@ -12330,9 +12332,17 @@ function renderHoleMapFullscreen(){
   html+='</div>';
   // Infos bas
   var infoParts=[];
+  var okT=cal&&cal.placedT, okG=cal&&cal.placedG;
   if(!hasCoords)infoParts.push('<span style="color:#fbbf24">⚠️ Renseigne tee + green dans le carnet pour la calibration</span>');
-  else if(!cal)infoParts.push('<span style="color:#fbbf24">👉 Clique « Placer T & G » puis fais glisser T sur le départ et G sur le green</span>');
-  else infoParts.push('💡 Fais glisser T et G pour ajuster — les autres points suivent');
+  else if(!cal)infoParts.push('<span style="color:#fbbf24">👉 Tape « 📍 T » puis tape sur le départ jaune</span>');
+  else if(!okT||!okG){
+    var parts=[];
+    if(!okT)parts.push('« 📍 T » → départ jaune');
+    if(!okG)parts.push('« 📍 G » → centre du green');
+    infoParts.push('<span style="color:#fbbf24">👉 Reste à placer : '+parts.join(' · ')+'</span>');
+  }else{
+    infoParts.push('✅ Calibré — fais glisser T ou G pour ajuster');
+  }
   if(note.strategy)infoParts.push('🎯 '+esc(note.strategy));
   html+='<div style="color:#e2e8f0;font-size:12px;padding:10px;max-width:700px;margin:0 auto;width:100%;line-height:1.5">'+infoParts.join('<br>')+'</div>';
   div.innerHTML=html;
@@ -12359,6 +12369,8 @@ function drawHoleMapOverlay(){
   if(!mi.hasOverlay)return;
   var cal=note.calibration;
   if(!cal||!note.coordsTee||!note.coordsGreen)return;
+  // Tant que T ET G n'ont pas été validés manuellement (drag OU tap), on n'affiche QUE T et G.
+  var calibConfirmed=!!(cal.placedT && cal.placedG);
   var tee=note.coordsTee;
   var green=note.coordsGreen;
   var imgW=(st.imageSize&&st.imageSize.w)||cal.imageSize.w;
@@ -12382,6 +12394,16 @@ function drawHoleMapOverlay(){
   var arcLabelColor=fromGreen?'#9a3412':'#1e40af';
   // Vecteur unitaire tee→green (pour placer les labels sur l'axe)
   var vx=(cal.greenPx.x-cal.teePx.x)/pLenPx, vy=(cal.greenPx.y-cal.teePx.y)/pLenPx;
+  // Si T ou G pas encore validé, on saute arcs + dangers + visée — n'affiche que T et G
+  if(!calibConfirmed){
+    out+='<circle id="cal-tee" cx="'+cal.teePx.x+'" cy="'+cal.teePx.y+'" r="18" fill="#16a34a" stroke="#fff" stroke-width="4" style="cursor:grab;pointer-events:all;touch-action:none"/>';
+    out+='<text id="cal-tee-lbl" x="'+cal.teePx.x+'" y="'+(cal.teePx.y+5)+'" text-anchor="middle" fill="#fff" font-size="16" font-weight="900" font-family="Inter,sans-serif" pointer-events="none">T</text>';
+    out+='<circle id="cal-green" cx="'+cal.greenPx.x+'" cy="'+cal.greenPx.y+'" r="20" fill="#eab308" stroke="#fff" stroke-width="4" style="cursor:grab;pointer-events:all;touch-action:none"/>';
+    out+='<text id="cal-green-lbl" x="'+cal.greenPx.x+'" y="'+(cal.greenPx.y+5)+'" text-anchor="middle" fill="#1e293b" font-size="17" font-weight="900" font-family="Inter,sans-serif" pointer-events="none">G</text>';
+    svg.innerHTML=out;
+    setupHoleMapDrag();
+    return;
+  }
   arcDistances.forEach(function(m){
     var r=m*pxPerM;
     out+='<circle cx="'+centerPx.x+'" cy="'+centerPx.y+'" r="'+r+'" fill="none" stroke="'+arcColor+'" stroke-width="2" stroke-dasharray="8 6" opacity="0.55"/>';
@@ -12485,10 +12507,10 @@ function setupHoleMapDrag(){
       var st=S._holeMap;if(!st)return;
       var note=getHoleNote(st.courseId,st.holeIdx);if(!note)return;
       if(!note.calibration)return;
-      if(id==='cal-tee')note.calibration.teePx=p;
-      else note.calibration.greenPx=p;
+      if(id==='cal-tee'){note.calibration.teePx=p;note.calibration.placedT=true;}
+      else {note.calibration.greenPx=p;note.calibration.placedG=true;}
       saveHoleNote(st.courseId,st.holeIdx,note);
-      drawHoleMapOverlay(); // repositionne tous les autres points
+      drawHoleMapOverlay();
     });
     el.addEventListener('pointercancel',function(){dragging=false;});
   });
