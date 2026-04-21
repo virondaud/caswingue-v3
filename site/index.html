@@ -10845,6 +10845,97 @@ if(lg('gm_version_major',0)<20){
   });
   ls('gm_version_major',20);save();
 }
+
+// ══ 🧪 SEED DEMO V3 (dev only, à retirer en prod) ══════════════════════════
+// Auto-charge un dataset de test si la base des joueurs est vide.
+// Contient : Mathieu (moi, index 16.4, gaucher, profil/clubs/chipping) + 4
+// autres joueurs + carnet trou 1 Vigneux.
+// Pour forcer un re-seed : vider DB.players puis recharger la page.
+// Pour désactiver : mettre ls('gm_seed_done',1) avant le premier load.
+function seedDemoDataV3(){
+  console.log('[SEED] chargement données de démo v3…');
+  // 5 joueurs
+  var mathieuId='pmathieu';
+  var mathieu={
+    id:mathieuId,name:'Mathieu',index:16.4,fav:true,
+    profile:{
+      version:1,
+      handedness:'left',
+      tendencies:{drive:'draw',irons:'unknown',putting:'unknown'},
+      strengths:[],
+      weaknesses:[],
+      style:'aggressive',
+      notes:"Gaucher. Jeu à ¾ de coup à encourager. Challenging, pas toujours raisonnable."
+    },
+    clubs:[
+      {id:'drv',name:'Driver',icon:'🏌️',full:190,threeQ:null,half:null},
+      {id:'b5',name:'Bois 5',icon:'🪵',full:160,threeQ:null,half:null},
+      {id:'h4',name:'Hybride 4',icon:'↪️',full:150,threeQ:null,half:null},
+      {id:'f5',name:'Fer 5',icon:'🔩',full:145,threeQ:135,half:105},
+      {id:'f6',name:'Fer 6',icon:'🔩',full:135,threeQ:130,half:100},
+      {id:'f7',name:'Fer 7',icon:'🔩',full:128,threeQ:120,half:90,chip:{two:null,three:60,four:null}},
+      {id:'f8',name:'Fer 8',icon:'🔩',full:118,threeQ:110,half:100,chip:{two:null,three:50,four:null}},
+      {id:'f9',name:'Fer 9',icon:'🔩',full:108,threeQ:100,half:90,chip:{two:null,three:45,four:null}},
+      {id:'w42',name:'42°',icon:'⚡',_iconCat:'wedge',full:98,threeQ:90,half:35,custom:true,chip:{two:35,three:30,four:20}},
+      {id:'w47',name:'47°',icon:'⚡',_iconCat:'wedge',full:80,threeQ:75,half:65,custom:true,chip:{two:null,three:20,four:16}},
+      {id:'w52',name:'52°',icon:'⚡',_iconCat:'wedge',full:75,threeQ:70,half:60,custom:true,chip:{two:null,three:18,four:12}},
+      {id:'w56',name:'56°',icon:'⚡',_iconCat:'wedge',full:65,threeQ:56,half:45,custom:true,chip:{two:null,three:16,four:9}},
+      {id:'w58',name:'58°',icon:'⚡',_iconCat:'wedge',full:50,threeQ:45,half:40,custom:true,chip:{two:null,three:12,four:7}}
+    ]
+  };
+  DB.players=[
+    mathieu,
+    {id:'pfred',name:'Fred',index:21},
+    {id:'pantoine',name:'Antoine',index:16},
+    {id:'ppierre',name:'Pierre',index:22},
+    {id:'pnico',name:'Nico',index:8.9}
+  ];
+  // Désigne Mathieu comme "moi"
+  try{localStorage.setItem('gm_me',JSON.stringify(mathieuId));}catch(e){}
+
+  // Carnet trou 1 Vigneux (retrouver le courseId par nom)
+  var vigneux=DB.courses.find(c=>_norm(c.name).includes(_norm('Nantes Vigneux'))||_norm(c.name).includes(_norm('Golf Club de Nantes')));
+  if(vigneux){
+    if(!DB.courseNotebooks)DB.courseNotebooks={};
+    if(!DB.courseNotebooks[vigneux.id])DB.courseNotebooks[vigneux.id]={};
+    // Présentation générale du parcours
+    DB.courseNotebooks[vigneux.id]._course={
+      rating:0,
+      overview:"Parcours abrité, bien drainé. Greens petits. Beaucoup de trous au milieu d'un bois.",
+      generalTips:"L'aller va jusqu'au trou 10."
+    };
+    DB.courseNotebooks[vigneux.id][0]={
+      type:'dogleg_l',
+      teeShot:{
+        targetDistance:190,
+        landingZone:'left',
+        dangers:[
+          {type:'bunker_r',distance:200},
+          {type:'trees_l',distance:150}
+        ],
+        usualClub:''
+      },
+      approach:{
+        strategy:'left',
+        targetBeforePin:4,
+        usualClub:''
+      },
+      strategy:"Danger bunker droit réduire d'un club. Viser gauche. Tempo pieds en pente",
+      difficulty:2,
+      notes:''
+    };
+  }
+
+  save();
+  try{localStorage.setItem('gm_seed_done','1');}catch(e){}
+  console.log('[SEED] ✅ 5 joueurs + carnet Vigneux T1 chargés');
+}
+// Auto-chargement : si aucun joueur et pas déjà seedé une fois
+if((!DB.players||DB.players.length===0) && !localStorage.getItem('gm_seed_done')){
+  try{seedDemoDataV3();}catch(e){console.error('[SEED] erreur',e);}
+}
+window.seedDemoDataV3=seedDemoDataV3; // utilitaire console : seedDemoDataV3() pour forcer
+
 window.addEventListener('resize',()=>{if(S.view==='scorecard')render();});
 // ── Liens externes iOS PWA standalone ─────────────────────────────────
 // En mode standalone (ajouté à l'écran d'accueil), ni target="_blank"
