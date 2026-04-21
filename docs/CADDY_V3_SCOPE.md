@@ -147,6 +147,29 @@ Le caddy respecte ces principes **systématiquement** :
    - Par 4 court (< 280m) : privilégier le placement sur la longueur
    - Règles `strategy_long_par4` / `strategy_short_par4`
 
+### 🔮 Extension v4 — préférences de jeu enrichies
+
+En v4 (Phase 4b), le caddy exploitera les données accumulées par v3 + dashboards Nantes :
+
+- **Clubs favoris** : identifiés via l'historique (quel club tu joues le plus, avec quel taux de réussite)
+- **Distances fétiches** : les distances où tu es le plus régulier (ex. « 120m wedge = tu es toujours sur le green »)
+- **Tendances contextuelles** : style agressif ou prudent selon la météo, la forme, la position dans la partie
+- **Stratégie multi-parcours** : les règles utilisent ces préférences pour proposer un plan de jeu
+  cohérent sur **n'importe quel parcours**, pas juste Vigneux où le carnet est rempli à la main
+
+Structure anticipée :
+```ts
+interface PlayerPreferences {
+  favoriteClubs: { [clubId: string]: { usage: number, successRate: number } };
+  comfortDistances: number[];           // ex. [100, 120, 150]
+  style: 'aggressive' | 'balanced' | 'conservative';
+  patterns: { scenario: string, preferredAction: string }[];
+}
+```
+
+Le caddy v3 pose les fondations (règles rule-based + PlayerProfile), la v4 remonte les
+signaux depuis Nantes pour personnaliser sans intervention manuelle.
+
 ### S2 — Alerte objectif (skill `objective_alert`)
 
 Bandeau discret dans le drawer, adaptatif selon l'avancée :
