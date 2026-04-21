@@ -10930,7 +10930,8 @@ function seedDemoDataV3(){
       strategy:"Danger bunker droit réduire d'un club. Viser gauche. Tempo pieds en pente",
       difficulty:2,
       notes:'',
-      coords:{lat:47.2909,lng:-1.6993},
+      coordsTee:{lat:47.29155674,lng:-1.70008861},
+      coordsGreen:null,
       mapImage:''
     };
   }
@@ -11769,8 +11770,10 @@ function openHoleEdit(courseId,holeIdx){
     strategy:note.strategy||'',
     difficulty:note.difficulty||0,
     notes:note.notes||'',
-    coordsLat:note.coords?note.coords.lat:'',
-    coordsLng:note.coords?note.coords.lng:'',
+    coordsTeeLat:(note.coordsTee&&note.coordsTee.lat)||(note.coords&&note.coords.lat)||'',
+    coordsTeeLng:(note.coordsTee&&note.coordsTee.lng)||(note.coords&&note.coords.lng)||'',
+    coordsGreenLat:(note.coordsGreen&&note.coordsGreen.lat)||'',
+    coordsGreenLng:(note.coordsGreen&&note.coordsGreen.lng)||'',
     mapImage:note.mapImage||''
   };
   renderHoleEditModal(c,hole);
@@ -11872,13 +11875,18 @@ function renderHoleEditModal(course,hole){
   // ── Section REPÈRES VISUELS (Option A + B) ──
   html+='<div style="margin-top:14px;padding:10px;background:#fef3c7;border-radius:10px;border-left:3px solid #f59e0b">';
   html+='<div class="ct" style="margin-bottom:8px;color:#92400e">🗺️ Repères visuels</div>';
-  html+='<div class="lbl">Coordonnées GPS (centre du trou)</div>';
+  html+='<div class="lbl">🚩 Départ (tee) — lat / lng</div>';
   html+='<div class="f g8 mb8">';
-  html+='<input type="number" step="0.0001" class="inp" style="flex:1" value="'+(f.coordsLat||'')+'" placeholder="Latitude ex: 47.2909" onchange="S._noteForm.coordsLat=parseFloat(this.value)||\'\'">';
-  html+='<input type="number" step="0.0001" class="inp" style="flex:1" value="'+(f.coordsLng||'')+'" placeholder="Longitude ex: -1.6993" onchange="S._noteForm.coordsLng=parseFloat(this.value)||\'\'">';
+  html+='<input type="number" step="0.00001" class="inp" style="flex:1" value="'+(f.coordsTeeLat||'')+'" placeholder="47.29170" onchange="S._noteForm.coordsTeeLat=parseFloat(this.value)||\'\'">';
+  html+='<input type="number" step="0.00001" class="inp" style="flex:1" value="'+(f.coordsTeeLng||'')+'" placeholder="-1.69910" onchange="S._noteForm.coordsTeeLng=parseFloat(this.value)||\'\'">';
+  html+='</div>';
+  html+='<div class="lbl">⛳ Green — lat / lng</div>';
+  html+='<div class="f g8 mb8">';
+  html+='<input type="number" step="0.00001" class="inp" style="flex:1" value="'+(f.coordsGreenLat||'')+'" placeholder="47.29050" onchange="S._noteForm.coordsGreenLat=parseFloat(this.value)||\'\'">';
+  html+='<input type="number" step="0.00001" class="inp" style="flex:1" value="'+(f.coordsGreenLng||'')+'" placeholder="-1.70040" onchange="S._noteForm.coordsGreenLng=parseFloat(this.value)||\'\'">';
   html+='</div>';
   html+='<div class="f11 tm" style="margin-bottom:8px">💡 Clic-droit sur Google Maps → « Quelles sont ces coordonnées ? »</div>';
-  html+='<div class="lbl">Image carte du trou (URL ou chemin)</div>';
+  html+='<div class="lbl">🖼️ Image carte du trou (URL ou chemin)</div>';
   html+='<input type="text" class="inp mb8" value="'+esc(f.mapImage||'')+'" placeholder="ex: pages/hole-maps/vigneux/h1.jpg" onchange="S._noteForm.mapImage=this.value">';
   html+='<div class="f11 tm">Schéma / extrait du carnet du club, JPG ou PNG.</div>';
   html+='</div>';
@@ -11948,7 +11956,8 @@ function saveHoleNoteFromForm(){
     strategy:f.strategy,
     difficulty:f.difficulty,
     notes:f.notes,
-    coords:(f.coordsLat&&f.coordsLng)?{lat:f.coordsLat,lng:f.coordsLng}:null,
+    coordsTee:(f.coordsTeeLat&&f.coordsTeeLng)?{lat:f.coordsTeeLat,lng:f.coordsTeeLng}:null,
+    coordsGreen:(f.coordsGreenLat&&f.coordsGreenLng)?{lat:f.coordsGreenLat,lng:f.coordsGreenLng}:null,
     mapImage:f.mapImage||''
   };
   saveHoleNote(f.courseId,f.holeIdx,entry);
@@ -11968,29 +11977,74 @@ function deleteHoleNote(){
 }
 
 // ── Repères visuels (Option A + B) ──
-// A : liens Google Maps satellite + Flyovergreen
+// Calcule l'azimut (cap) entre 2 points GPS, en degrés depuis le nord (0-360).
+function gpsBearing(lat1,lng1,lat2,lng2){
+  var toRad=function(d){return d*Math.PI/180;};
+  var toDeg=function(r){return r*180/Math.PI;};
+  var y=Math.sin(toRad(lng2-lng1))*Math.cos(toRad(lat2));
+  var x=Math.cos(toRad(lat1))*Math.sin(toRad(lat2))-Math.sin(toRad(lat1))*Math.cos(toRad(lat2))*Math.cos(toRad(lng2-lng1));
+  return (toDeg(Math.atan2(y,x))+360)%360;
+}
+// Distance approximative en mètres (formule haversine).
+function gpsDistanceM(lat1,lng1,lat2,lng2){
+  var R=6371000,toRad=function(d){return d*Math.PI/180;};
+  var dLat=toRad(lat2-lat1),dLng=toRad(lng2-lng1);
+  var a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)*Math.sin(dLng/2);
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+// Label cardinal (N, NE, E, SE, S, SW, W, NW) depuis un azimut 0-360.
+function bearingLabel(b){
+  var dirs=['N','NE','E','SE','S','SO','O','NO'];
+  return dirs[Math.round(b/45)%8];
+}
+// A : liens Google Maps satellite + Flyovergreen + boussole tee→green
 // B : aperçu image carte du trou + plein écran
 function renderHoleMapButtons(courseId,holeIdx){
   var note=getHoleNote(courseId,holeIdx)||{};
   var course=DB.courses.find(function(x){return x.id===courseId;});
   var courseName=course?course.name:'';
   var flyover=(typeof COURSE_INFO!=='undefined' && COURSE_INFO[courseName])?COURSE_INFO[courseName].flyover:'';
-  var hasCoords=note.coords && note.coords.lat && note.coords.lng;
+  var tee=note.coordsTee||(note.coords?note.coords:null); // rétro-compat
+  var green=note.coordsGreen;
+  var hasTee=tee && tee.lat && tee.lng;
+  var hasGreen=green && green.lat && green.lng;
+  var hasAxis=hasTee && hasGreen;
   var hasImage=note.mapImage;
-  if(!hasCoords && !hasImage && !flyover)return '';
-  var out='<div class="f g8" style="padding:8px 14px;flex-wrap:wrap;background:#fafafa;border-bottom:1px solid #e5e7eb">';
-  if(hasCoords){
-    var mapsUrl='https://www.google.com/maps/@'+note.coords.lat+','+note.coords.lng+',300m/data=!3m1!1e3';
-    out+='<a href="'+mapsUrl+'" target="_blank" rel="noopener" class="btn bsm mb0" style="flex:1;min-width:100px;text-decoration:none;background:#ecfeff;color:#0891b2;font-size:11px;text-align:center;padding:6px 4px" onclick="event.stopPropagation()">🗺️ Satellite</a>';
+  if(!hasTee && !hasImage && !flyover)return '';
+
+  // Compas / orientation du trou si on a tee + green
+  var compass='';
+  if(hasAxis){
+    var bearing=gpsBearing(tee.lat,tee.lng,green.lat,green.lng);
+    var dist=Math.round(gpsDistanceM(tee.lat,tee.lng,green.lat,green.lng));
+    compass='<div style="padding:6px 14px;background:#fff7ed;border-bottom:1px solid #fde68a;display:flex;align-items:center;gap:10px;font-size:11px;color:#92400e">';
+    compass+='<span style="display:inline-block;transform:rotate('+bearing+'deg);font-size:18px;line-height:1">➤</span>';
+    compass+='<span><b>'+bearingLabel(bearing)+'</b> · cap '+Math.round(bearing)+'°</span>';
+    compass+='<span style="margin-left:auto;color:#78350f">tee→green ≈ '+dist+' m</span>';
+    compass+='</div>';
+  }
+
+  var btns='<div class="f g8" style="padding:8px 14px;flex-wrap:wrap;background:#fafafa;border-bottom:1px solid #e5e7eb">';
+  if(hasTee){
+    // URL Google Maps : si on a l'axe tee→green, on recadre sur le milieu avec orientation
+    var mapsUrl;
+    if(hasAxis){
+      var midLat=(tee.lat+green.lat)/2, midLng=(tee.lng+green.lng)/2;
+      var bearing2=gpsBearing(tee.lat,tee.lng,green.lat,green.lng);
+      mapsUrl='https://www.google.com/maps/@'+midLat+','+midLng+',250m,'+bearing2.toFixed(1)+'h,0t/data=!3m1!1e3';
+    }else{
+      mapsUrl='https://www.google.com/maps/@'+tee.lat+','+tee.lng+',300m/data=!3m1!1e3';
+    }
+    btns+='<a href="'+mapsUrl+'" target="_blank" rel="noopener" class="btn bsm mb0" style="flex:1;min-width:100px;text-decoration:none;background:#ecfeff;color:#0891b2;font-size:11px;text-align:center;padding:6px 4px" onclick="event.stopPropagation()">🗺️ Satellite</a>';
   }
   if(flyover){
-    out+='<a href="'+flyover+'" target="_blank" rel="noopener" class="btn bsm mb0" style="flex:1;min-width:100px;text-decoration:none;background:#fef3c7;color:#92400e;font-size:11px;text-align:center;padding:6px 4px" onclick="event.stopPropagation()">📹 Flyover</a>';
+    btns+='<a href="'+flyover+'" target="_blank" rel="noopener" class="btn bsm mb0" style="flex:1;min-width:100px;text-decoration:none;background:#fef3c7;color:#92400e;font-size:11px;text-align:center;padding:6px 4px" onclick="event.stopPropagation()">📹 Flyover</a>';
   }
   if(hasImage){
-    out+='<button class="btn bsm mb0" style="flex:1;min-width:100px;background:#f0fdf4;color:#166534;font-size:11px;padding:6px 4px" onclick="event.stopPropagation();openHoleMapFullscreen(\''+courseId+'\','+holeIdx+')">🖼️ Carte trou</button>';
+    btns+='<button class="btn bsm mb0" style="flex:1;min-width:100px;background:#f0fdf4;color:#166534;font-size:11px;padding:6px 4px" onclick="event.stopPropagation();openHoleMapFullscreen(\''+courseId+'\','+holeIdx+')">🖼️ Carte trou</button>';
   }
-  out+='</div>';
-  return out;
+  btns+='</div>';
+  return compass+btns;
 }
 
 function openHoleMapFullscreen(courseId,holeIdx){
