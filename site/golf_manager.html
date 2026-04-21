@@ -12055,34 +12055,220 @@ function renderHoleMapButtons(courseId,holeIdx){
   return compass+btns;
 }
 
+// Projection GPS → pixel basée sur la calibration (2 ancres tee + green).
+// cal = { imageSize:{w,h}, teePx, greenPx }
+// note.coordsTee et note.coordsGreen fournissent les coords GPS des ancres.
+function gpsToPx(lat,lng,tee,green,cal){
+  // Vecteur GPS tee→P en mètres nord/est
+  var toRad=function(d){return d*Math.PI/180;};
+  var R=6371000;
+  var dLat=toRad(lat-tee.lat);
+  var dLng=toRad(lng-tee.lng);
+  var dN=dLat*R;
+  var dE=dLng*R*Math.cos(toRad(tee.lat));
+  // Vecteur GPS tee→green (référence)
+  var gLat=toRad(green.lat-tee.lat);
+  var gLng=toRad(green.lng-tee.lng);
+  var gN=gLat*R;
+  var gE=gLng*R*Math.cos(toRad(tee.lat));
+  var gLenM=Math.sqrt(gN*gN+gE*gE);
+  // Vecteur pixel tee→green (référence)
+  var pX=cal.greenPx.x-cal.teePx.x;
+  var pY=cal.greenPx.y-cal.teePx.y;
+  var pLenPx=Math.sqrt(pX*pX+pY*pY);
+  if(gLenM<1||pLenPx<1)return{x:cal.teePx.x,y:cal.teePx.y};
+  var pxPerM=pLenPx/gLenM;
+  // Base orthonormée dans le monde GPS (N,E) et dans l'image (pX,pY normalisés + perpendiculaire)
+  // On projette (dN,dE) sur la base (gN,gE)/gLenM et sa perpendiculaire.
+  var uN=gN/gLenM, uE=gE/gLenM; // vecteur unitaire tee→green en GPS
+  var along=dN*uN+dE*uE;         // composante le long de l'axe (m)
+  var perp =dN*(-uE)+dE*uN;      // composante perpendiculaire (m), +gauche de l'axe GPS
+  // Correspondance dans l'image : axe tee→green = vecteur (pX,pY)/pLenPx
+  var vX=pX/pLenPx, vY=pY/pLenPx;
+  // Perpendiculaire image : rotation +90° dans le repère écran (y vers le bas), donc gauche visuelle = (-vY, vX) inversée selon orientation photo
+  // Convention : "perp GPS" + (gauche de l'axe dans le monde) = côté gauche du dessin (généralement en haut de l'image orientée nord-haut)
+  // En SVG (y vers le bas), rotation 90° CCW = (vY, -vX). On ajuste empiriquement.
+  var nX=vY, nY=-vX; // perpendiculaire "gauche" dans l'image
+  var x=cal.teePx.x + along*pxPerM*vX + perp*pxPerM*nX;
+  var y=cal.teePx.y + along*pxPerM*vY + perp*pxPerM*nY;
+  return{x:x,y:y};
+}
+
 function openHoleMapFullscreen(courseId,holeIdx){
   var note=getHoleNote(courseId,holeIdx);
   if(!note||!note.mapImage)return;
-  var course=DB.courses.find(function(x){return x.id===courseId;});
-  var hole=course?course.holes[holeIdx]:null;
+  S._holeMap={courseId:courseId,holeIdx:holeIdx,calibStep:0,calibTee:null,calibGreen:null,imageSize:null};
+  renderHoleMapFullscreen();
+}
+
+function renderHoleMapFullscreen(){
+  var st=S._holeMap;if(!st)return;
+  var note=getHoleNote(st.courseId,st.holeIdx);if(!note||!note.mapImage)return;
+  var course=DB.courses.find(function(x){return x.id===st.courseId;});
+  var hole=course?course.holes[st.holeIdx]:null;
   var existing=document.getElementById('hole-map-fs');if(existing)existing.remove();
   var div=document.createElement('div');
   div.id='hole-map-fs';
-  div.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px';
-  var title='Trou '+(holeIdx+1)+(hole?' · Par '+hole.par+(hole.distBlanc?' · '+hole.distBlanc+'m':''):'');
+  div.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:500;display:flex;flex-direction:column;padding:10px';
+  var title='Trou '+(st.holeIdx+1)+(hole?' · Par '+hole.par+(hole.distBlanc?' · '+hole.distBlanc+'m':''):'');
   var safeSrc=esc(note.mapImage);
+  var cal=note.calibration;
+  var inCalib=st.calibStep>0;
+  var hasCoords=note.coordsTee&&note.coordsGreen;
   var html='';
-  html+='<div style="color:#fff;font-weight:700;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;width:100%;max-width:700px">';
-  html+='<span style="font-size:15px">'+esc(title)+'</span>';
-  html+='<button class="btn bsm mb0" style="background:#fff;color:#0f172a" onclick="document.getElementById(\'hole-map-fs\').remove()">✕ Fermer</button>';
+  // Header
+  html+='<div style="color:#fff;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px;width:100%;max-width:700px;margin-left:auto;margin-right:auto">';
+  html+='<span style="font-size:14px;flex:1">'+esc(title)+'</span>';
+  if(hasCoords){
+    if(inCalib){
+      html+='<button class="btn bsm mb0" style="background:#fbbf24;color:#0f172a" onclick="cancelCalibration()">Annuler calibration</button>';
+    }else{
+      html+='<button class="btn bsm mb0" style="background:'+(cal?'#94a3b8':'#10b981')+';color:#fff" onclick="startCalibration()">'+(cal?'🔁 Recalibrer':'🎯 Calibrer')+'</button>';
+    }
+  }
+  html+='<button class="btn bsm mb0" style="background:#fff;color:#0f172a" onclick="closeHoleMap()">✕</button>';
   html+='</div>';
-  html+='<div style="flex:1;overflow:auto;width:100%;max-width:700px;display:flex;align-items:center;justify-content:center">';
-  html+='<img src="'+safeSrc+'" alt="Carte trou '+(holeIdx+1)+'" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;background:#fff" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'block\'">';
-  html+='<div style="display:none;color:#fca5a5;padding:20px;text-align:center;font-size:12px">Image introuvable :<br>'+safeSrc+'</div>';
+  // Instruction calibration
+  if(inCalib){
+    var step=st.calibStep===1?'Tape sur le <b>départ blanc</b> (tee)':'Tape sur le <b>centre du green</b>';
+    html+='<div style="background:#fbbf24;color:#0f172a;padding:10px 14px;border-radius:8px;margin-bottom:8px;font-size:13px;font-weight:600;text-align:center;max-width:700px;margin-left:auto;margin-right:auto;width:100%">'+step+' ('+st.calibStep+'/2)</div>';
+  }
+  // Container image + SVG
+  html+='<div style="flex:1;overflow:auto;width:100%;max-width:700px;margin:0 auto;display:flex;align-items:center;justify-content:center">';
+  html+='<div id="hm-wrap" style="position:relative;display:inline-block;max-width:100%;max-height:100%" '+(inCalib?'onclick="handleCalibClick(event)"':'')+'>';
+  html+='<img id="hm-img" src="'+safeSrc+'" alt="Carte trou" style="display:block;max-width:100%;max-height:80vh;background:#fff;border-radius:6px" onload="onHoleMapImgLoad()" onerror="this.style.display=\'none\';document.getElementById(\'hm-err\').style.display=\'block\'">';
+  html+='<div id="hm-err" style="display:none;color:#fca5a5;padding:20px;text-align:center;font-size:12px">Image introuvable :<br>'+safeSrc+'</div>';
+  html+='<svg id="hm-svg" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" preserveAspectRatio="xMidYMid meet"></svg>';
   html+='</div>';
-  if(note.strategy||(note.teeShot&&note.teeShot.targetDistance)){
-    html+='<div style="color:#e2e8f0;font-size:12px;padding:10px;max-width:700px;width:100%;line-height:1.5">';
-    if(note.teeShot&&note.teeShot.targetDistance)html+='<div>🚩 Cible : '+note.teeShot.targetDistance+'m'+(note.teeShot.landingZone?' ('+esc(note.teeShot.landingZone)+')':'')+'</div>';
-    if(note.strategy)html+='<div style="margin-top:4px">🎯 '+esc(note.strategy)+'</div>';
-    html+='</div>';
+  html+='</div>';
+  // Infos bas
+  if(!inCalib){
+    var infoParts=[];
+    if(!hasCoords)infoParts.push('<span style="color:#fbbf24">⚠️ Renseigne tee + green dans le carnet pour la calibration</span>');
+    else if(!cal)infoParts.push('<span style="color:#fbbf24">👉 Clique « Calibrer » pour placer les marqueurs automatiquement</span>');
+    else infoParts.push('✅ Calibré · '+(note.dangers?'':'').replace(/^/, '')+(note.teeShot&&note.teeShot.targetDistance?'cible '+note.teeShot.targetDistance+'m':''));
+    if(note.strategy)infoParts.push('🎯 '+esc(note.strategy));
+    if(infoParts.length){
+      html+='<div style="color:#e2e8f0;font-size:12px;padding:10px;max-width:700px;margin:0 auto;width:100%;line-height:1.5">'+infoParts.join('<br>')+'</div>';
+    }
   }
   div.innerHTML=html;
   document.body.appendChild(div);
+}
+
+function onHoleMapImgLoad(){
+  var img=document.getElementById('hm-img');if(!img)return;
+  var st=S._holeMap;if(!st)return;
+  st.imageSize={w:img.naturalWidth,h:img.naturalHeight};
+  var svg=document.getElementById('hm-svg');
+  if(svg)svg.setAttribute('viewBox','0 0 '+img.naturalWidth+' '+img.naturalHeight);
+  drawHoleMapOverlay();
+}
+
+function drawHoleMapOverlay(){
+  var st=S._holeMap;if(!st)return;
+  var note=getHoleNote(st.courseId,st.holeIdx);if(!note)return;
+  var svg=document.getElementById('hm-svg');if(!svg)return;
+  svg.innerHTML='';
+  if(!note.calibration||!note.coordsTee||!note.coordsGreen)return;
+  var cal=note.calibration;
+  var tee=note.coordsTee;
+  var green=note.coordsGreen;
+  var imgW=(st.imageSize&&st.imageSize.w)||cal.imageSize.w;
+  var imgH=(st.imageSize&&st.imageSize.h)||cal.imageSize.h;
+  svg.setAttribute('viewBox','0 0 '+imgW+' '+imgH);
+  var out='';
+  // Arcs de distance 100/150/200m (depuis le tee)
+  var toRad=function(d){return d*Math.PI/180;};
+  var R=6371000;
+  var gLat=toRad(green.lat-tee.lat);
+  var gLng=toRad(green.lng-tee.lng);
+  var gN=gLat*R;
+  var gE=gLng*R*Math.cos(toRad(tee.lat));
+  var gLenM=Math.sqrt(gN*gN+gE*gE);
+  var pLenPx=Math.sqrt(Math.pow(cal.greenPx.x-cal.teePx.x,2)+Math.pow(cal.greenPx.y-cal.teePx.y,2));
+  var pxPerM=pLenPx/gLenM;
+  [100,150,200].forEach(function(m){
+    var r=m*pxPerM;
+    out+='<circle cx="'+cal.teePx.x+'" cy="'+cal.teePx.y+'" r="'+r+'" fill="none" stroke="#60a5fa" stroke-width="2" stroke-dasharray="8 6" opacity="0.55"/>';
+    // Label distance sur l'axe vers le green
+    var vx=(cal.greenPx.x-cal.teePx.x)/pLenPx, vy=(cal.greenPx.y-cal.teePx.y)/pLenPx;
+    var lx=cal.teePx.x+vx*r, ly=cal.teePx.y+vy*r;
+    out+='<rect x="'+(lx-22)+'" y="'+(ly-11)+'" width="44" height="18" rx="4" fill="#1e40af" opacity="0.85"/>';
+    out+='<text x="'+lx+'" y="'+(ly+4)+'" text-anchor="middle" fill="#fff" font-size="14" font-weight="700" font-family="Inter,sans-serif">'+m+'m</text>';
+  });
+  // Dangers
+  (note.dangers||(note.teeShot&&note.teeShot.dangers)||[]).forEach(function(d){
+    if(!d.coords)return;
+    var p=gpsToPx(d.coords.lat,d.coords.lng,tee,green,cal);
+    var color=d.type&&d.type.indexOf('bunker')===0?'#f59e0b':(d.type&&d.type.indexOf('water')===0?'#0891b2':'#dc2626');
+    out+='<circle cx="'+p.x+'" cy="'+p.y+'" r="18" fill="'+color+'" fill-opacity="0.35" stroke="'+color+'" stroke-width="3"/>';
+    out+='<circle cx="'+p.x+'" cy="'+p.y+'" r="5" fill="'+color+'"/>';
+    if(d.distance){
+      out+='<rect x="'+(p.x-24)+'" y="'+(p.y+22)+'" width="48" height="18" rx="4" fill="'+color+'" opacity="0.9"/>';
+      out+='<text x="'+p.x+'" y="'+(p.y+36)+'" text-anchor="middle" fill="#fff" font-size="13" font-weight="700" font-family="Inter,sans-serif">'+d.distance+'m</text>';
+    }
+  });
+  (note.teeShot&&note.teeShot.dangers||[]).forEach(function(d){
+    if(!d.coords||note.dangers)return; // évite doublon si dangers racine existe
+    var p=gpsToPx(d.coords.lat,d.coords.lng,tee,green,cal);
+    var color=d.type&&d.type.indexOf('bunker')===0?'#f59e0b':(d.type&&d.type.indexOf('water')===0?'#0891b2':'#dc2626');
+    out+='<circle cx="'+p.x+'" cy="'+p.y+'" r="18" fill="'+color+'" fill-opacity="0.35" stroke="'+color+'" stroke-width="3"/>';
+    out+='<circle cx="'+p.x+'" cy="'+p.y+'" r="5" fill="'+color+'"/>';
+    if(d.distance){
+      out+='<rect x="'+(p.x-24)+'" y="'+(p.y+22)+'" width="48" height="18" rx="4" fill="'+color+'" opacity="0.9"/>';
+      out+='<text x="'+p.x+'" y="'+(p.y+36)+'" text-anchor="middle" fill="#fff" font-size="13" font-weight="700" font-family="Inter,sans-serif">'+d.distance+'m</text>';
+    }
+  });
+  // Marqueur tee (par-dessus)
+  out+='<circle cx="'+cal.teePx.x+'" cy="'+cal.teePx.y+'" r="14" fill="#16a34a" stroke="#fff" stroke-width="3"/>';
+  out+='<text x="'+cal.teePx.x+'" y="'+(cal.teePx.y+5)+'" text-anchor="middle" fill="#fff" font-size="14" font-weight="900" font-family="Inter,sans-serif">T</text>';
+  // Marqueur green
+  out+='<circle cx="'+cal.greenPx.x+'" cy="'+cal.greenPx.y+'" r="16" fill="#eab308" stroke="#fff" stroke-width="3"/>';
+  out+='<text x="'+cal.greenPx.x+'" y="'+(cal.greenPx.y+5)+'" text-anchor="middle" fill="#1e293b" font-size="15" font-weight="900" font-family="Inter,sans-serif">G</text>';
+  svg.innerHTML=out;
+}
+
+function startCalibration(){
+  var st=S._holeMap;if(!st)return;
+  st.calibStep=1;st.calibTee=null;st.calibGreen=null;
+  renderHoleMapFullscreen();
+}
+function cancelCalibration(){
+  var st=S._holeMap;if(!st)return;
+  st.calibStep=0;st.calibTee=null;st.calibGreen=null;
+  renderHoleMapFullscreen();
+}
+function handleCalibClick(ev){
+  var st=S._holeMap;if(!st||st.calibStep===0)return;
+  var img=document.getElementById('hm-img');if(!img)return;
+  var rect=img.getBoundingClientRect();
+  // Converti le clic écran → pixel natif de l'image
+  var relX=(ev.clientX-rect.left)/rect.width;
+  var relY=(ev.clientY-rect.top)/rect.height;
+  var px={x:Math.round(relX*img.naturalWidth),y:Math.round(relY*img.naturalHeight)};
+  if(st.calibStep===1){
+    st.calibTee=px;
+    st.calibStep=2;
+    renderHoleMapFullscreen();
+  }else if(st.calibStep===2){
+    st.calibGreen=px;
+    // Sauvegarde calibration
+    var note=getHoleNote(st.courseId,st.holeIdx);
+    note.calibration={
+      version:1,
+      imageSize:{w:img.naturalWidth,h:img.naturalHeight},
+      teePx:st.calibTee,
+      greenPx:st.calibGreen
+    };
+    saveHoleNote(st.courseId,st.holeIdx,note);
+    st.calibStep=0;st.calibTee=null;st.calibGreen=null;
+    renderHoleMapFullscreen();
+  }
+}
+function closeHoleMap(){
+  var d=document.getElementById('hole-map-fs');if(d)d.remove();
+  S._holeMap=null;
 }
 
 // Drawer collant en bas (au-dessus de la navbar), extensible.
