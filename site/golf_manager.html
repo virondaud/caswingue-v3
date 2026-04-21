@@ -10929,7 +10929,9 @@ function seedDemoDataV3(){
       },
       strategy:"Danger bunker droit réduire d'un club. Viser gauche. Tempo pieds en pente",
       difficulty:2,
-      notes:''
+      notes:'',
+      coords:{lat:47.2909,lng:-1.6993},
+      mapImage:''
     };
   }
 
@@ -11766,7 +11768,10 @@ function openHoleEdit(courseId,holeIdx){
     ap_usualClub:ap.usualClub||'',
     strategy:note.strategy||'',
     difficulty:note.difficulty||0,
-    notes:note.notes||''
+    notes:note.notes||'',
+    coordsLat:note.coords?note.coords.lat:'',
+    coordsLng:note.coords?note.coords.lng:'',
+    mapImage:note.mapImage||''
   };
   renderHoleEditModal(c,hole);
 }
@@ -11864,6 +11869,20 @@ function renderHoleEditModal(course,hole){
   }
   html+='</div>';
 
+  // ── Section REPÈRES VISUELS (Option A + B) ──
+  html+='<div style="margin-top:14px;padding:10px;background:#fef3c7;border-radius:10px;border-left:3px solid #f59e0b">';
+  html+='<div class="ct" style="margin-bottom:8px;color:#92400e">🗺️ Repères visuels</div>';
+  html+='<div class="lbl">Coordonnées GPS (centre du trou)</div>';
+  html+='<div class="f g8 mb8">';
+  html+='<input type="number" step="0.0001" class="inp" style="flex:1" value="'+(f.coordsLat||'')+'" placeholder="Latitude ex: 47.2909" onchange="S._noteForm.coordsLat=parseFloat(this.value)||\'\'">';
+  html+='<input type="number" step="0.0001" class="inp" style="flex:1" value="'+(f.coordsLng||'')+'" placeholder="Longitude ex: -1.6993" onchange="S._noteForm.coordsLng=parseFloat(this.value)||\'\'">';
+  html+='</div>';
+  html+='<div class="f11 tm" style="margin-bottom:8px">💡 Clic-droit sur Google Maps → « Quelles sont ces coordonnées ? »</div>';
+  html+='<div class="lbl">Image carte du trou (URL ou chemin)</div>';
+  html+='<input type="text" class="inp mb8" value="'+esc(f.mapImage||'')+'" placeholder="ex: pages/hole-maps/vigneux/h1.jpg" onchange="S._noteForm.mapImage=this.value">';
+  html+='<div class="f11 tm">Schéma / extrait du carnet du club, JPG ou PNG.</div>';
+  html+='</div>';
+
   // Notes libres
   html+='<div class="lbl">📝 Notes libres</div>';
   html+='<textarea class="inp mb8" rows="2" placeholder="Vent dominant, pente du green, repères…" onchange="S._noteForm.notes=this.value">'+esc(f.notes)+'</textarea>';
@@ -11928,7 +11947,9 @@ function saveHoleNoteFromForm(){
     },
     strategy:f.strategy,
     difficulty:f.difficulty,
-    notes:f.notes
+    notes:f.notes,
+    coords:(f.coordsLat&&f.coordsLng)?{lat:f.coordsLat,lng:f.coordsLng}:null,
+    mapImage:f.mapImage||''
   };
   saveHoleNote(f.courseId,f.holeIdx,entry);
   document.getElementById('nb-mo')?.remove();
@@ -11944,6 +11965,62 @@ function deleteHoleNote(){
     S._noteForm=null;
     render();
   });
+}
+
+// ── Repères visuels (Option A + B) ──
+// A : liens Google Maps satellite + Flyovergreen
+// B : aperçu image carte du trou + plein écran
+function renderHoleMapButtons(courseId,holeIdx){
+  var note=getHoleNote(courseId,holeIdx)||{};
+  var course=DB.courses.find(function(x){return x.id===courseId;});
+  var courseName=course?course.name:'';
+  var flyover=(typeof COURSE_INFO!=='undefined' && COURSE_INFO[courseName])?COURSE_INFO[courseName].flyover:'';
+  var hasCoords=note.coords && note.coords.lat && note.coords.lng;
+  var hasImage=note.mapImage;
+  if(!hasCoords && !hasImage && !flyover)return '';
+  var out='<div class="f g8" style="padding:8px 14px;flex-wrap:wrap;background:#fafafa;border-bottom:1px solid #e5e7eb">';
+  if(hasCoords){
+    var mapsUrl='https://www.google.com/maps/@'+note.coords.lat+','+note.coords.lng+',300m/data=!3m1!1e3';
+    out+='<a href="'+mapsUrl+'" target="_blank" rel="noopener" class="btn bsm mb0" style="flex:1;min-width:100px;text-decoration:none;background:#ecfeff;color:#0891b2;font-size:11px;text-align:center;padding:6px 4px" onclick="event.stopPropagation()">🗺️ Satellite</a>';
+  }
+  if(flyover){
+    out+='<a href="'+flyover+'" target="_blank" rel="noopener" class="btn bsm mb0" style="flex:1;min-width:100px;text-decoration:none;background:#fef3c7;color:#92400e;font-size:11px;text-align:center;padding:6px 4px" onclick="event.stopPropagation()">📹 Flyover</a>';
+  }
+  if(hasImage){
+    out+='<button class="btn bsm mb0" style="flex:1;min-width:100px;background:#f0fdf4;color:#166534;font-size:11px;padding:6px 4px" onclick="event.stopPropagation();openHoleMapFullscreen(\''+courseId+'\','+holeIdx+')">🖼️ Carte trou</button>';
+  }
+  out+='</div>';
+  return out;
+}
+
+function openHoleMapFullscreen(courseId,holeIdx){
+  var note=getHoleNote(courseId,holeIdx);
+  if(!note||!note.mapImage)return;
+  var course=DB.courses.find(function(x){return x.id===courseId;});
+  var hole=course?course.holes[holeIdx]:null;
+  var existing=document.getElementById('hole-map-fs');if(existing)existing.remove();
+  var div=document.createElement('div');
+  div.id='hole-map-fs';
+  div.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px';
+  var title='Trou '+(holeIdx+1)+(hole?' · Par '+hole.par+(hole.distBlanc?' · '+hole.distBlanc+'m':''):'');
+  var safeSrc=esc(note.mapImage);
+  var html='';
+  html+='<div style="color:#fff;font-weight:700;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;width:100%;max-width:700px">';
+  html+='<span style="font-size:15px">'+esc(title)+'</span>';
+  html+='<button class="btn bsm mb0" style="background:#fff;color:#0f172a" onclick="document.getElementById(\'hole-map-fs\').remove()">✕ Fermer</button>';
+  html+='</div>';
+  html+='<div style="flex:1;overflow:auto;width:100%;max-width:700px;display:flex;align-items:center;justify-content:center">';
+  html+='<img src="'+safeSrc+'" alt="Carte trou '+(holeIdx+1)+'" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;background:#fff" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'block\'">';
+  html+='<div style="display:none;color:#fca5a5;padding:20px;text-align:center;font-size:12px">Image introuvable :<br>'+safeSrc+'</div>';
+  html+='</div>';
+  if(note.strategy||(note.teeShot&&note.teeShot.targetDistance)){
+    html+='<div style="color:#e2e8f0;font-size:12px;padding:10px;max-width:700px;width:100%;line-height:1.5">';
+    if(note.teeShot&&note.teeShot.targetDistance)html+='<div>🚩 Cible : '+note.teeShot.targetDistance+'m'+(note.teeShot.landingZone?' ('+esc(note.teeShot.landingZone)+')':'')+'</div>';
+    if(note.strategy)html+='<div style="margin-top:4px">🎯 '+esc(note.strategy)+'</div>';
+    html+='</div>';
+  }
+  div.innerHTML=html;
+  document.body.appendChild(div);
 }
 
 // Drawer collant en bas (au-dessus de la navbar), extensible.
@@ -12000,8 +12077,10 @@ function renderNotebookFab(courseId,holeIdx){
     objAlerts.forEach(function(a){caddyBar+='<div class="f12" style="color:#0891b2;margin-bottom:3px;line-height:1.4">🎯 '+esc(a.say)+'</div>';});
     caddyBar+='</div>';
   }
+  var mapButtons=renderHoleMapButtons(courseId,holeIdx);
   return '<div class="nb-drawer" style="position:sticky;bottom:60px;z-index:35;background:var(--card);border-top:1px solid var(--gray);box-shadow:0 -2px 10px rgba(0,0,0,.04)">'+
     caddyBar+
+    mapButtons+
     (hasOv?'<a href="javascript:void(0)" onclick="event.stopPropagation();openCourseOverviewEdit(\''+courseId+'\')" style="display:block;padding:6px 14px 0;font-size:11px;color:#0891b2;text-decoration:none;font-weight:600">📖 Consignes du parcours ›</a>':'')+
     '<button type="button" onclick="S.nbDrawerOpen='+(!open)+';render()" '+
     'style="width:100%;background:transparent;border:none;padding:10px 14px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;font-family:inherit">'+
