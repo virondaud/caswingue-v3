@@ -11776,6 +11776,34 @@ function renderNotebookHoleRow(courseId,idx,hole,note){
   var typeLabel=n.type?HOLE_TYPES.find(t=>t.key===n.type)?.label:'';
   var apStratLabel=ap.strategy?APPROACH_STRATEGIES.find(t=>t.key===ap.strategy)?.label.replace(/^[^ ]+ /,''):'';
   var lzLabel=ts.landingZone?LANDING_ZONES.find(z=>z.key===ts.landingZone)?.label:'';
+
+  // Classe les dangers : tee-side (distance depuis tee) vs green-side (depuis green)
+  // Les bords de green (green_front/back/left/right) servent à calculer la taille du green.
+  var green=n.coordsGreen;
+  var teeDangers=[],greensideDangers=[],edgePts={};
+  (ts.dangers||[]).forEach(function(d){
+    if(!d)return;
+    if(d.type==='green_front'||d.type==='green_back'||d.type==='green_left'||d.type==='green_right'){
+      if(d.coords)edgePts[d.type]=d.coords;
+      return;
+    }
+    if(green&&d.coords){
+      var dg=gpsDistanceM(d.coords.lat,d.coords.lng,green.lat,green.lng);
+      if(dg<30){greensideDangers.push({d:d,dg:Math.round(dg)});return;}
+    }
+    teeDangers.push(d);
+  });
+  // Taille du green (longueur × largeur) si les 4 bords existent
+  var greenSize='';
+  if(edgePts.green_front&&edgePts.green_back&&edgePts.green_left&&edgePts.green_right){
+    var depth=Math.round(gpsDistanceM(edgePts.green_front.lat,edgePts.green_front.lng,edgePts.green_back.lat,edgePts.green_back.lng));
+    var width=Math.round(gpsDistanceM(edgePts.green_left.lat,edgePts.green_left.lng,edgePts.green_right.lat,edgePts.green_right.lng));
+    greenSize='Green ≈ '+depth+'m × '+width+'m';
+  }
+  // Badges tee-side (distance tee) + green-side (distance green)
+  var badgeTee=teeDangers.map(function(d){var dl=DANGER_TYPES.find(x=>x.key===d.type);return dl?`<span class="badge bg" style="background:#fef3c7;color:#92400e;font-size:10px">⚠️ ${esc(dl.label)}${d.distance?' '+d.distance+'m':''}</span>`:'';}).join('');
+  var badgeGreen=greensideDangers.map(function(o){var dl=DANGER_TYPES.find(x=>x.key===o.d.type);return dl?`<span class="badge bg" style="background:#fde68a;color:#78350f;font-size:10px">⛳ ${esc(dl.label)} ${o.dg}m`+'</span>':'';}).join('');
+
   return `<div class="card" style="padding:10px;cursor:pointer" onclick="openHoleEdit('${courseId}',${idx})">
     <div class="f" style="justify-content:space-between;align-items:flex-start">
       <div style="flex:1;min-width:0">
@@ -11783,7 +11811,9 @@ function renderNotebookHoleRow(courseId,idx,hole,note){
         ${hasNote?`
           ${typeLabel?`<div class="f11 tm mt8">${typeLabel}</div>`:''}
           ${ts.targetDistance?`<div class="f11" style="margin-top:2px;color:#16a34a">🚩 Viser ${ts.targetDistance}m${lzLabel?' · '+esc(lzLabel):''}</div>`:''}
-          ${ts.dangers&&ts.dangers.length?`<div class="f g8 mt8" style="flex-wrap:wrap">${ts.dangers.map(d=>{var dl=DANGER_TYPES.find(x=>x.key===d.type);return dl?`<span class="badge bg" style="background:#fef3c7;color:#92400e;font-size:10px">⚠️ ${esc(dl.label)}${d.distance?' '+d.distance+'m':''}</span>`:'';}).join('')}</div>`:''}
+          ${badgeTee?`<div class="f g8 mt8" style="flex-wrap:wrap">${badgeTee}</div>`:''}
+          ${greenSize?`<div class="f11" style="margin-top:6px;color:#0891b2;font-weight:600">⛳ ${greenSize}</div>`:''}
+          ${badgeGreen?`<div class="f g8 mt4" style="flex-wrap:wrap">${badgeGreen}</div>`:''}
           ${apStratLabel?`<div class="f11" style="margin-top:4px;color:#0891b2">⛳ ${esc(apStratLabel)}${ap.targetBeforePin?' · '+ap.targetBeforePin+'m avant drapeau':''}</div>`:''}
           ${n.strategy?`<div class="f12" style="margin-top:6px;color:#334155">«${esc(n.strategy.slice(0,120))}${n.strategy.length>120?'…':''}»</div>`:''}
           ${n.difficulty?`<div class="f11 tm mt8" style="color:#d97706">${stars}</div>`:''}
@@ -12467,9 +12497,6 @@ function drawHoleMapOverlay(){
   // Arcs de distance — depuis tee OU depuis green selon le toggle
   var fromGreen=!!st.viewFromGreen;
   var centerPx=fromGreen?cal.greenPx:cal.teePx;
-  var arcDistances=fromGreen?[30,60,100,150]:[100,150,200,250];
-  var arcColor=fromGreen?'#f97316':'#60a5fa';     // orange pour vue green, bleu pour tee
-  var arcLabelColor=fromGreen?'#9a3412':'#1e40af';
   // Vecteur unitaire tee→green (pour placer les labels sur l'axe)
   var vx=(cal.greenPx.x-cal.teePx.x)/pLenPx, vy=(cal.greenPx.y-cal.teePx.y)/pLenPx;
   // Si T ou G pas encore validé, on saute arcs + dangers + visée — n'affiche que T et G
@@ -12482,14 +12509,34 @@ function drawHoleMapOverlay(){
     setupHoleMapDrag();
     return;
   }
-  arcDistances.forEach(function(m){
-    var r=m*pxPerM;
-    out+='<circle cx="'+centerPx.x+'" cy="'+centerPx.y+'" r="'+r+'" fill="none" stroke="'+arcColor+'" stroke-width="2" stroke-dasharray="8 6" opacity="0.55"/>';
-    // Label : en vue green, on place vers le tee (vecteur inverse)
-    var dirX=fromGreen?-vx:vx, dirY=fromGreen?-vy:vy;
-    var lx=centerPx.x+dirX*r, ly=centerPx.y+dirY*r;
-    out+='<rect x="'+(lx-22)+'" y="'+(ly-11)+'" width="44" height="18" rx="4" fill="'+arcLabelColor+'" opacity="0.85"/>';
-    out+='<text x="'+lx+'" y="'+(ly+4)+'" text-anchor="middle" fill="#fff" font-size="14" font-weight="700" font-family="Inter,sans-serif">'+m+'m</text>';
+  // Bandes par zone en vue tee (par 4/5) :
+  //  - zone tee shot (0-150m)  → cyan
+  //  - zone fairway   (150-225m) → vert lime (avant l'approche du green)
+  //  en vue green : arcs orange unifiés centrés sur le green
+  var arcBands;
+  if(fromGreen){
+    arcBands=[
+      {distances:[30,60,100,150],color:'#f97316',labelColor:'#9a3412'}
+    ];
+  }else if(isPar3){
+    arcBands=[
+      {distances:[50,100,150,200],color:'#60a5fa',labelColor:'#1e40af'}
+    ];
+  }else{
+    arcBands=[
+      {distances:[100,150],color:'#06b6d4',labelColor:'#0e7490'},            // tee shot = cyan
+      {distances:[180,210,240],color:'#84cc16',labelColor:'#3f6212'}          // fairway = lime
+    ];
+  }
+  arcBands.forEach(function(band){
+    band.distances.forEach(function(m){
+      var r=m*pxPerM;
+      out+='<circle cx="'+centerPx.x+'" cy="'+centerPx.y+'" r="'+r+'" fill="none" stroke="'+band.color+'" stroke-width="2" stroke-dasharray="8 6" opacity="0.55"/>';
+      var dirX=fromGreen?-vx:vx, dirY=fromGreen?-vy:vy;
+      var lx=centerPx.x+dirX*r, ly=centerPx.y+dirY*r;
+      out+='<rect x="'+(lx-22)+'" y="'+(ly-11)+'" width="44" height="18" rx="4" fill="'+band.labelColor+'" opacity="0.85"/>';
+      out+='<text x="'+lx+'" y="'+(ly+4)+'" text-anchor="middle" fill="#fff" font-size="14" font-weight="700" font-family="Inter,sans-serif">'+m+'m</text>';
+    });
   });
   // Dangers — filtrage par catégorie selon la vue (tee-side vs green-side)
   // Classification :
