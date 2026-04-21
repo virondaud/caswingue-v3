@@ -12218,7 +12218,35 @@ function toggleMapImage(){
 function toggleViewFromGreen(){
   var st=S._holeMap;if(!st)return;
   st.viewFromGreen=!st.viewFromGreen;
-  drawHoleMapOverlay();
+  if(st.viewFromGreen){
+    st.zoom=Math.max(st.zoom||1,2.5);
+    st.pendingScrollTo='green';
+  }else{
+    st.zoom=1;
+    st.pendingScrollTo='tee';
+  }
+  renderHoleMapFullscreen();
+}
+
+// Scroll du conteneur pour centrer un point (tee/green) en vue.
+function scrollHoleMapTo(which){
+  var st=S._holeMap;if(!st)return;
+  var note=getHoleNote(st.courseId,st.holeIdx);if(!note||!note.calibration)return;
+  var cal=note.calibration;
+  var img=document.getElementById('hm-img');
+  var wrap=document.getElementById('hm-wrap');
+  if(!img||!wrap||!img.naturalWidth)return;
+  var container=wrap.parentNode;if(!container)return;
+  var renderedW=parseInt(img.style.width)||img.clientWidth;
+  var renderedH=parseInt(img.style.height)||img.clientHeight;
+  if(!renderedW)return;
+  var scaleX=renderedW/img.naturalWidth;
+  var scaleY=renderedH/img.naturalHeight;
+  var px=(which==='green')?cal.greenPx:cal.teePx;
+  var targetX=px.x*scaleX;
+  var targetY=px.y*scaleY;
+  container.scrollLeft=Math.max(0,targetX-container.clientWidth/2);
+  container.scrollTop=Math.max(0,targetY-container.clientHeight/2);
 }
 
 function setHoleMapZoom(delta){
@@ -12352,6 +12380,12 @@ function onHoleMapImgLoad(){
   if(svg)svg.setAttribute('viewBox','0 0 '+img.naturalWidth+' '+img.naturalHeight);
   applyHoleMapZoom();
   drawHoleMapOverlay();
+  // Scroll demandé par toggleViewFromGreen ou setHoleMapZoom
+  if(st.pendingScrollTo){
+    var target=st.pendingScrollTo;
+    st.pendingScrollTo=null;
+    setTimeout(function(){scrollHoleMapTo(target);},30);
+  }
 }
 
 function drawHoleMapOverlay(){
