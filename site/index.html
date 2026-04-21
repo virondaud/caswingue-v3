@@ -12508,6 +12508,23 @@ function drawHoleMapOverlay(){
   // Dédoublonnage des listes dangers (racine + teeShot.dangers)
   var allDangers=[].concat(note.dangers||[]);
   if(!note.dangers&&note.teeShot&&note.teeShot.dangers)allDangers=allDangers.concat(note.teeShot.dangers);
+  // Filtrage image (le carnet conserve toutes les données) :
+  //  - Pas de green_front/back/left/right sur la carte (trop imprécis visuellement)
+  //  - Une seule balise par bunker : on garde l'instance au plus petit distance (= entrée)
+  var GREEN_EDGE_TYPES={green_front:1,green_back:1,green_left:1,green_right:1};
+  var bestBunkerByType={};
+  allDangers.forEach(function(d){
+    if(!d||!d.coords||!d.type)return;
+    if(d.type.indexOf('bunker')!==0)return;
+    var prev=bestBunkerByType[d.type];
+    if(!prev || (d.distance||99999)<(prev.distance||99999))bestBunkerByType[d.type]=d;
+  });
+  allDangers=allDangers.filter(function(d){
+    if(!d||!d.coords)return false;
+    if(GREEN_EDGE_TYPES[d.type])return false;
+    if(d.type && d.type.indexOf('bunker')===0)return bestBunkerByType[d.type]===d;
+    return true;
+  });
   allDangers.forEach(function(d){
     if(!d.coords)return;
     var cat=categorize(d);
