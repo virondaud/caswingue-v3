@@ -11917,6 +11917,9 @@ function renderHoleEditModal(course,hole){
   html+='<div class="lbl">🖼️ Image carte du trou (URL ou chemin)</div>';
   html+='<input type="text" class="inp mb8" value="'+esc(f.mapImage||'')+'" placeholder="ex: pages/hole-maps/vigneux/h1.jpg" onchange="S._noteForm.mapImage=this.value">';
   html+='<div class="f11 tm" style="margin-bottom:8px">Schéma / extrait du carnet du club, JPG ou PNG.</div>';
+  if(f.mapImage){
+    html+='<button class="btn bp mb0" style="width:100%;margin-bottom:8px" onclick="openMapFromEdit()">🖼️ Ouvrir la carte (placer T & G)</button>';
+  }
   html+='<div class="lbl">🏌️ Fiche officielle du club (URL)</div>';
   html+='<input type="url" class="inp mb8" value="'+esc(f.officialUrl||'')+'" placeholder="ex: https://www.golfclubdenantes.com/parcours/trou-1/" onchange="S._noteForm.officialUrl=this.value">';
   html+='</div>';
@@ -11948,6 +11951,14 @@ function removeDanger(idx){
   syncNoteFormFromDOM();
   f.ts_dangers.splice(idx,1);
   reopenHoleModal();
+}
+// Ouvre la carte plein écran depuis le modal d'édition du carnet (hors partie).
+// Sauvegarde d'abord les champs en cours, puis ouvre la vue map (laisse le modal d'édition ouvert derrière).
+function openMapFromEdit(){
+  var f=S._noteForm;if(!f)return;
+  var cid=f.courseId, hi=f.holeIdx;
+  saveHoleNoteFromForm(); // referme le modal + réouvre la carte au-dessus
+  openHoleMapFullscreen(cid,hi);
 }
 // Met à jour lat/lng d'un danger, supprime coords si les 2 sont vides
 function setDangerCoord(idx,which,val){
@@ -12137,8 +12148,53 @@ function gpsToPx(lat,lng,tee,green,cal){
 function openHoleMapFullscreen(courseId,holeIdx){
   var note=getHoleNote(courseId,holeIdx);
   if(!note||!note.mapImage)return;
-  S._holeMap={courseId:courseId,holeIdx:holeIdx,imageSize:null};
+  S._holeMap={courseId:courseId,holeIdx:holeIdx,imageSize:null,zoom:1};
   renderHoleMapFullscreen();
+}
+
+function setHoleMapZoom(delta){
+  var st=S._holeMap;if(!st)return;
+  var z=(st.zoom||1)+delta;
+  if(z<1)z=1;if(z>4)z=4;
+  st.zoom=z;
+  applyHoleMapZoom();
+}
+function applyHoleMapZoom(){
+  var st=S._holeMap;if(!st)return;
+  var img=document.getElementById('hm-img');
+  var svg=document.getElementById('hm-svg');
+  var wrap=document.getElementById('hm-wrap');
+  if(!img||!wrap)return;
+  var z=st.zoom||1;
+  // Au zoom 1 : image à sa taille max (max-width:100%; max-height:82vh).
+  // Au zoom >1 : on force width en px pour activer le scroll du conteneur.
+  if(z===1){
+    img.style.width='';
+    img.style.height='';
+    img.style.maxWidth='100%';
+    img.style.maxHeight='82vh';
+    wrap.style.width='';
+    wrap.style.height='';
+  }else{
+    // Prendre la taille actuelle rendue comme base et multiplier
+    var baseW=img.naturalWidth;
+    var baseH=img.naturalHeight;
+    // On limite la base à la taille d'affichage à zoom 1
+    var maxDispW=Math.min(document.documentElement.clientWidth-20,700);
+    var ratio=Math.min(maxDispW/baseW, (window.innerHeight*0.82)/baseH);
+    if(ratio>1)ratio=1;
+    var w=Math.round(baseW*ratio*z);
+    var h=Math.round(baseH*ratio*z);
+    img.style.maxWidth='none';
+    img.style.maxHeight='none';
+    img.style.width=w+'px';
+    img.style.height=h+'px';
+    wrap.style.width=w+'px';
+    wrap.style.height=h+'px';
+  }
+  // Le SVG suit automatiquement via width:100%;height:100% du wrap
+  var btn=document.getElementById('hm-zoom-lbl');
+  if(btn)btn.textContent=z.toFixed(1)+'×';
 }
 
 // Place T et G à des positions par défaut (bas-droite & haut-gauche) pour que
@@ -12174,13 +12230,17 @@ function renderHoleMapFullscreen(){
   var hasCoords=note.coordsTee&&note.coordsGreen;
   var html='';
   // Header
-  html+='<div style="color:#fff;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px;width:100%;max-width:700px;margin-left:auto;margin-right:auto">';
-  html+='<span style="font-size:14px;flex:1">'+esc(title)+'</span>';
+  html+='<div style="color:#fff;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px;width:100%;max-width:700px;margin-left:auto;margin-right:auto">';
+  html+='<span style="font-size:13px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(title)+'</span>';
+  // Boutons zoom
+  html+='<button class="btn bsm mb0" style="background:#fff;color:#0f172a;font-size:16px;padding:4px 10px" onclick="setHoleMapZoom(-0.5)">−</button>';
+  html+='<span id="hm-zoom-lbl" style="color:#fff;font-size:11px;min-width:28px;text-align:center">'+((st.zoom||1).toFixed(1))+'×</span>';
+  html+='<button class="btn bsm mb0" style="background:#fff;color:#0f172a;font-size:16px;padding:4px 10px" onclick="setHoleMapZoom(0.5)">+</button>';
   if(hasCoords){
     if(!cal){
-      html+='<button class="btn bsm mb0" style="background:#10b981;color:#fff" onclick="startCalibration()">🎯 Placer T & G</button>';
+      html+='<button class="btn bsm mb0" style="background:#10b981;color:#fff;font-size:11px;padding:4px 8px" onclick="startCalibration()">🎯 T&G</button>';
     }else{
-      html+='<button class="btn bsm mb0" style="background:#94a3b8;color:#fff;font-size:11px" onclick="resetCalibration()">🔁 Reset</button>';
+      html+='<button class="btn bsm mb0" style="background:#94a3b8;color:#fff;font-size:11px;padding:4px 8px" onclick="resetCalibration()">🔁</button>';
     }
   }
   html+='<button class="btn bsm mb0" style="background:#fff;color:#0f172a" onclick="closeHoleMap()">✕</button>';
@@ -12210,6 +12270,7 @@ function onHoleMapImgLoad(){
   st.imageSize={w:img.naturalWidth,h:img.naturalHeight};
   var svg=document.getElementById('hm-svg');
   if(svg)svg.setAttribute('viewBox','0 0 '+img.naturalWidth+' '+img.naturalHeight);
+  applyHoleMapZoom();
   drawHoleMapOverlay();
 }
 
