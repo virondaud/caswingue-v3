@@ -12246,7 +12246,7 @@ function toggleViewFromGreen(){
   var st=S._holeMap;if(!st)return;
   st.viewFromGreen=!st.viewFromGreen;
   if(st.viewFromGreen){
-    st.zoom=Math.max(st.zoom||1,2.5);
+    st.zoom=Math.max(st.zoom||1,1.5);
     st.pendingScrollTo='green';
   }else{
     st.zoom=1;
@@ -12380,21 +12380,28 @@ function renderHoleMapFullscreen(){
   html+='<svg id="hm-svg" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none" preserveAspectRatio="xMidYMid meet"></svg>';
   html+='</div>';
   html+='</div>';
-  // Infos bas
-  var infoParts=[];
+  // Infos bas — statut calibration + bouton Valider le cas échéant
   var okT=cal&&cal.placedT, okG=cal&&cal.placedG;
-  if(!hasCoords)infoParts.push('<span style="color:#fbbf24">⚠️ Renseigne tee + green dans le carnet pour la calibration</span>');
-  else if(!cal)infoParts.push('<span style="color:#fbbf24">👉 Tape « 📍 T » puis tape sur le départ jaune</span>');
-  else if(!okT||!okG){
+  var confirmed=cal&&cal.userConfirmed;
+  var bottom='<div style="color:#e2e8f0;font-size:12px;padding:10px;max-width:700px;margin:0 auto;width:100%;line-height:1.5">';
+  if(!hasCoords){
+    bottom+='<span style="color:#fbbf24">⚠️ Renseigne tee + green dans le carnet</span>';
+  }else if(!cal){
+    bottom+='<span style="color:#fbbf24">👉 Tape « 📍 T » puis tape sur le départ jaune</span>';
+  }else if(!okT||!okG){
     var parts=[];
     if(!okT)parts.push('« 📍 T » → départ jaune');
     if(!okG)parts.push('« 📍 G » → centre du green');
-    infoParts.push('<span style="color:#fbbf24">👉 Reste à placer : '+parts.join(' · ')+'</span>');
+    bottom+='<span style="color:#fbbf24">👉 Reste à placer : '+parts.join(' · ')+'</span>';
+  }else if(!confirmed){
+    // T et G placés mais pas encore confirmés → bouton Valider
+    bottom+='<div style="background:#fbbf24;color:#0f172a;padding:10px;border-radius:8px;display:flex;align-items:center;gap:10px"><span style="flex:1;font-weight:700;font-size:13px">T et G placés. Vérifie puis valide :</span><button class="btn bp mb0" style="background:#16a34a;color:#fff;padding:6px 14px;font-size:13px" onclick="confirmCalibration()">✅ Valider</button></div>';
   }else{
-    infoParts.push('✅ Calibré — fais glisser T ou G pour ajuster');
+    bottom+='✅ Calibré — fais glisser T ou G pour ajuster';
   }
-  if(note.strategy)infoParts.push('🎯 '+esc(note.strategy));
-  html+='<div style="color:#e2e8f0;font-size:12px;padding:10px;max-width:700px;margin:0 auto;width:100%;line-height:1.5">'+infoParts.join('<br>')+'</div>';
+  if(note.strategy)bottom+='<div style="margin-top:6px">🎯 '+esc(note.strategy)+'</div>';
+  bottom+='</div>';
+  html+=bottom;
   div.innerHTML=html;
   document.body.appendChild(div);
 }
@@ -12425,8 +12432,9 @@ function drawHoleMapOverlay(){
   if(!mi.hasOverlay)return;
   var cal=note.calibration;
   if(!cal||!note.coordsTee||!note.coordsGreen)return;
-  // Tant que T ET G n'ont pas été validés manuellement (drag OU tap), on n'affiche QUE T et G.
-  var calibConfirmed=!!(cal.placedT && cal.placedG);
+  // Tant que T ET G n'ont pas été placés ET explicitement validés (bouton Valider),
+  // on n'affiche QUE T et G pour que l'utilisateur puisse les vérifier d'abord.
+  var calibConfirmed=!!(cal.placedT && cal.placedG && cal.userConfirmed);
   var tee=note.coordsTee;
   var green=note.coordsGreen;
   var imgW=(st.imageSize&&st.imageSize.w)||cal.imageSize.w;
@@ -12598,6 +12606,15 @@ function resetCalibration(){
   var note=getHoleNote(st.courseId,st.holeIdx);
   if(note){delete note.calibration;saveHoleNote(st.courseId,st.holeIdx,note);}
   startCalibration();
+}
+
+// Confirme explicitement la calibration → déclenche l'affichage des autres points.
+function confirmCalibration(){
+  var st=S._holeMap;if(!st)return;
+  var note=getHoleNote(st.courseId,st.holeIdx);if(!note||!note.calibration)return;
+  note.calibration.userConfirmed=true;
+  saveHoleNote(st.courseId,st.holeIdx,note);
+  renderHoleMapFullscreen();
 }
 function closeHoleMap(){
   var d=document.getElementById('hole-map-fs');if(d)d.remove();
