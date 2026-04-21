@@ -11633,6 +11633,8 @@ function courseNotebookView(){
   if(!c)return clubNantesView();
   var nb=getCourseNotebook(cid);
   var holes=c.holes||[];
+  var flyover=(typeof COURSE_INFO!=='undefined' && COURSE_INFO[c.name])?COURSE_INFO[c.name].flyover:'';
+  var flyBtn=flyover?`<a href="${flyover}" target="_blank" rel="noopener" class="card" style="display:flex;align-items:center;gap:10px;padding:12px;text-decoration:none;background:#fef3c7;border-left:4px solid #f59e0b"><span style="font-size:22px">📹</span><div style="flex:1"><div class="fw7 f13" style="color:#92400e">Flyover — Vidéo aérienne du parcours</div><div class="f11" style="color:#78350f">Voir les 18 trous en vue aérienne</div></div><div style="color:#92400e;font-size:18px">›</div></a>`:'';
   return`<div class="hdr"><button class="back" onclick="go('clubNantes')">‹</button><h1>📓 Carnet — ${esc(c.name)}</h1></div>
   <div class="content an">
     <div class="card" style="background:linear-gradient(135deg,#0891b2,#06b6d4);color:#fff;padding:14px">
@@ -11641,6 +11643,7 @@ function courseNotebookView(){
         <div class="f12" style="opacity:.9">Stratégie, club préféré, pièges et notes — trou par trou.</div></div>
       </div>
     </div>
+    ${flyBtn}
     ${renderCourseOverviewCard(cid,c)}
     ${holes.map((h,i)=>renderNotebookHoleRow(cid,i,h,nb[i])).join('')}
   </div>`;
@@ -12106,17 +12109,41 @@ function renderHoleMapButtons(courseId,holeIdx){
   }
 
   var btns='<div class="f g8" style="padding:8px 14px;flex-wrap:wrap;background:#fafafa;border-bottom:1px solid #e5e7eb">';
-  if(flyover){
-    btns+='<a href="'+flyover+'" target="_blank" rel="noopener" class="btn bsm mb0" style="flex:1;min-width:100px;text-decoration:none;background:#fef3c7;color:#92400e;font-size:11px;text-align:center;padding:6px 4px" onclick="event.stopPropagation()">📹 Flyover</a>';
-  }
   if(hasImage){
     btns+='<button class="btn bsm mb0" style="flex:1;min-width:100px;background:#f0fdf4;color:#166534;font-size:11px;padding:6px 4px" onclick="event.stopPropagation();openHoleMapFullscreen(\''+courseId+'\','+holeIdx+')">🖼️ Carte trou</button>';
+  }
+  if(note.mapImageClub){
+    btns+='<button class="btn bsm mb0" style="flex:1;min-width:100px;background:#fef3c7;color:#92400e;font-size:11px;padding:6px 4px" onclick="event.stopPropagation();openHoleClubDrawing(\''+courseId+'\','+holeIdx+')">📐 Dessin du trou</button>';
   }
   if(note.officialUrl){
     btns+='<a href="'+esc(note.officialUrl)+'" target="_blank" rel="noopener" class="btn bsm mb0" style="flex:1;min-width:100px;text-decoration:none;background:#fce7f3;color:#9d174d;font-size:11px;text-align:center;padding:6px 4px" onclick="event.stopPropagation()">🏌️ Fiche club</a>';
   }
   btns+='</div>';
   return compass+btns;
+}
+
+// Viewer simple pour le dessin du trou issu du club — pas d'overlay, pas de calibration.
+function openHoleClubDrawing(courseId,holeIdx){
+  var note=getHoleNote(courseId,holeIdx);
+  if(!note||!note.mapImageClub)return;
+  var course=DB.courses.find(function(x){return x.id===courseId;});
+  var hole=course?course.holes[holeIdx]:null;
+  var existing=document.getElementById('hole-club-fs');if(existing)existing.remove();
+  var div=document.createElement('div');
+  div.id='hole-club-fs';
+  div.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:500;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top,0px) + 10px) 10px calc(env(safe-area-inset-bottom,0px) + 10px) 10px';
+  var title='Trou '+(holeIdx+1)+(hole?' · Par '+hole.par+(hole.distBlanc?' · '+hole.distBlanc+'m':''):'');
+  var safeSrc=esc(note.mapImageClub);
+  var html='';
+  html+='<div style="color:#fff;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px;width:100%;max-width:700px;margin-left:auto;margin-right:auto">';
+  html+='<span style="font-size:14px;flex:1">📐 '+esc(title)+'</span>';
+  html+='<button class="btn bsm mb0" style="background:#fff;color:#0f172a" onclick="document.getElementById(\'hole-club-fs\').remove()">✕</button>';
+  html+='</div>';
+  html+='<div style="flex:1;display:flex;align-items:center;justify-content:center;overflow:auto;width:100%;max-width:700px;margin:0 auto">';
+  html+='<img src="'+safeSrc+'" alt="Dessin trou" style="max-width:100%;max-height:85vh;background:#fff;border-radius:6px">';
+  html+='</div>';
+  div.innerHTML=html;
+  document.body.appendChild(div);
 }
 
 // Projection GPS → pixel basée sur la calibration (2 ancres tee + green).
