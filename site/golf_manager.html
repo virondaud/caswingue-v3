@@ -7214,11 +7214,13 @@ function playing(){
     ${g.gameType==='bbb'?bbbUI(g,pls,hn):''}
   </div>
   ${renderNotebookFab(g.courseId,hn)}
-  <div class="navbar">
+  <div class="navbar" style="justify-content:space-between;gap:6px">
     <button class="btn bo mb0" style="width:auto;padding:11px 12px" onclick="prevH()" ${hn===0?'disabled style="opacity:.35"':''}>‹</button>
-    <button class="btn bo mb0" style="width:auto;padding:11px 10px;font-size:18px;background:rgba(22,163,74,.15);color:#16a34a" onclick="openAdvisorFromGame()" title="Quel club ?">🎯</button>
-    <div class="hctr" style="flex:1;text-align:center"><span style="display:inline-flex;align-items:center;justify-content:center;min-width:36px;height:36px;padding:0 10px;border-radius:18px;background:#1f2937;color:rgba(255,255,255,.9);font-weight:800;font-size:16px">${hn+1}</span></div>
-    <button class="btn bo mb0" style="width:auto;padding:11px 10px;font-size:18px" onclick="go('scorecard')" title="Carte de score">📊</button>
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="btn bo mb0" style="width:auto;padding:11px 10px;font-size:18px;background:rgba(22,163,74,.15);color:#16a34a" onclick="openAdvisorFromGame()" title="Quel club ?">🎯</button>
+      <span style="display:inline-flex;align-items:center;justify-content:center;min-width:36px;height:36px;padding:0 10px;border-radius:18px;background:#1f2937;color:rgba(255,255,255,.9);font-weight:800;font-size:16px">${hn+1}</span>
+      <button class="btn bo mb0" style="width:auto;padding:11px 10px;font-size:18px" onclick="go('scorecard')" title="Carte de score">📊</button>
+    </div>
     ${hn<17?`<button class="btn bp mb0" style="width:auto;padding:11px 12px" onclick="nextH()">›</button>`:
     `<button class="btn bg2 mb0" style="width:auto;padding:11px 14px" onclick="finishGame()">🏆 Fin</button>`}
   </div>`}
@@ -11380,12 +11382,10 @@ function renderNotebookFab(courseId,holeIdx){
   return '<div class="nb-drawer" style="position:sticky;bottom:60px;z-index:35;background:var(--card);border-top:1px solid var(--gray);box-shadow:0 -2px 10px rgba(0,0,0,.04)">'+
     (hasOv?'<a href="javascript:void(0)" onclick="event.stopPropagation();openCourseOverviewEdit(\''+courseId+'\')" style="display:block;padding:6px 14px 0;font-size:11px;color:#0891b2;text-decoration:none;font-weight:600">📖 Consignes du parcours ›</a>':'')+
     '<button type="button" onclick="S.nbDrawerOpen='+(!open)+';render()" '+
-    'style="width:100%;background:transparent;border:none;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-family:inherit">'+
-    '<div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1">'+
-      '<span style="font-size:18px">'+(hasNote?'✏️':'📓')+'</span>'+
-      '<span style="color:#0891b2;font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(headerText)+'</span>'+
-    '</div>'+
-    '<span style="color:#0891b2;font-size:28px;flex-shrink:0;margin-left:8px;line-height:1">'+chev+'</span>'+
+    'style="width:100%;background:transparent;border:none;padding:10px 14px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;font-family:inherit">'+
+    '<span style="font-size:18px">'+(hasNote?'✏️':'📓')+'</span>'+
+    '<span style="color:#0891b2;font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:65vw">'+esc(headerText)+'</span>'+
+    '<span style="color:#0891b2;font-size:28px;line-height:1">'+chev+'</span>'+
     '</button>'+
     body+
     '</div>';
