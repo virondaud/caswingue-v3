@@ -12272,21 +12272,14 @@ function renderHoleMapFullscreen(){
   html+='</div>';
   // Header ligne 2 : toggles + zoom + reset
   html+='<div style="margin-bottom:8px;display:flex;align-items:center;gap:6px;width:100%;max-width:700px;margin-left:auto;margin-right:auto;flex-wrap:wrap">';
-  // Toggle image (satellite ↔ schéma club)
-  if(hasBothImages){
-    html+='<button class="btn bsm mb0" style="background:#fff;color:#0f172a;font-size:11px;padding:4px 8px" onclick="toggleMapImage()">'+(st.useAlt?'📐 Schéma':'🛰️ Satellite')+'</button>';
-  }
-  // Le reste des contrôles n'a de sens qu'en vue satellite (avec overlay)
-  if(mi.hasOverlay){
-    // Toggle vue tee/green
-    html+='<button class="btn bsm mb0" style="background:'+(st.viewFromGreen?'#eab308':'#16a34a')+';color:#fff;font-size:11px;padding:4px 8px" onclick="toggleViewFromGreen()">'+(st.viewFromGreen?'⛳ Vue green':'🚩 Vue tee')+'</button>';
-    // Calibration
-    if(hasCoords){
-      if(!cal){
-        html+='<button class="btn bsm mb0" style="background:#10b981;color:#fff;font-size:11px;padding:4px 8px" onclick="startCalibration()">🎯 T&G</button>';
-      }else{
-        html+='<button class="btn bsm mb0" style="background:#94a3b8;color:#fff;font-size:11px;padding:4px 8px" onclick="resetCalibration()">🔁</button>';
-      }
+  // Toggle vue tee/green
+  html+='<button class="btn bsm mb0" style="background:'+(st.viewFromGreen?'#eab308':'#16a34a')+';color:#fff;font-size:11px;padding:4px 8px" onclick="toggleViewFromGreen()">'+(st.viewFromGreen?'⛳ Vue green':'🚩 Vue tee')+'</button>';
+  // Calibration
+  if(hasCoords){
+    if(!cal){
+      html+='<button class="btn bsm mb0" style="background:#10b981;color:#fff;font-size:11px;padding:4px 8px" onclick="startCalibration()">🎯 T&G</button>';
+    }else{
+      html+='<button class="btn bsm mb0" style="background:#94a3b8;color:#fff;font-size:11px;padding:4px 8px" onclick="resetCalibration()">🔁</button>';
     }
   }
   // Zoom (valable pour les deux vues)
@@ -12300,15 +12293,6 @@ function renderHoleMapFullscreen(){
   html+='<img id="hm-img" src="'+safeSrc+'" alt="Carte trou" style="display:block;max-width:100%;max-height:82vh;width:auto;height:auto;background:#fff;border-radius:6px" onload="onHoleMapImgLoad()" onerror="this.style.display=\'none\';document.getElementById(\'hm-err\').style.display=\'block\'">';
   html+='<div id="hm-err" style="display:none;color:#fca5a5;padding:20px;text-align:center;font-size:12px">Image introuvable :<br>'+safeSrc+'</div>';
   html+='<svg id="hm-svg" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none" preserveAspectRatio="xMidYMid meet"></svg>';
-  // Vignette de l'image alternative (sans calibration, juste référence visuelle) en coin bas-droit
-  if(hasBothImages){
-    var altSrc=esc(st.useAlt?note.mapImage:note.mapImageClub);
-    var altLabel=st.useAlt?'🛰️':'📐';
-    html+='<div style="position:absolute;bottom:6px;right:6px;background:rgba(255,255,255,0.9);border:2px solid #fff;border-radius:8px;padding:3px;box-shadow:0 2px 8px rgba(0,0,0,.4);line-height:0" onclick="event.stopPropagation();toggleMapImage()">';
-    html+='<img src="'+altSrc+'" alt="alt" style="display:block;width:90px;height:auto;max-height:110px;object-fit:contain;border-radius:4px">';
-    html+='<div style="position:absolute;top:5px;left:5px;background:rgba(0,0,0,0.6);color:#fff;font-size:11px;padding:1px 6px;border-radius:3px;line-height:1.4">'+altLabel+'</div>';
-    html+='</div>';
-  }
   html+='</div>';
   html+='</div>';
   // Infos bas
