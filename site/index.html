@@ -10918,6 +10918,7 @@ function seedDemoDataV3(){
         landingZone:'left',
         dangers:[
           {type:'bunker_r',distance:197,coords:{lat:47.29315584,lng:-1.70121443},label:'entrée bunker droite'},
+          {type:'bunker_r',distance:218,coords:{lat:47.29327778,lng:-1.70147222},label:'sortie bunker droite'},
           {type:'trees_l',distance:153,coords:{lat:47.29274749,lng:-1.70112695},label:'angle dog-leg gauche (forêt)'}
         ],
         usualClub:''
@@ -11763,7 +11764,7 @@ function openHoleEdit(courseId,holeIdx){
     type:note.type||'',
     ts_targetDistance:ts.targetDistance||'',
     ts_landingZone:ts.landingZone||'',
-    ts_dangers:(ts.dangers||[]).map(d=>Object.assign({},d)),
+    ts_dangers:(ts.dangers||[]).map(function(d){return{type:d.type,distance:d.distance,label:d.label||'',coords:d.coords?{lat:d.coords.lat,lng:d.coords.lng}:null};}),
     ts_usualClub:ts.usualClub||'',
     ap_strategy:ap.strategy||'',
     ap_targetBeforePin:ap.targetBeforePin||'',
@@ -11817,7 +11818,8 @@ function renderHoleEditModal(course,hole){
   html+='<div class="lbl" style="margin-top:10px">⚠️ Dangers chiffrés</div>';
   html+='<div id="ts-dangers">';
   f.ts_dangers.forEach(function(d,i){
-    html+='<div class="f g8 mb8" style="align-items:center">';
+    html+='<div style="margin-bottom:8px;padding:8px;background:#fff;border:1px solid #e5e7eb;border-radius:8px">';
+    html+='<div class="f g8" style="align-items:center;margin-bottom:6px">';
     html+='<select class="inp" style="flex:3" onchange="S._noteForm.ts_dangers['+i+'].type=this.value"><option value="">— type —</option>';
     DANGER_TYPES.forEach(function(dt){html+='<option value="'+dt.key+'"'+(d.type===dt.key?' selected':'')+'>'+dt.label+'</option>';});
     html+='</select>';
@@ -11825,6 +11827,15 @@ function renderHoleEditModal(course,hole){
     html+='<input type="number" class="inp" style="flex:1;width:60px" min="0" max="400" value="'+(d.distance||'')+'" placeholder="m" onchange="S._noteForm.ts_dangers['+i+'].distance=parseInt(this.value)||0">';
     html+='<span class="f11 tm">m</span>';
     html+='<button class="btn bxs bd mb0" style="padding:4px 8px" onclick="removeDanger('+i+')">🗑</button>';
+    html+='</div>';
+    // Label libre + GPS optionnel
+    html+='<input type="text" class="inp" style="margin-bottom:4px;font-size:11px;padding:4px 6px" value="'+esc(d.label||'')+'" placeholder="Label (ex: entrée bunker droite)" onchange="S._noteForm.ts_dangers['+i+'].label=this.value">';
+    var lat=(d.coords&&d.coords.lat)||'';
+    var lng=(d.coords&&d.coords.lng)||'';
+    html+='<div class="f g8" style="gap:4px">';
+    html+='<input type="number" step="0.00001" class="inp" style="flex:1;font-size:11px;padding:4px 6px" value="'+lat+'" placeholder="lat GPS (opt.)" onchange="setDangerCoord('+i+',\'lat\',this.value)">';
+    html+='<input type="number" step="0.00001" class="inp" style="flex:1;font-size:11px;padding:4px 6px" value="'+lng+'" placeholder="lng GPS (opt.)" onchange="setDangerCoord('+i+',\'lng\',this.value)">';
+    html+='</div>';
     html+='</div>';
   });
   html+='</div>';
@@ -11922,6 +11933,20 @@ function removeDanger(idx){
   syncNoteFormFromDOM();
   f.ts_dangers.splice(idx,1);
   reopenHoleModal();
+}
+// Met à jour lat/lng d'un danger, supprime coords si les 2 sont vides
+function setDangerCoord(idx,which,val){
+  var f=S._noteForm;if(!f||!f.ts_dangers[idx])return;
+  var v=parseFloat(val);
+  if(!f.ts_dangers[idx].coords)f.ts_dangers[idx].coords={};
+  if(isNaN(v)){
+    delete f.ts_dangers[idx].coords[which];
+    if(!f.ts_dangers[idx].coords.lat&&!f.ts_dangers[idx].coords.lng){
+      delete f.ts_dangers[idx].coords;
+    }
+  }else{
+    f.ts_dangers[idx].coords[which]=v;
+  }
 }
 
 // Récupère les valeurs des textareas et inputs dans S._noteForm
