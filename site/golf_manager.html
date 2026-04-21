@@ -10916,6 +10916,7 @@ function seedDemoDataV3(){
       teeShot:{
         targetDistance:190,
         landingZone:'left',
+        aimReference:'angle du fairway avec la forêt droite',
         dangers:[
           {type:'bunker_r',distance:211,coords:{lat:47.29325379,lng:-1.70131028},label:'centre bunker droit fairway'},
           {type:'trees_l',distance:153,coords:{lat:47.29274749,lng:-1.70112695},label:'angle dog-leg gauche (forêt)'},
@@ -11875,6 +11876,7 @@ function renderNotebookHoleRow(courseId,idx,hole,note){
         ${hasNote?`
           ${typeLabel?`<div class="f11 tm mt8">${typeLabel}</div>`:''}
           ${ts.targetDistance?`<div class="f11" style="margin-top:2px;color:#16a34a">🚩 Viser ${ts.targetDistance}m${lzLabel?' · '+esc(lzLabel):''}</div>`:''}
+          ${ts.aimReference?`<div class="f11" style="margin-top:2px;color:#9d174d">🎯 Repère : ${esc(ts.aimReference)}</div>`:''}
           ${badgeTee?`<div class="f g8 mt8" style="flex-wrap:wrap">${badgeTee}</div>`:''}
           ${greenSize?`<div class="f11" style="margin-top:6px;color:#0891b2;font-weight:600">⛳ ${greenSize}</div>`:''}
           ${badgeGreen?`<div class="f g8 mt4" style="flex-wrap:wrap">${badgeGreen}</div>`:''}
@@ -11915,6 +11917,7 @@ function openHoleEdit(courseId,holeIdx){
     type:note.type||'',
     ts_targetDistance:ts.targetDistance||'',
     ts_landingZone:ts.landingZone||'',
+    ts_aimReference:ts.aimReference||'',
     ts_dangers:(ts.dangers||[]).map(function(d){return{type:d.type,distance:d.distance,label:d.label||'',coords:d.coords?{lat:d.coords.lat,lng:d.coords.lng}:null};}),
     ts_usualClub:ts.usualClub||'',
     ap_strategy:ap.strategy||'',
@@ -11965,6 +11968,9 @@ function renderHoleEditModal(course,hole){
   LANDING_ZONES.forEach(function(z){html+='<option value="'+z.key+'"'+(f.ts_landingZone===z.key?' selected':'')+'>'+z.label+'</option>';});
   html+='</select></div>';
   html+='</div>';
+  // Repère de visée (texte libre — point sur le terrain)
+  html+='<label class="lbl" style="margin-top:8px">🎯 Repère de visée (sur le terrain)</label>';
+  html+='<input type="text" class="inp mb0" value="'+esc(f.ts_aimReference||'')+'" placeholder="ex: grand pin à droite, angle fairway, drapeau lointain…" onchange="S._noteForm.ts_aimReference=this.value">';
   // Dangers chiffrés
   html+='<div class="lbl" style="margin-top:10px">⚠️ Dangers chiffrés</div>';
   html+='<div id="ts-dangers">';
@@ -12136,6 +12142,7 @@ function saveHoleNoteFromForm(){
     teeShot:{
       targetDistance:f.ts_targetDistance||0,
       landingZone:f.ts_landingZone,
+      aimReference:f.ts_aimReference||'',
       dangers:f.ts_dangers.filter(function(d){return d.type;}),
       usualClub:f.ts_usualClub
     },
@@ -12816,10 +12823,11 @@ function renderNotebookFab(courseId,holeIdx){
       }
       body='<div style="padding:10px 14px;max-height:50vh;overflow-y:auto;font-size:12px;line-height:1.5">';
       // ── ZONE TEE SHOT ──
-      if(ts.targetDistance||teeD.length||ucStart){
+      if(ts.targetDistance||teeD.length||ucStart||ts.aimReference){
         body+='<div style="background:#f0fdf4;border-left:3px solid #16a34a;padding:6px 10px;border-radius:6px;margin-bottom:8px">';
         body+='<div style="color:#166534;font-weight:800;font-size:11px;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:4px">🚩 Tee shot</div>';
         if(ts.targetDistance)body+='<div style="color:#166534;font-weight:700">Viser '+ts.targetDistance+'m'+(lzLabel?' ('+esc(lzLabel).toLowerCase()+')':'')+'</div>';
+        if(ts.aimReference)body+='<div style="color:#9d174d;font-weight:600;margin-top:2px">🎯 Repère : '+esc(ts.aimReference)+'</div>';
         if(ucStart)body+='<div class="f11 tm" style="margin-top:2px">Club habituel : '+esc(ucStart)+'</div>';
         if(teeD.length)body+='<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">'+teeD.map(function(d){
           var dl=DANGER_TYPES.find(x=>x.key===d.type);
