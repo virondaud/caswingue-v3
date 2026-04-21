@@ -10925,7 +10925,7 @@ function seedDemoDataV3(){
           {type:'green_right',distance:264,coords:{lat:47.29325092,lng:-1.70252588},label:'bord droit green'},
           {type:'fairway_corner',distance:215,coords:{lat:47.29336328,lng:-1.70112747},label:'angle fairway'},
           {type:'bunker_c',distance:268,coords:{lat:47.29327271,lng:-1.70259307},label:'avant bunker fond (milieu)'},
-          {type:'aim_target',distance:242,coords:{lat:47.29338122,lng:-1.70185497},label:'visée idéale (cap 327°)'},
+          {type:'aim_target',distance:242,coords:{lat:47.29338122,lng:-1.70185497},label:'angle du fairway avec la forêt droite'},
           {type:'layup',distance:220,coords:{lat:47.29317011,lng:-1.70175779},label:'lay-up sécurité (si risque slice bois droit)'}
         ],
         usualClub:''
@@ -11856,8 +11856,16 @@ function renderNotebookHoleRow(courseId,idx,hole,note){
     var width=Math.round(gpsDistanceM(edgePts.green_left.lat,edgePts.green_left.lng,edgePts.green_right.lat,edgePts.green_right.lng));
     greenSize='Green ≈ '+depth+'m × '+width+'m';
   }
-  // Badges tee-side (distance tee) + green-side (distance green)
-  var badgeTee=teeDangers.map(function(d){var dl=DANGER_TYPES.find(x=>x.key===d.type);return dl?`<span class="badge bg" style="background:#fef3c7;color:#92400e;font-size:10px">⚠️ ${esc(dl.label)}${d.distance?' '+d.distance+'m':''}</span>`:'';}).join('');
+  // Badges tee-side : distance depuis tee ; aim_target → label terrain (pas de distance)
+  var badgeTee=teeDangers.map(function(d){
+    var dl=DANGER_TYPES.find(x=>x.key===d.type);
+    if(!dl)return '';
+    if(d.type==='aim_target'){
+      var ref=d.label&&d.label!==dl.label?d.label:'repère terrain';
+      return `<span class="badge bg" style="background:#fce7f3;color:#9d174d;font-size:10px">🎯 Visée : ${esc(ref)}</span>`;
+    }
+    return `<span class="badge bg" style="background:#fef3c7;color:#92400e;font-size:10px">⚠️ ${esc(dl.label)}${d.distance?' '+d.distance+'m':''}</span>`;
+  }).join('');
   var badgeGreen=greensideDangers.map(function(o){var dl=DANGER_TYPES.find(x=>x.key===o.d.type);return dl?`<span class="badge bg" style="background:#fde68a;color:#78350f;font-size:10px">⛳ ${esc(dl.label)} ${o.dg}m`+'</span>':'';}).join('');
 
   return `<div class="card" style="padding:10px;cursor:pointer" onclick="openHoleEdit('${courseId}',${idx})">
@@ -12644,6 +12652,8 @@ function drawHoleMapOverlay(){
   });
   allDangers.forEach(function(d){
     if(!d.coords)return;
+    // aim_target est géré par la flèche dédiée en fin de rendu, pas comme danger
+    if(d.type==='aim_target')return;
     var cat=categorize(d);
     if(!isPar3){
       if(fromGreen && cat!=='green')return;
@@ -12811,7 +12821,15 @@ function renderNotebookFab(courseId,holeIdx){
         body+='<div style="color:#166534;font-weight:800;font-size:11px;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:4px">🚩 Tee shot</div>';
         if(ts.targetDistance)body+='<div style="color:#166534;font-weight:700">Viser '+ts.targetDistance+'m'+(lzLabel?' ('+esc(lzLabel).toLowerCase()+')':'')+'</div>';
         if(ucStart)body+='<div class="f11 tm" style="margin-top:2px">Club habituel : '+esc(ucStart)+'</div>';
-        if(teeD.length)body+='<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">'+teeD.map(d=>{var dl=DANGER_TYPES.find(x=>x.key===d.type);return dl?'<span class="badge bg" style="background:#fef3c7;color:#92400e;font-size:10px">⚠️ '+esc(dl.label)+(d.distance?' '+d.distance+'m':'')+'</span>':'';}).join('')+'</div>';
+        if(teeD.length)body+='<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">'+teeD.map(function(d){
+          var dl=DANGER_TYPES.find(x=>x.key===d.type);
+          if(!dl)return '';
+          if(d.type==='aim_target'){
+            var ref=d.label&&d.label!==dl.label?d.label:'repère terrain';
+            return '<span class="badge bg" style="background:#fce7f3;color:#9d174d;font-size:10px">🎯 Visée : '+esc(ref)+'</span>';
+          }
+          return '<span class="badge bg" style="background:#fef3c7;color:#92400e;font-size:10px">⚠️ '+esc(dl.label)+(d.distance?' '+d.distance+'m':'')+'</span>';
+        }).join('')+'</div>';
         body+='</div>';
       }
       // ── ZONE GREEN ──
