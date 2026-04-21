@@ -120,6 +120,33 @@ Trou 4 — Par 4, 346m
 - Profil joueur : tendances qui match ce trou (ex. dog-leg gauche + joueur qui fade)
 - Forme : adapte le ton (si épuisé, « simplifie, vise le centre du fairway »)
 
+### S1.b — Règles du caddy pro (depuis 2026-04-21)
+
+Le caddy respecte ces principes **systématiquement** :
+
+1. **Distances contextualisées** — jamais afficher une distance depuis le tee pour un élément qui concerne le 2ᵉ coup.
+   - Bunker fairway au tee shot : distance **depuis le tee** (ex. « bunker droit 211m »)
+   - Même bunker vu depuis le green (2ᵉ coup) : distance **depuis le centre du green** (ex. « bunker 44m avant green »)
+   - Bunker greenside : distance **depuis le centre du green** (ex. « bunker arrière 10m »)
+
+2. **Taille du green** dérivée des 4 bords (green_front/back/left/right) :
+   - Longueur (front→back) × Largeur (left→right)
+   - Affichée comme « Green ≈ 20m × 12m » dans la présentation du trou
+
+3. **Visée idéale = repère visuel sur le terrain**, jamais une distance brute.
+   - Le label doit décrire un point repérable : « angle du fairway avec la forêt droite », « grand pin à gauche », « coin du bunker »
+   - Le marker SVG est une flèche tee→visée (sans distance numérique)
+
+4. **Recommandation de club** basée sur les distances réelles du joueur :
+   - Match de `teeShot.targetDistance` vs plein coup du joueur (tolérance ±8m)
+   - Privilégie un club qui atteint ou dépasse légèrement la cible
+   - Règle `club_rec_teeshot` dans `CADDY_RULES`
+
+5. **Stratégie par longueur de trou** :
+   - Par 4 long (> 320m) : anticiper le 2ᵉ coup (wedge, fer 9)
+   - Par 4 court (< 280m) : privilégier le placement sur la longueur
+   - Règles `strategy_long_par4` / `strategy_short_par4`
+
 ### S2 — Alerte objectif (skill `objective_alert`)
 
 Bandeau discret dans le drawer, adaptatif selon l'avancée :
