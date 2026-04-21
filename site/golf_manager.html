@@ -11019,6 +11019,15 @@ if((!DB.players||DB.players.length===0) && !localStorage.getItem('gm_seed_done')
         delete note.calibration; // nouvelle image = recalibration obligatoire
         migrated=true;
       }
+      // Migration dangers : si la liste riche existait au niveau racine,
+      // on la déplace dans teeShot.dangers (source de vérité unique).
+      if(Array.isArray(note.dangers) && note.dangers.length>0){
+        if(!note.teeShot)note.teeShot={};
+        // On considère la version root comme la plus récente (contient coords + labels)
+        note.teeShot.dangers=note.dangers;
+        delete note.dangers;
+        migrated=true;
+      }
     });
   });
   if(migrated){save();console.info('[MIGRATION] mapImages inversés → recalibre dans l\'app');}
