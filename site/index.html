@@ -12720,24 +12720,58 @@ function renderNotebookFab(courseId,holeIdx){
   var headerText=hasNote?summary:'+ Ajouter mes notes pour ce trou';
   var chev=open?'▾':'▴';
 
-  // Contenu étendu
+  // Contenu étendu — vue « caddy » structurée en 2 zones (tee shot + green)
   var body='';
   if(open){
     if(hasNote){
       var lzLabel=ts.landingZone?LANDING_ZONES.find(z=>z.key===ts.landingZone)?.label:'';
       var ucStart=ts.usualClub?getClubLabelFromId(courseId,ts.usualClub):'';
       var ucApp=ap.usualClub?getClubLabelFromId(courseId,ap.usualClub):'';
-      var dangers=ts.dangers||[];
       var apStratLabel=ap.strategy?APPROACH_STRATEGIES.find(t=>t.key===ap.strategy)?.label.replace(/^[^ ]+ /,''):'';
-      body='<div style="padding:10px 14px;max-height:40vh;overflow-y:auto;font-size:12px;line-height:1.5">';
-      if(ts.targetDistance)body+='<div style="color:#16a34a;font-weight:700">🚩 Viser '+ts.targetDistance+'m'+(lzLabel?' ('+esc(lzLabel).toLowerCase()+')':'')+'</div>';
-      if(ucStart)body+='<div class="f11 tm" style="margin-top:2px">Habituel départ : '+esc(ucStart)+'</div>';
-      if(dangers.length)body+='<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">'+dangers.map(d=>{var dl=DANGER_TYPES.find(x=>x.key===d.type);return dl?'<span class="badge bg" style="background:#fef3c7;color:#92400e;font-size:10px">⚠️ '+esc(dl.label)+(d.distance?' '+d.distance+'m':'')+'</span>':'';}).join('')+'</div>';
-      if(apStratLabel)body+='<div style="margin-top:6px;color:#0891b2;font-weight:700">⛳ '+esc(apStratLabel)+(ap.targetBeforePin?' · '+ap.targetBeforePin+'m avant drapeau':'')+'</div>';
-      if(ucApp)body+='<div class="f11 tm" style="margin-top:2px">Habituel attaque : '+esc(ucApp)+'</div>';
-      if(note.strategy)body+='<div style="margin-top:6px;color:#334155;font-style:italic">«'+esc(note.strategy)+'»</div>';
-      if(note.notes)body+='<div class="f11 tm" style="margin-top:4px">📝 '+esc(note.notes)+'</div>';
-      body+='<button class="btn bp mb0 mt8" style="width:100%" onclick="event.stopPropagation();openHoleEdit(\''+courseId+'\','+holeIdx+')">✏️ Modifier</button>';
+      // Tri des dangers : tee-side / greenside / bords de green
+      var green=note.coordsGreen;
+      var teeD=[],greenD=[],edgePts={};
+      (ts.dangers||[]).forEach(function(d){
+        if(!d)return;
+        if(d.type==='green_front'||d.type==='green_back'||d.type==='green_left'||d.type==='green_right'){
+          if(d.coords)edgePts[d.type]=d.coords;return;
+        }
+        if(green&&d.coords){
+          var dg=gpsDistanceM(d.coords.lat,d.coords.lng,green.lat,green.lng);
+          if(dg<30){greenD.push({d:d,dg:Math.round(dg)});return;}
+        }
+        teeD.push(d);
+      });
+      var greenSize='';
+      if(edgePts.green_front&&edgePts.green_back&&edgePts.green_left&&edgePts.green_right){
+        var depth=Math.round(gpsDistanceM(edgePts.green_front.lat,edgePts.green_front.lng,edgePts.green_back.lat,edgePts.green_back.lng));
+        var width=Math.round(gpsDistanceM(edgePts.green_left.lat,edgePts.green_left.lng,edgePts.green_right.lat,edgePts.green_right.lng));
+        greenSize=depth+'m × '+width+'m';
+      }
+      body='<div style="padding:10px 14px;max-height:50vh;overflow-y:auto;font-size:12px;line-height:1.5">';
+      // ── ZONE TEE SHOT ──
+      if(ts.targetDistance||teeD.length||ucStart){
+        body+='<div style="background:#f0fdf4;border-left:3px solid #16a34a;padding:6px 10px;border-radius:6px;margin-bottom:8px">';
+        body+='<div style="color:#166534;font-weight:800;font-size:11px;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:4px">🚩 Tee shot</div>';
+        if(ts.targetDistance)body+='<div style="color:#166534;font-weight:700">Viser '+ts.targetDistance+'m'+(lzLabel?' ('+esc(lzLabel).toLowerCase()+')':'')+'</div>';
+        if(ucStart)body+='<div class="f11 tm" style="margin-top:2px">Club habituel : '+esc(ucStart)+'</div>';
+        if(teeD.length)body+='<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">'+teeD.map(d=>{var dl=DANGER_TYPES.find(x=>x.key===d.type);return dl?'<span class="badge bg" style="background:#fef3c7;color:#92400e;font-size:10px">⚠️ '+esc(dl.label)+(d.distance?' '+d.distance+'m':'')+'</span>':'';}).join('')+'</div>';
+        body+='</div>';
+      }
+      // ── ZONE GREEN ──
+      if(greenSize||greenD.length||apStratLabel||ucApp){
+        body+='<div style="background:#ecfeff;border-left:3px solid #0891b2;padding:6px 10px;border-radius:6px;margin-bottom:8px">';
+        body+='<div style="color:#0e7490;font-weight:800;font-size:11px;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:4px">⛳ Attaque de green</div>';
+        if(greenSize)body+='<div style="color:#0e7490;font-weight:700">Green ≈ '+greenSize+'</div>';
+        if(greenD.length)body+='<div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap">'+greenD.map(o=>{var dl=DANGER_TYPES.find(x=>x.key===o.d.type);return dl?'<span class="badge bg" style="background:#fde68a;color:#78350f;font-size:10px">⛳ '+esc(dl.label)+' '+o.dg+'m</span>':'';}).join('')+'</div>';
+        if(apStratLabel)body+='<div style="margin-top:6px;color:#0891b2">'+esc(apStratLabel)+(ap.targetBeforePin?' · '+ap.targetBeforePin+'m avant drapeau':'')+'</div>';
+        if(ucApp)body+='<div class="f11 tm" style="margin-top:2px">Club habituel : '+esc(ucApp)+'</div>';
+        body+='</div>';
+      }
+      // Stratégie libre + notes
+      if(note.strategy)body+='<div style="color:#334155;font-style:italic;margin-bottom:4px">«'+esc(note.strategy)+'»</div>';
+      if(note.notes)body+='<div class="f11 tm" style="margin-bottom:6px">📝 '+esc(note.notes)+'</div>';
+      body+='<button class="btn bp mb0 mt4" style="width:100%" onclick="event.stopPropagation();openHoleEdit(\''+courseId+'\','+holeIdx+')">✏️ Modifier</button>';
       body+='</div>';
     }else{
       body='<div style="padding:10px 14px"><button class="btn bp mb0" style="width:100%" onclick="event.stopPropagation();openHoleEdit(\''+courseId+'\','+holeIdx+')">✏️ Ajouter des notes</button></div>';
