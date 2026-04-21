@@ -10941,7 +10941,8 @@ function seedDemoDataV3(){
       notes:'',
       coordsTee:{lat:47.29154279,lng:-1.70010835},
       coordsGreen:{lat:47.29318071,lng:-1.70251479},
-      mapImage:'assets/Parcours/Vigneux/vigneux_google_trou_1.png',
+      mapImage:'assets/Parcours/Vigneux/vigneux_trou_1.png',
+      mapImageSat:'assets/Parcours/Vigneux/vigneux_google_trou_1.png',
       officialUrl:'https://www.golfclubdenantes.com/parcours/trou-1/'
     };
   }
@@ -12081,18 +12082,6 @@ function renderHoleMapButtons(courseId,holeIdx){
   }
 
   var btns='<div class="f g8" style="padding:8px 14px;flex-wrap:wrap;background:#fafafa;border-bottom:1px solid #e5e7eb">';
-  if(hasTee){
-    // URL Google Maps : si on a l'axe tee→green, on recadre sur le milieu avec orientation
-    var mapsUrl;
-    if(hasAxis){
-      var midLat=(tee.lat+green.lat)/2, midLng=(tee.lng+green.lng)/2;
-      var bearing2=gpsBearing(tee.lat,tee.lng,green.lat,green.lng);
-      mapsUrl='https://www.google.com/maps/@'+midLat+','+midLng+',250m,'+bearing2.toFixed(1)+'h,0t/data=!3m1!1e3';
-    }else{
-      mapsUrl='https://www.google.com/maps/@'+tee.lat+','+tee.lng+',300m/data=!3m1!1e3';
-    }
-    btns+='<a href="'+mapsUrl+'" target="_blank" rel="noopener" class="btn bsm mb0" style="flex:1;min-width:100px;text-decoration:none;background:#ecfeff;color:#0891b2;font-size:11px;text-align:center;padding:6px 4px" onclick="event.stopPropagation()">🗺️ Satellite</a>';
-  }
   if(flyover){
     btns+='<a href="'+flyover+'" target="_blank" rel="noopener" class="btn bsm mb0" style="flex:1;min-width:100px;text-decoration:none;background:#fef3c7;color:#92400e;font-size:11px;text-align:center;padding:6px 4px" onclick="event.stopPropagation()">📹 Flyover</a>';
   }
@@ -12147,9 +12136,39 @@ function gpsToPx(lat,lng,tee,green,cal){
 
 function openHoleMapFullscreen(courseId,holeIdx){
   var note=getHoleNote(courseId,holeIdx);
-  if(!note||!note.mapImage)return;
-  S._holeMap={courseId:courseId,holeIdx:holeIdx,imageSize:null,zoom:1};
+  if(!note||(!note.mapImage&&!note.mapImageSat))return;
+  S._holeMap={
+    courseId:courseId,
+    holeIdx:holeIdx,
+    imageSize:null,
+    zoom:1,
+    useAlt:false,                 // false=mapImage (schéma club) · true=mapImageSat (satellite)
+    viewFromGreen:false           // false=arcs depuis tee · true=arcs depuis green
+  };
   renderHoleMapFullscreen();
+}
+
+// Retourne {src, calKey} selon le toggle image actuel.
+function activeMapImage(note){
+  var st=S._holeMap;
+  if(st&&st.useAlt&&note.mapImageSat)return {src:note.mapImageSat,calKey:'calibrationSat'};
+  if(note.mapImage)return {src:note.mapImage,calKey:'calibration'};
+  if(note.mapImageSat)return {src:note.mapImageSat,calKey:'calibrationSat'};
+  return {src:'',calKey:'calibration'};
+}
+
+function toggleMapImage(){
+  var st=S._holeMap;if(!st)return;
+  var note=getHoleNote(st.courseId,st.holeIdx);
+  if(!(note.mapImage&&note.mapImageSat))return; // rien à basculer
+  st.useAlt=!st.useAlt;
+  st.imageSize=null;
+  renderHoleMapFullscreen();
+}
+function toggleViewFromGreen(){
+  var st=S._holeMap;if(!st)return;
+  st.viewFromGreen=!st.viewFromGreen;
+  drawHoleMapOverlay();
 }
 
 function setHoleMapZoom(delta){
@@ -12199,13 +12218,15 @@ function applyHoleMapZoom(){
 
 // Place T et G à des positions par défaut (bas-droite & haut-gauche) pour que
 // l'utilisateur voie immédiatement les 2 markers et puisse les déplacer.
+// La calibration est stockée sous la clé correspondant à l'image active.
 function ensureDefaultCalibration(){
   var st=S._holeMap;if(!st)return false;
   var note=getHoleNote(st.courseId,st.holeIdx);if(!note)return false;
+  var mi=activeMapImage(note);
   var img=document.getElementById('hm-img');
   if(!img||!img.naturalWidth)return false;
-  if(note.calibration&&note.calibration.teePx&&note.calibration.greenPx)return true;
-  note.calibration={
+  if(note[mi.calKey]&&note[mi.calKey].teePx&&note[mi.calKey].greenPx)return true;
+  note[mi.calKey]={
     version:1,
     imageSize:{w:img.naturalWidth,h:img.naturalHeight},
     teePx:{x:Math.round(img.naturalWidth*0.7),y:Math.round(img.naturalHeight*0.82)},
@@ -12217,7 +12238,9 @@ function ensureDefaultCalibration(){
 
 function renderHoleMapFullscreen(){
   var st=S._holeMap;if(!st)return;
-  var note=getHoleNote(st.courseId,st.holeIdx);if(!note||!note.mapImage)return;
+  var note=getHoleNote(st.courseId,st.holeIdx);if(!note)return;
+  var mi=activeMapImage(note);
+  if(!mi.src)return;
   var course=DB.courses.find(function(x){return x.id===st.courseId;});
   var hole=course?course.holes[st.holeIdx]:null;
   var existing=document.getElementById('hole-map-fs');if(existing)existing.remove();
@@ -12225,17 +12248,29 @@ function renderHoleMapFullscreen(){
   div.id='hole-map-fs';
   div.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:500;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top,0px) + 10px) 10px calc(env(safe-area-inset-bottom,0px) + 10px) 10px';
   var title='Trou '+(st.holeIdx+1)+(hole?' · Par '+hole.par+(hole.distBlanc?' · '+hole.distBlanc+'m':''):'');
-  var safeSrc=esc(note.mapImage);
-  var cal=note.calibration;
+  var safeSrc=esc(mi.src);
+  var cal=note[mi.calKey];
   var hasCoords=note.coordsTee&&note.coordsGreen;
+  var hasBothImages=note.mapImage&&note.mapImageSat;
   var html='';
-  // Header
-  html+='<div style="color:#fff;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px;width:100%;max-width:700px;margin-left:auto;margin-right:auto">';
+  // Header ligne 1 : titre + fermer
+  html+='<div style="color:#fff;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px;width:100%;max-width:700px;margin-left:auto;margin-right:auto">';
   html+='<span style="font-size:13px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(title)+'</span>';
-  // Boutons zoom
+  html+='<button class="btn bsm mb0" style="background:#fff;color:#0f172a" onclick="closeHoleMap()">✕</button>';
+  html+='</div>';
+  // Header ligne 2 : toggles + zoom + reset
+  html+='<div style="margin-bottom:8px;display:flex;align-items:center;gap:6px;width:100%;max-width:700px;margin-left:auto;margin-right:auto;flex-wrap:wrap">';
+  // Toggle image
+  if(hasBothImages){
+    html+='<button class="btn bsm mb0" style="background:#fff;color:#0f172a;font-size:11px;padding:4px 8px" onclick="toggleMapImage()">'+(st.useAlt?'📐 Schéma':'🛰️ Satellite')+'</button>';
+  }
+  // Toggle vue tee/green
+  html+='<button class="btn bsm mb0" style="background:'+(st.viewFromGreen?'#eab308':'#16a34a')+';color:#fff;font-size:11px;padding:4px 8px" onclick="toggleViewFromGreen()">'+(st.viewFromGreen?'⛳ Vue green':'🚩 Vue tee')+'</button>';
+  // Zoom
   html+='<button class="btn bsm mb0" style="background:#fff;color:#0f172a;font-size:16px;padding:4px 10px" onclick="setHoleMapZoom(-0.5)">−</button>';
   html+='<span id="hm-zoom-lbl" style="color:#fff;font-size:11px;min-width:28px;text-align:center">'+((st.zoom||1).toFixed(1))+'×</span>';
   html+='<button class="btn bsm mb0" style="background:#fff;color:#0f172a;font-size:16px;padding:4px 10px" onclick="setHoleMapZoom(0.5)">+</button>';
+  // Calibration
   if(hasCoords){
     if(!cal){
       html+='<button class="btn bsm mb0" style="background:#10b981;color:#fff;font-size:11px;padding:4px 8px" onclick="startCalibration()">🎯 T&G</button>';
@@ -12243,7 +12278,6 @@ function renderHoleMapFullscreen(){
       html+='<button class="btn bsm mb0" style="background:#94a3b8;color:#fff;font-size:11px;padding:4px 8px" onclick="resetCalibration()">🔁</button>';
     }
   }
-  html+='<button class="btn bsm mb0" style="background:#fff;color:#0f172a" onclick="closeHoleMap()">✕</button>';
   html+='</div>';
   // Container image + SVG (flex-grow pour remplir tout l'espace dispo)
   html+='<div style="flex:1;min-height:0;width:100%;max-width:700px;margin:0 auto;display:flex;align-items:center;justify-content:center;overflow:auto">';
@@ -12279,15 +12313,15 @@ function drawHoleMapOverlay(){
   var note=getHoleNote(st.courseId,st.holeIdx);if(!note)return;
   var svg=document.getElementById('hm-svg');if(!svg)return;
   svg.innerHTML='';
-  if(!note.calibration||!note.coordsTee||!note.coordsGreen)return;
-  var cal=note.calibration;
+  var mi=activeMapImage(note);
+  var cal=note[mi.calKey];
+  if(!cal||!note.coordsTee||!note.coordsGreen)return;
   var tee=note.coordsTee;
   var green=note.coordsGreen;
   var imgW=(st.imageSize&&st.imageSize.w)||cal.imageSize.w;
   var imgH=(st.imageSize&&st.imageSize.h)||cal.imageSize.h;
   svg.setAttribute('viewBox','0 0 '+imgW+' '+imgH);
   var out='';
-  // Arcs de distance 100/150/200m (depuis le tee)
   var toRad=function(d){return d*Math.PI/180;};
   var R=6371000;
   var gLat=toRad(green.lat-tee.lat);
@@ -12297,13 +12331,21 @@ function drawHoleMapOverlay(){
   var gLenM=Math.sqrt(gN*gN+gE*gE);
   var pLenPx=Math.sqrt(Math.pow(cal.greenPx.x-cal.teePx.x,2)+Math.pow(cal.greenPx.y-cal.teePx.y,2));
   var pxPerM=pLenPx/gLenM;
-  [100,150,200].forEach(function(m){
+  // Arcs de distance — depuis tee OU depuis green selon le toggle
+  var fromGreen=!!st.viewFromGreen;
+  var centerPx=fromGreen?cal.greenPx:cal.teePx;
+  var arcDistances=fromGreen?[30,60,100,150]:[100,150,200,250];
+  var arcColor=fromGreen?'#f97316':'#60a5fa';     // orange pour vue green, bleu pour tee
+  var arcLabelColor=fromGreen?'#9a3412':'#1e40af';
+  // Vecteur unitaire tee→green (pour placer les labels sur l'axe)
+  var vx=(cal.greenPx.x-cal.teePx.x)/pLenPx, vy=(cal.greenPx.y-cal.teePx.y)/pLenPx;
+  arcDistances.forEach(function(m){
     var r=m*pxPerM;
-    out+='<circle cx="'+cal.teePx.x+'" cy="'+cal.teePx.y+'" r="'+r+'" fill="none" stroke="#60a5fa" stroke-width="2" stroke-dasharray="8 6" opacity="0.55"/>';
-    // Label distance sur l'axe vers le green
-    var vx=(cal.greenPx.x-cal.teePx.x)/pLenPx, vy=(cal.greenPx.y-cal.teePx.y)/pLenPx;
-    var lx=cal.teePx.x+vx*r, ly=cal.teePx.y+vy*r;
-    out+='<rect x="'+(lx-22)+'" y="'+(ly-11)+'" width="44" height="18" rx="4" fill="#1e40af" opacity="0.85"/>';
+    out+='<circle cx="'+centerPx.x+'" cy="'+centerPx.y+'" r="'+r+'" fill="none" stroke="'+arcColor+'" stroke-width="2" stroke-dasharray="8 6" opacity="0.55"/>';
+    // Label : en vue green, on place vers le tee (vecteur inverse)
+    var dirX=fromGreen?-vx:vx, dirY=fromGreen?-vy:vy;
+    var lx=centerPx.x+dirX*r, ly=centerPx.y+dirY*r;
+    out+='<rect x="'+(lx-22)+'" y="'+(ly-11)+'" width="44" height="18" rx="4" fill="'+arcLabelColor+'" opacity="0.85"/>';
     out+='<text x="'+lx+'" y="'+(ly+4)+'" text-anchor="middle" fill="#fff" font-size="14" font-weight="700" font-family="Inter,sans-serif">'+m+'m</text>';
   });
   // Dangers
@@ -12398,10 +12440,11 @@ function setupHoleMapDrag(){
       dragging=false;
       var p=clickToNatPx(ev);
       var st=S._holeMap;if(!st)return;
-      var note=getHoleNote(st.courseId,st.holeIdx);
-      if(!note||!note.calibration)return;
-      if(id==='cal-tee')note.calibration.teePx=p;
-      else note.calibration.greenPx=p;
+      var note=getHoleNote(st.courseId,st.holeIdx);if(!note)return;
+      var mi=activeMapImage(note);
+      if(!note[mi.calKey])return;
+      if(id==='cal-tee')note[mi.calKey].teePx=p;
+      else note[mi.calKey].greenPx=p;
       saveHoleNote(st.courseId,st.holeIdx,note);
       drawHoleMapOverlay(); // repositionne tous les autres points
     });
@@ -12414,11 +12457,15 @@ function setupHoleMapDrag(){
 function startCalibration(){
   if(ensureDefaultCalibration())renderHoleMapFullscreen();
 }
-// « Recalibrer » = efface puis relance placement par défaut.
+// « Recalibrer » = efface la calibration de l'image active puis relance.
 function resetCalibration(){
   var st=S._holeMap;if(!st)return;
   var note=getHoleNote(st.courseId,st.holeIdx);
-  if(note){delete note.calibration;saveHoleNote(st.courseId,st.holeIdx,note);}
+  if(note){
+    var mi=activeMapImage(note);
+    delete note[mi.calKey];
+    saveHoleNote(st.courseId,st.holeIdx,note);
+  }
   startCalibration();
 }
 function closeHoleMap(){
