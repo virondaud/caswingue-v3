@@ -12137,8 +12137,26 @@ function gpsToPx(lat,lng,tee,green,cal){
 function openHoleMapFullscreen(courseId,holeIdx){
   var note=getHoleNote(courseId,holeIdx);
   if(!note||!note.mapImage)return;
-  S._holeMap={courseId:courseId,holeIdx:holeIdx,calibStep:0,calibTee:null,calibGreen:null,imageSize:null};
+  S._holeMap={courseId:courseId,holeIdx:holeIdx,imageSize:null};
   renderHoleMapFullscreen();
+}
+
+// Place T et G à des positions par défaut (bas-droite & haut-gauche) pour que
+// l'utilisateur voie immédiatement les 2 markers et puisse les déplacer.
+function ensureDefaultCalibration(){
+  var st=S._holeMap;if(!st)return false;
+  var note=getHoleNote(st.courseId,st.holeIdx);if(!note)return false;
+  var img=document.getElementById('hm-img');
+  if(!img||!img.naturalWidth)return false;
+  if(note.calibration&&note.calibration.teePx&&note.calibration.greenPx)return true;
+  note.calibration={
+    version:1,
+    imageSize:{w:img.naturalWidth,h:img.naturalHeight},
+    teePx:{x:Math.round(img.naturalWidth*0.7),y:Math.round(img.naturalHeight*0.82)},
+    greenPx:{x:Math.round(img.naturalWidth*0.3),y:Math.round(img.naturalHeight*0.18)}
+  };
+  saveHoleNote(st.courseId,st.holeIdx,note);
+  return true;
 }
 
 function renderHoleMapFullscreen(){
@@ -12153,45 +12171,35 @@ function renderHoleMapFullscreen(){
   var title='Trou '+(st.holeIdx+1)+(hole?' · Par '+hole.par+(hole.distBlanc?' · '+hole.distBlanc+'m':''):'');
   var safeSrc=esc(note.mapImage);
   var cal=note.calibration;
-  var inCalib=st.calibStep>0;
   var hasCoords=note.coordsTee&&note.coordsGreen;
   var html='';
   // Header
   html+='<div style="color:#fff;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px;width:100%;max-width:700px;margin-left:auto;margin-right:auto">';
   html+='<span style="font-size:14px;flex:1">'+esc(title)+'</span>';
   if(hasCoords){
-    if(inCalib){
-      html+='<button class="btn bsm mb0" style="background:#fbbf24;color:#0f172a" onclick="cancelCalibration()">Annuler calibration</button>';
+    if(!cal){
+      html+='<button class="btn bsm mb0" style="background:#10b981;color:#fff" onclick="startCalibration()">🎯 Placer T & G</button>';
     }else{
-      html+='<button class="btn bsm mb0" style="background:'+(cal?'#94a3b8':'#10b981')+';color:#fff" onclick="startCalibration()">'+(cal?'🔁 Recalibrer':'🎯 Calibrer')+'</button>';
+      html+='<button class="btn bsm mb0" style="background:#94a3b8;color:#fff;font-size:11px" onclick="resetCalibration()">🔁 Reset</button>';
     }
   }
   html+='<button class="btn bsm mb0" style="background:#fff;color:#0f172a" onclick="closeHoleMap()">✕</button>';
   html+='</div>';
-  // Instruction calibration
-  if(inCalib){
-    var step=st.calibStep===1?'Tape sur le <b>départ jaune</b> (tee)':'Tape sur le <b>centre du green</b>';
-    html+='<div style="background:#fbbf24;color:#0f172a;padding:10px 14px;border-radius:8px;margin-bottom:8px;font-size:13px;font-weight:600;text-align:center;max-width:700px;margin-left:auto;margin-right:auto;width:100%">'+step+' ('+st.calibStep+'/2)</div>';
-  }
   // Container image + SVG (flex-grow pour remplir tout l'espace dispo)
   html+='<div style="flex:1;min-height:0;width:100%;max-width:700px;margin:0 auto;display:flex;align-items:center;justify-content:center;overflow:auto">';
-  html+='<div id="hm-wrap" style="position:relative;display:inline-block;line-height:0;max-width:100%" '+(inCalib?'onclick="handleCalibClick(event)"':'')+'>';
+  html+='<div id="hm-wrap" style="position:relative;display:inline-block;line-height:0;max-width:100%">';
   html+='<img id="hm-img" src="'+safeSrc+'" alt="Carte trou" style="display:block;max-width:100%;max-height:82vh;width:auto;height:auto;background:#fff;border-radius:6px" onload="onHoleMapImgLoad()" onerror="this.style.display=\'none\';document.getElementById(\'hm-err\').style.display=\'block\'">';
   html+='<div id="hm-err" style="display:none;color:#fca5a5;padding:20px;text-align:center;font-size:12px">Image introuvable :<br>'+safeSrc+'</div>';
   html+='<svg id="hm-svg" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none" preserveAspectRatio="xMidYMid meet"></svg>';
   html+='</div>';
   html+='</div>';
   // Infos bas
-  if(!inCalib){
-    var infoParts=[];
-    if(!hasCoords)infoParts.push('<span style="color:#fbbf24">⚠️ Renseigne tee + green dans le carnet pour la calibration</span>');
-    else if(!cal)infoParts.push('<span style="color:#fbbf24">👉 Clique « Calibrer » pour placer les marqueurs automatiquement</span>');
-    else infoParts.push('✅ Calibré · '+(note.dangers?'':'').replace(/^/, '')+(note.teeShot&&note.teeShot.targetDistance?'cible '+note.teeShot.targetDistance+'m':''));
-    if(note.strategy)infoParts.push('🎯 '+esc(note.strategy));
-    if(infoParts.length){
-      html+='<div style="color:#e2e8f0;font-size:12px;padding:10px;max-width:700px;margin:0 auto;width:100%;line-height:1.5">'+infoParts.join('<br>')+'</div>';
-    }
-  }
+  var infoParts=[];
+  if(!hasCoords)infoParts.push('<span style="color:#fbbf24">⚠️ Renseigne tee + green dans le carnet pour la calibration</span>');
+  else if(!cal)infoParts.push('<span style="color:#fbbf24">👉 Clique « Placer T & G » puis fais glisser T sur le départ et G sur le green</span>');
+  else infoParts.push('💡 Fais glisser T et G pour ajuster — les autres points suivent');
+  if(note.strategy)infoParts.push('🎯 '+esc(note.strategy));
+  html+='<div style="color:#e2e8f0;font-size:12px;padding:10px;max-width:700px;margin:0 auto;width:100%;line-height:1.5">'+infoParts.join('<br>')+'</div>';
   div.innerHTML=html;
   document.body.appendChild(div);
 }
@@ -12285,51 +12293,72 @@ function drawHoleMapOverlay(){
     out+='<defs><marker id="arrowAim" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#ec4899"/></marker></defs>';
     out+='<line x1="'+cal.teePx.x+'" y1="'+cal.teePx.y+'" x2="'+ap.x+'" y2="'+ap.y+'" stroke="#ec4899" stroke-width="4" stroke-dasharray="0" opacity="0.85" marker-end="url(#arrowAim)"/>';
   }
-  // Marqueur tee (par-dessus)
-  out+='<circle cx="'+cal.teePx.x+'" cy="'+cal.teePx.y+'" r="14" fill="#16a34a" stroke="#fff" stroke-width="3"/>';
-  out+='<text x="'+cal.teePx.x+'" y="'+(cal.teePx.y+5)+'" text-anchor="middle" fill="#fff" font-size="14" font-weight="900" font-family="Inter,sans-serif">T</text>';
-  // Marqueur green
-  out+='<circle cx="'+cal.greenPx.x+'" cy="'+cal.greenPx.y+'" r="16" fill="#eab308" stroke="#fff" stroke-width="3"/>';
-  out+='<text x="'+cal.greenPx.x+'" y="'+(cal.greenPx.y+5)+'" text-anchor="middle" fill="#1e293b" font-size="15" font-weight="900" font-family="Inter,sans-serif">G</text>';
+  // Marqueur tee (drag enabled)
+  out+='<circle id="cal-tee" cx="'+cal.teePx.x+'" cy="'+cal.teePx.y+'" r="18" fill="#16a34a" stroke="#fff" stroke-width="4" style="cursor:grab;pointer-events:all;touch-action:none"/>';
+  out+='<text id="cal-tee-lbl" x="'+cal.teePx.x+'" y="'+(cal.teePx.y+5)+'" text-anchor="middle" fill="#fff" font-size="16" font-weight="900" font-family="Inter,sans-serif" pointer-events="none">T</text>';
+  // Marqueur green (drag enabled)
+  out+='<circle id="cal-green" cx="'+cal.greenPx.x+'" cy="'+cal.greenPx.y+'" r="20" fill="#eab308" stroke="#fff" stroke-width="4" style="cursor:grab;pointer-events:all;touch-action:none"/>';
+  out+='<text id="cal-green-lbl" x="'+cal.greenPx.x+'" y="'+(cal.greenPx.y+5)+'" text-anchor="middle" fill="#1e293b" font-size="17" font-weight="900" font-family="Inter,sans-serif" pointer-events="none">G</text>';
   svg.innerHTML=out;
+  setupHoleMapDrag();
 }
 
+// Active le drag des marqueurs T et G pour ajustement fin sans recalibration.
+function setupHoleMapDrag(){
+  var svg=document.getElementById('hm-svg');
+  var img=document.getElementById('hm-img');
+  if(!svg||!img)return;
+  ['cal-tee','cal-green'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el)return;
+    var dragging=false;
+    function clickToNatPx(ev){
+      var rect=img.getBoundingClientRect();
+      var relX=(ev.clientX-rect.left)/rect.width;
+      var relY=(ev.clientY-rect.top)/rect.height;
+      return{x:Math.round(relX*img.naturalWidth),y:Math.round(relY*img.naturalHeight)};
+    }
+    el.addEventListener('pointerdown',function(ev){
+      dragging=true;
+      try{el.setPointerCapture(ev.pointerId);}catch(e){}
+      ev.stopPropagation();ev.preventDefault();
+    });
+    el.addEventListener('pointermove',function(ev){
+      if(!dragging)return;
+      ev.stopPropagation();ev.preventDefault();
+      var p=clickToNatPx(ev);
+      el.setAttribute('cx',p.x);
+      el.setAttribute('cy',p.y);
+      var lbl=document.getElementById(id+'-lbl');
+      if(lbl){lbl.setAttribute('x',p.x);lbl.setAttribute('y',p.y+5);}
+    });
+    el.addEventListener('pointerup',function(ev){
+      if(!dragging)return;
+      dragging=false;
+      var p=clickToNatPx(ev);
+      var st=S._holeMap;if(!st)return;
+      var note=getHoleNote(st.courseId,st.holeIdx);
+      if(!note||!note.calibration)return;
+      if(id==='cal-tee')note.calibration.teePx=p;
+      else note.calibration.greenPx=p;
+      saveHoleNote(st.courseId,st.holeIdx,note);
+      drawHoleMapOverlay(); // repositionne tous les autres points
+    });
+    el.addEventListener('pointercancel',function(){dragging=false;});
+  });
+}
+
+// « Calibrer » = place T et G à des positions par défaut, l'utilisateur les
+// ajuste ensuite par drag-and-drop.
 function startCalibration(){
-  var st=S._holeMap;if(!st)return;
-  st.calibStep=1;st.calibTee=null;st.calibGreen=null;
-  renderHoleMapFullscreen();
+  if(ensureDefaultCalibration())renderHoleMapFullscreen();
 }
-function cancelCalibration(){
+// « Recalibrer » = efface puis relance placement par défaut.
+function resetCalibration(){
   var st=S._holeMap;if(!st)return;
-  st.calibStep=0;st.calibTee=null;st.calibGreen=null;
-  renderHoleMapFullscreen();
-}
-function handleCalibClick(ev){
-  var st=S._holeMap;if(!st||st.calibStep===0)return;
-  var img=document.getElementById('hm-img');if(!img)return;
-  var rect=img.getBoundingClientRect();
-  // Converti le clic écran → pixel natif de l'image
-  var relX=(ev.clientX-rect.left)/rect.width;
-  var relY=(ev.clientY-rect.top)/rect.height;
-  var px={x:Math.round(relX*img.naturalWidth),y:Math.round(relY*img.naturalHeight)};
-  if(st.calibStep===1){
-    st.calibTee=px;
-    st.calibStep=2;
-    renderHoleMapFullscreen();
-  }else if(st.calibStep===2){
-    st.calibGreen=px;
-    // Sauvegarde calibration
-    var note=getHoleNote(st.courseId,st.holeIdx);
-    note.calibration={
-      version:1,
-      imageSize:{w:img.naturalWidth,h:img.naturalHeight},
-      teePx:st.calibTee,
-      greenPx:st.calibGreen
-    };
-    saveHoleNote(st.courseId,st.holeIdx,note);
-    st.calibStep=0;st.calibTee=null;st.calibGreen=null;
-    renderHoleMapFullscreen();
-  }
+  var note=getHoleNote(st.courseId,st.holeIdx);
+  if(note){delete note.calibration;saveHoleNote(st.courseId,st.holeIdx,note);}
+  startCalibration();
 }
 function closeHoleMap(){
   var d=document.getElementById('hole-map-fs');if(d)d.remove();
