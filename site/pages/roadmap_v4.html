@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Roadmap Ça Swingue 4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  :root{--bg:#f0f4f8;--card:#fff;--text:#0f172a;--muted:#64748b;
+    --accent:#7c3aed;--accent-dk:#4c1d95;--ok:#16a34a;--bd:#e5e7eb;
+    --r:16px;--sh:0 2px 16px rgba(0,0,0,.07)}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;max-width:860px;margin:0 auto;padding-bottom:40px}
+  .hdr{background:rgba(255,255,255,.92);backdrop-filter:blur(20px);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;border-bottom:1px solid var(--bd)}
+  .hdr-title{font-size:17px;font-weight:800;letter-spacing:-.3px}
+  .hdr-btn{background:#f1f5f9;border:none;border-radius:10px;padding:7px 13px;font-size:13px;font-weight:600;color:#475569;text-decoration:none}
+  .hero{background:linear-gradient(145deg,#4c1d95 0%,#7c3aed 60%,#a78bfa 100%);padding:32px 24px 28px;position:relative;overflow:hidden}
+  .hero::before{content:'🌀';font-size:110px;position:absolute;right:-8px;top:-12px;opacity:.14;line-height:1}
+  .hero-tag{display:inline-block;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.3);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;color:#fff;letter-spacing:.6px;text-transform:uppercase;margin-bottom:12px}
+  .hero h1{font-size:30px;font-weight:900;color:#fff;letter-spacing:-.5px;line-height:1.15;margin-bottom:6px}
+  .hero p{font-size:14px;color:rgba(255,255,255,.88);font-weight:500}
+  .section{margin:22px 16px 0}
+  .section h2{font-size:14px;font-weight:800;color:var(--accent-dk);letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px}
+  .card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:16px}
+  .phase{border-left:4px solid var(--accent);padding-left:12px;margin-bottom:8px}
+  .phase-title{font-size:16px;font-weight:800;color:var(--accent-dk);margin-bottom:2px}
+  .phase-duration{font-size:11px;color:var(--muted);font-weight:600}
+  .checklist{list-style:none;padding:0;margin:12px 0 0}
+  .checklist li{padding:6px 0;font-size:13px;display:flex;gap:8px;align-items:flex-start;color:#334155}
+  .checklist li::before{content:'☐';color:var(--accent);flex-shrink:0;font-size:14px;font-weight:700}
+  .checklist li.done::before{content:'✓';color:var(--ok)}
+  .checklist li.done{color:var(--muted);text-decoration:line-through}
+  .sub-block{margin-left:18px;margin-top:8px;padding:10px 12px;background:#faf5ff;border-radius:10px;border-left:3px solid #a78bfa}
+  .sub-block .title{font-size:12px;font-weight:700;color:var(--accent-dk);margin-bottom:4px}
+  .sub-block ul{list-style:none;padding:0;font-size:12px;color:#52525b;line-height:1.5}
+  .sub-block li{padding:2px 0}
+  .sub-block li::before{content:'→ ';color:var(--accent)}
+  .vision{background:linear-gradient(135deg,#f3e8ff,#ede9fe);border-radius:var(--r);padding:16px;margin-bottom:12px}
+  .vision p{font-size:13px;line-height:1.6;color:#3730a3}
+  .stack-box{background:#f8fafc;border-radius:10px;padding:12px;font-size:12px;line-height:1.6;color:#475569;font-family:monospace}
+  .stack-box strong{color:var(--accent-dk);font-family:'Inter',sans-serif;font-weight:700}
+  .total{text-align:center;padding:20px;background:#f3e8ff;border-radius:var(--r);margin-top:20px;font-size:14px;color:var(--accent-dk);font-weight:700}
+  .footer{text-align:center;padding:24px;font-size:11px;color:var(--muted)}
+  .footer a{color:var(--accent);text-decoration:none;font-weight:600}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <a href="roadmap_v3.html" class="hdr-btn">← v3</a>
+  <div class="hdr-title">Roadmap v4</div>
+  <a href="../index.html" class="hdr-btn">App →</a>
+</header>
+
+<section class="hero">
+  <span class="hero-tag">Ça Swingue 4 · Fusion tri-outils</span>
+  <h1>Roadmap</h1>
+  <p>PWA + Dashboards Nantes + Coaching golf-suivi → un seul produit 3 couches.</p>
+</section>
+
+<div class="section">
+  <h2>🧭 Vision</h2>
+  <div class="vision">
+    <p>Trois outils actuels indépendants — <strong>Ça Swingue</strong> (PWA pendant la partie), <strong>Nantes_Vigneux</strong> (dashboards après partie), <strong>golf-suivi</strong> (coaching entre parties) — sont fusionnés en une app unique avec base de données commune.</p>
+    <p style="margin-top:8px">📱 Live → 📊 Stats → 🎯 Coach + Caddy</p>
+  </div>
+</div>
+
+<div class="section">
+  <h2>📅 Phases</h2>
+
+  <div class="card" style="margin-bottom:14px">
+    <div class="phase">
+      <div class="phase-title">Phase 1 — Fondations</div>
+      <div class="phase-duration">2-3 semaines</div>
+    </div>
+    <ul class="checklist">
+      <li>docs/10_data_model.md — schéma TypeScript unifié</li>
+      <li>Setup esbuild + TypeScript config minimal</li>
+      <li>Migration localStorage → IndexedDB (wrapper)</li>
+      <li>Routeur SPA simple (3 onglets Live/Stats/Coach)</li>
+      <li>Tests unitaires sur migrations v2 → v4</li>
+    </ul>
+  </div>
+
+  <div class="card" style="margin-bottom:14px">
+    <div class="phase">
+      <div class="phase-title">Phase 2 — Couche Live</div>
+      <div class="phase-duration">1-2 semaines</div>
+    </div>
+    <ul class="checklist">
+      <li>Porter playing view depuis v2</li>
+      <li>Porter score saisie + format engine</li>
+      <li>Porter partage Firebase</li>
+      <li>Parité v2 validée</li>
+    </ul>
+  </div>
+
+  <div class="card" style="margin-bottom:14px">
+    <div class="phase">
+      <div class="phase-title">Phase 3 — Couche Stats</div>
+      <div class="phase-duration">2-3 semaines</div>
+    </div>
+    <ul class="checklist">
+      <li>Conversion XLSX Nantes → JSON</li>
+      <li>Dashboard WHS (onglet 1)</li>
+      <li>Dashboard par trou (onglets 2 + 3)</li>
+      <li>Dashboard N-derniers (onglets 4 + 5)</li>
+      <li>Export PDF</li>
+    </ul>
+  </div>
+
+  <div class="card" style="margin-bottom:14px">
+    <div class="phase">
+      <div class="phase-title">Phase 4 — Couche Coach + Caddy</div>
+      <div class="phase-duration">3-4 semaines</div>
+    </div>
+
+    <div style="margin-top:12px">
+      <div style="font-weight:700;font-size:13px;color:var(--accent-dk);margin-bottom:6px">4a — Coach (entre parties · hérité de golf-suivi)</div>
+      <ul class="checklist">
+        <li>Parseur MD golf-suivi</li>
+        <li>UI conversationnelle</li>
+        <li>Skill planifier-séance</li>
+        <li>Skill analyser-parcours</li>
+        <li>Skill bilan-progression</li>
+        <li>Sync .md bidirectionnelle (File System Access)</li>
+      </ul>
+    </div>
+
+    <div style="margin-top:14px">
+      <div style="font-weight:700;font-size:13px;color:var(--accent-dk);margin-bottom:6px">4b — Caddy (pendant partie · hérité de v3)</div>
+      <ul class="checklist">
+        <li>Import des structures Caddy v3 (PlayerProfile, GameContext, CaddyRule)</li>
+      </ul>
+      <div class="sub-block">
+        <div class="title">🎯 Préférences de jeu enrichies</div>
+        <ul>
+          <li>Identifie les clubs les plus joués avec réussite (stats Nantes)</li>
+          <li>Repère les distances où tu es le plus à l'aise (ex. 120m wedge, 150m fer 8)</li>
+          <li>Stocke ces préférences dans <code>PlayerProfile.preferences</code></li>
+        </ul>
+      </div>
+      <div class="sub-block">
+        <div class="title">🗺️ Stratégie multi-parcours</div>
+        <ul>
+          <li>Règles qui combinent hole.distance + préférences joueur</li>
+          <li>Plan de jeu (drive + lay-up + attaque) sur n'importe quel parcours</li>
+          <li>Fonctionne sans carnet rempli à la main, depuis les données accumulées</li>
+        </ul>
+      </div>
+      <ul class="checklist" style="margin-top:8px">
+        <li>Enrichissement par stats Nantes (% GIR, trous faibles, etc.)</li>
+        <li>Briefing pré-coup avancé (profil + stats + forme + conditions)</li>
+        <li>Bilan mi-parcours (après 9 trous)</li>
+        <li>Coaching post-erreur (mental adaptatif)</li>
+        <li>Mémoire vive (observations passives → profil)</li>
+        <li>(optionnel) Appels Claude API pour cas limites</li>
+      </ul>
+    </div>
+
+    <div class="stack-box" style="margin-top:14px">
+      <strong>Fusion naturelle</strong> : Coach et Caddy partagent le même profil joueur, stocké en .md dans golf-suivi et en objet dans IndexedDB.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="phase">
+      <div class="phase-title">Phase 5 — Polish</div>
+      <div class="phase-duration">1-2 semaines</div>
+    </div>
+    <ul class="checklist">
+      <li>PWA install + offline</li>
+      <li>Notifications push</li>
+      <li>Widget watch-sized</li>
+      <li>Doc utilisateur</li>
+    </ul>
+  </div>
+</div>
+
+<div class="section">
+  <div class="total">⏱️ Total estimé : <strong>9-14 semaines</strong> (2-3 mois)</div>
+</div>
+
+<div class="section">
+  <h2>🔧 Stack cible</h2>
+  <div class="stack-box">
+    <strong>TypeScript</strong> sans framework · <strong>esbuild</strong> pour le bundle · <strong>Chart.js</strong> stats · <strong>Marked</strong> markdown · <strong>Firebase</strong> sync · <strong>IndexedDB</strong> local<br><br>
+    1 SPA PWA unifiée · 3 onglets Live / Stats / Coach · mobile-first, dashboards tablette/desktop
+  </div>
+</div>
+
+<div class="footer">
+  Maintenu par Virnaoned · Ça Swingue 4 · <a href="roadmap_v3.html">← Retour roadmap v3</a>
+</div>
+
+</body>
+</html>
