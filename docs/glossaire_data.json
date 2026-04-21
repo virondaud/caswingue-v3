@@ -157,6 +157,9 @@
         { "emoji": "🗂", "term": "Memory (Claude)", "english": "mémoire persistante",
           "definition": "Fichiers que Claude écrit dans ~/.claude/projects/.../memory/ pour se souvenir entre sessions : profil utilisateur, contexte projet, retours d'expérience. Chaque projet a sa propre mémoire. Tu peux la lire, l'éditer, la supprimer.",
           "example": "Pour le projet Sophie, j'ai trois fichiers mémoire : profil Mathieu, contexte clinique Sophie, vocabulaire informatique. Ça m'évite de repartir de zéro à chaque conversation." },
+        { "emoji": "🔎", "term": "ToolSearch", "english": "chargeur d'outils à la demande",
+          "definition": "Mécanisme de Claude Code qui permet de charger le détail technique d'un outil seulement quand j'en ai besoin. Au démarrage, certains outils sont listés par leur nom mais pas activés ; je dois taper une requête pour les récupérer et les rendre utilisables. Ça évite de saturer mon contexte avec des centaines d'outils dormants.",
+          "example": "Aujourd'hui, quand j'ai voulu vérifier des citations PubMed, j'ai utilisé ToolSearch pour charger le tool de recherche d'articles, puis j'ai pu interroger la base. Sans ça, j'aurais hallucé les références (comme je l'ai déjà fait) au lieu de les vérifier." },
         { "emoji": "📅", "term": "Schedule", "english": "skill de planification Claude",
           "definition": "Skill Claude qui crée des remote agents (triggers) programmés sur un cron. Une fois configuré, l'agent s'exécute tout seul à l'heure dite, fait sa tâche, envoie le résultat à l'utilisateur — sans qu'il ait à ouvrir Claude. Nécessite une connexion au compte claude.ai.",
           "example": "On a tenté de créer « Sophie — Bilan hebdo » (dimanche 20h Europe/Paris) qui analyse les 7 derniers jours de Sophie et propose des ajustements. Première tentative a échoué (problème de connexion claude.ai) — à relancer plus tard." }
