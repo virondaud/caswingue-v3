@@ -12149,7 +12149,7 @@ function renderHoleMapFullscreen(){
   var existing=document.getElementById('hole-map-fs');if(existing)existing.remove();
   var div=document.createElement('div');
   div.id='hole-map-fs';
-  div.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:500;display:flex;flex-direction:column;padding:10px';
+  div.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:500;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top,0px) + 10px) 10px calc(env(safe-area-inset-bottom,0px) + 10px) 10px';
   var title='Trou '+(st.holeIdx+1)+(hole?' · Par '+hole.par+(hole.distBlanc?' · '+hole.distBlanc+'m':''):'');
   var safeSrc=esc(note.mapImage);
   var cal=note.calibration;
