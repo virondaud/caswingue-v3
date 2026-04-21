@@ -10919,7 +10919,9 @@ function seedDemoDataV3(){
         dangers:[
           {type:'bunker_r',distance:197,coords:{lat:47.29315584,lng:-1.70121443},label:'entrée bunker droite'},
           {type:'bunker_r',distance:218,coords:{lat:47.29327778,lng:-1.70147222},label:'sortie bunker droite'},
-          {type:'trees_l',distance:153,coords:{lat:47.29274749,lng:-1.70112695},label:'angle dog-leg gauche (forêt)'}
+          {type:'trees_l',distance:153,coords:{lat:47.29274749,lng:-1.70112695},label:'angle dog-leg gauche (forêt)'},
+          {type:'green_front',distance:245,coords:{lat:47.29313585,lng:-1.70233626},label:'entrée de green'},
+          {type:'green_back',distance:265,coords:{lat:47.29318065,lng:-1.70266208},label:'fond de green'}
         ],
         usualClub:''
       },
@@ -11529,7 +11531,10 @@ var DANGER_TYPES=[
   {key:'trees_l',label:'Arbres gauche'},
   {key:'trees_r',label:'Arbres droite'},
   {key:'rough',label:'Rough épais'},
-  {key:'slope',label:'Dénivelé'}
+  {key:'slope',label:'Dénivelé'},
+  {key:'green_front',label:'Entrée de green'},
+  {key:'green_back',label:'Fond de green'},
+  {key:'layup',label:'Zone de lay-up'}
 ];
 var APPROACH_STRATEGIES=[
   {key:'direct',label:'🎯 Direct — viser le drapeau'},
@@ -12226,7 +12231,13 @@ function drawHoleMapOverlay(){
   (note.dangers||(note.teeShot&&note.teeShot.dangers)||[]).forEach(function(d){
     if(!d.coords)return;
     var p=gpsToPx(d.coords.lat,d.coords.lng,tee,green,cal);
-    var color=d.type&&d.type.indexOf('bunker')===0?'#f59e0b':(d.type&&d.type.indexOf('water')===0?'#0891b2':'#dc2626');
+    var color=(function(t){
+      if(!t)return '#dc2626';
+      if(t.indexOf('bunker')===0)return '#f59e0b';
+      if(t.indexOf('water')===0)return '#0891b2';
+      if(t.indexOf('green_')===0||t==='layup')return '#10b981';
+      return '#dc2626';
+    })(d.type);
     out+='<circle cx="'+p.x+'" cy="'+p.y+'" r="18" fill="'+color+'" fill-opacity="0.35" stroke="'+color+'" stroke-width="3"/>';
     out+='<circle cx="'+p.x+'" cy="'+p.y+'" r="5" fill="'+color+'"/>';
     if(d.distance){
@@ -12237,7 +12248,13 @@ function drawHoleMapOverlay(){
   (note.teeShot&&note.teeShot.dangers||[]).forEach(function(d){
     if(!d.coords||note.dangers)return; // évite doublon si dangers racine existe
     var p=gpsToPx(d.coords.lat,d.coords.lng,tee,green,cal);
-    var color=d.type&&d.type.indexOf('bunker')===0?'#f59e0b':(d.type&&d.type.indexOf('water')===0?'#0891b2':'#dc2626');
+    var color=(function(t){
+      if(!t)return '#dc2626';
+      if(t.indexOf('bunker')===0)return '#f59e0b';
+      if(t.indexOf('water')===0)return '#0891b2';
+      if(t.indexOf('green_')===0||t==='layup')return '#10b981';
+      return '#dc2626';
+    })(d.type);
     out+='<circle cx="'+p.x+'" cy="'+p.y+'" r="18" fill="'+color+'" fill-opacity="0.35" stroke="'+color+'" stroke-width="3"/>';
     out+='<circle cx="'+p.x+'" cy="'+p.y+'" r="5" fill="'+color+'"/>';
     if(d.distance){
