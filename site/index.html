@@ -12408,53 +12408,68 @@ function drawHoleMapOverlay(){
     out+='<rect x="'+(lx-22)+'" y="'+(ly-11)+'" width="44" height="18" rx="4" fill="'+arcLabelColor+'" opacity="0.85"/>';
     out+='<text x="'+lx+'" y="'+(ly+4)+'" text-anchor="middle" fill="#fff" font-size="14" font-weight="700" font-family="Inter,sans-serif">'+m+'m</text>';
   });
-  // Dangers
-  (note.dangers||(note.teeShot&&note.teeShot.dangers)||[]).forEach(function(d){
+  // Dangers — filtrage par catégorie selon la vue (tee-side vs green-side)
+  // Classification :
+  //  - green-side : types green_* OU marker à < 30m du centre du green
+  //  - tee-side   : tout le reste (bunkers fairway, trees, layup, aim_target, fairway_corner)
+  // Règle :
+  //  - Par 3      : pas de filtre (tout affiché dans les 2 vues)
+  //  - Par 4+     : vue tee = tee-side uniquement · vue green = green-side uniquement
+  //  - Labels     : distance depuis le tee en vue tee · depuis le centre du green en vue green
+  var course=DB.courses.find(function(x){return x.id===st.courseId;});
+  var hole=course?course.holes[st.holeIdx]:null;
+  var isPar3=hole&&hole.par===3;
+  function categorize(d){
+    if(!d.coords)return 'none';
+    if(d.type&&d.type.indexOf('green_')===0)return 'green';
+    var dg=gpsDistanceM(d.coords.lat,d.coords.lng,green.lat,green.lng);
+    if(dg<30)return 'green';
+    return 'tee';
+  }
+  var colorForType=function(t){
+    if(!t)return '#dc2626';
+    if(t.indexOf('bunker')===0)return '#f59e0b';
+    if(t.indexOf('water')===0)return '#0891b2';
+    if(t.indexOf('green_')===0)return '#10b981';
+    if(t==='layup')return '#8b5cf6';
+    if(t==='fairway_corner')return '#64748b';
+    if(t==='aim_target')return '#ec4899';
+    return '#dc2626';
+  };
+  // Dédoublonnage des listes dangers (racine + teeShot.dangers)
+  var allDangers=[].concat(note.dangers||[]);
+  if(!note.dangers&&note.teeShot&&note.teeShot.dangers)allDangers=allDangers.concat(note.teeShot.dangers);
+  allDangers.forEach(function(d){
     if(!d.coords)return;
+    var cat=categorize(d);
+    if(!isPar3){
+      if(fromGreen && cat!=='green')return;
+      if(!fromGreen && cat==='green')return;
+    }
     var p=gpsToPx(d.coords.lat,d.coords.lng,tee,green,cal);
-    var color=(function(t){
-      if(!t)return '#dc2626';
-      if(t.indexOf('bunker')===0)return '#f59e0b';
-      if(t.indexOf('water')===0)return '#0891b2';
-      if(t.indexOf('green_')===0)return '#10b981';
-      if(t==='layup')return '#8b5cf6';
-      if(t==='fairway_corner')return '#64748b';
-      if(t==='aim_target')return '#ec4899';
-      return '#dc2626';
-    })(d.type);
+    var color=colorForType(d.type);
     out+='<circle cx="'+p.x+'" cy="'+p.y+'" r="18" fill="'+color+'" fill-opacity="0.35" stroke="'+color+'" stroke-width="3"/>';
     out+='<circle cx="'+p.x+'" cy="'+p.y+'" r="5" fill="'+color+'"/>';
-    if(d.distance){
+    // Label : distance pertinente selon la vue
+    var distLabel;
+    if(fromGreen){
+      distLabel=Math.round(gpsDistanceM(d.coords.lat,d.coords.lng,green.lat,green.lng))+'m';
+    }else if(d.distance){
+      distLabel=d.distance+'m';
+    }
+    if(distLabel){
       out+='<rect x="'+(p.x-24)+'" y="'+(p.y+22)+'" width="48" height="18" rx="4" fill="'+color+'" opacity="0.9"/>';
-      out+='<text x="'+p.x+'" y="'+(p.y+36)+'" text-anchor="middle" fill="#fff" font-size="13" font-weight="700" font-family="Inter,sans-serif">'+d.distance+'m</text>';
+      out+='<text x="'+p.x+'" y="'+(p.y+36)+'" text-anchor="middle" fill="#fff" font-size="13" font-weight="700" font-family="Inter,sans-serif">'+distLabel+'</text>';
     }
   });
-  (note.teeShot&&note.teeShot.dangers||[]).forEach(function(d){
-    if(!d.coords||note.dangers)return; // évite doublon si dangers racine existe
-    var p=gpsToPx(d.coords.lat,d.coords.lng,tee,green,cal);
-    var color=(function(t){
-      if(!t)return '#dc2626';
-      if(t.indexOf('bunker')===0)return '#f59e0b';
-      if(t.indexOf('water')===0)return '#0891b2';
-      if(t.indexOf('green_')===0)return '#10b981';
-      if(t==='layup')return '#8b5cf6';
-      if(t==='fairway_corner')return '#64748b';
-      if(t==='aim_target')return '#ec4899';
-      return '#dc2626';
-    })(d.type);
-    out+='<circle cx="'+p.x+'" cy="'+p.y+'" r="18" fill="'+color+'" fill-opacity="0.35" stroke="'+color+'" stroke-width="3"/>';
-    out+='<circle cx="'+p.x+'" cy="'+p.y+'" r="5" fill="'+color+'"/>';
-    if(d.distance){
-      out+='<rect x="'+(p.x-24)+'" y="'+(p.y+22)+'" width="48" height="18" rx="4" fill="'+color+'" opacity="0.9"/>';
-      out+='<text x="'+p.x+'" y="'+(p.y+36)+'" text-anchor="middle" fill="#fff" font-size="13" font-weight="700" font-family="Inter,sans-serif">'+d.distance+'m</text>';
+  // Flèche tee → visée idéale (uniquement en vue tee)
+  if(!fromGreen){
+    var aim=((note.dangers||[]).concat((note.teeShot&&note.teeShot.dangers)||[])).find(function(d){return d.type==='aim_target'&&d.coords;});
+    if(aim){
+      var ap=gpsToPx(aim.coords.lat,aim.coords.lng,tee,green,cal);
+      out+='<defs><marker id="arrowAim" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#ec4899"/></marker></defs>';
+      out+='<line x1="'+cal.teePx.x+'" y1="'+cal.teePx.y+'" x2="'+ap.x+'" y2="'+ap.y+'" stroke="#ec4899" stroke-width="4" stroke-dasharray="0" opacity="0.85" marker-end="url(#arrowAim)"/>';
     }
-  });
-  // Flèche tee → visée idéale (si présente)
-  var aim=((note.dangers||[]).concat((note.teeShot&&note.teeShot.dangers)||[])).find(function(d){return d.type==='aim_target'&&d.coords;});
-  if(aim){
-    var ap=gpsToPx(aim.coords.lat,aim.coords.lng,tee,green,cal);
-    out+='<defs><marker id="arrowAim" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#ec4899"/></marker></defs>';
-    out+='<line x1="'+cal.teePx.x+'" y1="'+cal.teePx.y+'" x2="'+ap.x+'" y2="'+ap.y+'" stroke="#ec4899" stroke-width="4" stroke-dasharray="0" opacity="0.85" marker-end="url(#arrowAim)"/>';
   }
   // Marqueur tee (drag enabled)
   out+='<circle id="cal-tee" cx="'+cal.teePx.x+'" cy="'+cal.teePx.y+'" r="18" fill="#16a34a" stroke="#fff" stroke-width="4" style="cursor:grab;pointer-events:all;touch-action:none"/>';
