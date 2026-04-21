@@ -12516,7 +12516,9 @@ function drawHoleMapOverlay(){
       if(!fromGreen && cat==='green')return;
     }
     var p=gpsToPx(d.coords.lat,d.coords.lng,tee,green,cal);
-    var color=colorForType(d.type);
+    // En vue green : couleur unifiée ambre doré pour la zone d'attaque
+    // En vue tee   : couleur spécifique par type (bunker=orange, eau=bleu, etc.)
+    var color=fromGreen?'#d97706':colorForType(d.type);
     out+='<circle cx="'+p.x+'" cy="'+p.y+'" r="18" fill="'+color+'" fill-opacity="0.35" stroke="'+color+'" stroke-width="3"/>';
     out+='<circle cx="'+p.x+'" cy="'+p.y+'" r="5" fill="'+color+'"/>';
     // Label : distance pertinente selon la vue
