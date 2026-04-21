@@ -11376,6 +11376,7 @@ function getCaddyContext(g,courseId,holeIdx){
   }
   return {
     profile:profile,
+    clubs:getPlayerClubs(me),  // distances du joueur → pour recommandations de club
     checkIn:g.checkIn||null,
     objective:g.objective||{type:'none'},
     currentHole:{idx:holeIdx,par:hole.par,handicap:hole.handicap,distBlanc:hole.distBlanc,distJaune:hole.distJaune},
@@ -11385,6 +11386,24 @@ function getCaddyContext(g,courseId,holeIdx){
     roundStats:{played:holeIdx,brut:brut,net:net,pts:pts,parPlayed:parPlayed,diff:brut-parPlayed,diffNet:net-parPlayed},
     totalHoles:course.holes.length
   };
+}
+
+// Helper caddy : trouve le club dont la distance plein coup colle le mieux à distM (±tolérance).
+// Retourne {club, delta} ou null. Priorise les clubs dont la distance est proche ou légèrement supérieure à distM.
+function caddySuggestClub(clubs,distM,tol){
+  if(!clubs||!distM)return null;
+  tol=tol||8;
+  var best=null;
+  clubs.forEach(function(c){
+    var d=(c.fullShot&&c.fullShot.distance)||c.distance||0;
+    if(!d)return;
+    var delta=d-distM;
+    // On préfère un club qui délivre +/-tol m, avec léger biais vers "un peu plus long" (pour passer l'obstacle)
+    if(Math.abs(delta)<=tol+3){
+      if(!best || Math.abs(delta)<Math.abs(best.delta))best={club:c,delta:delta};
+    }
+  });
+  return best;
 }
 
 var CADDY_RULES=[
@@ -11404,6 +11423,43 @@ var CADDY_RULES=[
   {id:'basics_if_distracted',skill:'prebrief',priority:7,
     when:function(ctx){return ctx.checkIn && ctx.checkIn.mental==='distracted' && ctx.currentHole.idx%3===0;},
     say:function(ctx){return '🧠 Reviens aux bases : grip, posture, alignement. Une routine complète avant chaque coup.';}
+  },
+
+  // ── Recommandation de club selon distance cible et clubs du joueur ──
+  {id:'club_rec_teeshot',skill:'prebrief',priority:8,
+    when:function(ctx){
+      return ctx.courseNote && ctx.courseNote.teeShot && ctx.courseNote.teeShot.targetDistance && ctx.clubs && ctx.clubs.length;
+    },
+    say:function(ctx){
+      var d=ctx.courseNote.teeShot.targetDistance;
+      var s=caddySuggestClub(ctx.clubs,d,8);
+      if(!s)return '🎯 Cible '+d+'m — aucun club exactement à cette distance dans ton sac, ajuste au feeling.';
+      var dd=s.delta>0?('+'+s.delta+'m au plein coup'):(s.delta<0?(s.delta+'m au plein coup'):('pile à distance'));
+      return '🎯 Cible '+d+'m → '+s.club.name+' ('+dd+')';
+    }
+  },
+  // ── Cohérence distance cible vs distance trou : suggestion de stratégie ──
+  {id:'strategy_long_par4',skill:'prebrief',priority:6,
+    when:function(ctx){
+      if(ctx.currentHole.par!==4)return false;
+      var dist=ctx.currentHole.distJaune||ctx.currentHole.distBlanc;
+      return dist && dist>320;
+    },
+    say:function(ctx){
+      var dist=ctx.currentHole.distJaune||ctx.currentHole.distBlanc;
+      return '📏 Par 4 long ('+dist+'m) — après ton drive, il restera probablement 100-130m au green, prépare-toi au wedge ou fer 9.';
+    }
+  },
+  {id:'strategy_short_par4',skill:'prebrief',priority:5,
+    when:function(ctx){
+      if(ctx.currentHole.par!==4)return false;
+      var dist=ctx.currentHole.distJaune||ctx.currentHole.distBlanc;
+      return dist && dist<280;
+    },
+    say:function(ctx){
+      var dist=ctx.currentHole.distJaune||ctx.currentHole.distBlanc;
+      return '📏 Par 4 court ('+dist+'m) — tu peux viser le placement plutôt que la longueur, un fer ou bois pour t\'assurer d\'être au centre.';
+    }
   },
 
   // ── Chemin de club : draw & fade ──
