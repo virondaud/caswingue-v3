@@ -10994,6 +10994,30 @@ function seedDemoDataV3(){
 if((!DB.players||DB.players.length===0) && !localStorage.getItem('gm_seed_done')){
   try{seedDemoDataV3();}catch(e){console.error('[SEED] erreur',e);}
 }
+
+// Migration v3 : ancien schéma mapImageSat → mapImageClub (avec inversion).
+// Les utilisateurs existants avaient mapImage=schéma club, mapImageSat=satellite.
+// Le nouveau modèle fait l'inverse : mapImage=satellite (calibré), mapImageClub=schéma.
+(function migrateMapImages(){
+  if(!DB.courseNotebooks)return;
+  var migrated=false;
+  Object.keys(DB.courseNotebooks).forEach(function(cid){
+    var nb=DB.courseNotebooks[cid];if(!nb||typeof nb!=='object')return;
+    Object.keys(nb).forEach(function(hi){
+      var note=nb[hi];if(!note||typeof note!=='object')return;
+      if(note.mapImageSat && !note.mapImageClub){
+        var oldSchema=note.mapImage;       // ancien : schéma club
+        note.mapImage=note.mapImageSat;    // nouveau primaire : satellite
+        note.mapImageClub=oldSchema;       // référence : schéma club
+        delete note.mapImageSat;
+        delete note.calibration;           // force recalibration sur la nouvelle image
+        delete note.calibrationSat;
+        migrated=true;
+      }
+    });
+  });
+  if(migrated){save();console.info('[MIGRATION] mapImages inversés → recalibre dans l\'app');}
+})();
 window.seedDemoDataV3=seedDemoDataV3; // utilitaire console : seedDemoDataV3() pour forcer
 
 window.addEventListener('resize',()=>{if(S.view==='scorecard')render();});
