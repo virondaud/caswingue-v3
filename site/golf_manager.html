@@ -10921,7 +10921,8 @@ function seedDemoDataV3(){
           {type:'bunker_r',distance:218,coords:{lat:47.29327778,lng:-1.70147222},label:'sortie bunker droite'},
           {type:'trees_l',distance:153,coords:{lat:47.29274749,lng:-1.70112695},label:'angle dog-leg gauche (forêt)'},
           {type:'green_front',distance:245,coords:{lat:47.29313585,lng:-1.70233626},label:'entrée de green'},
-          {type:'green_back',distance:265,coords:{lat:47.29318065,lng:-1.70266208},label:'fond de green'}
+          {type:'green_back',distance:265,coords:{lat:47.29318065,lng:-1.70266208},label:'fond de green'},
+          {type:'fairway_corner',distance:215,coords:{lat:47.29336328,lng:-1.70112747},label:'angle fairway'}
         ],
         usualClub:''
       },
@@ -11534,7 +11535,8 @@ var DANGER_TYPES=[
   {key:'slope',label:'Dénivelé'},
   {key:'green_front',label:'Entrée de green'},
   {key:'green_back',label:'Fond de green'},
-  {key:'layup',label:'Zone de lay-up'}
+  {key:'layup',label:'Zone de lay-up'},
+  {key:'fairway_corner',label:'Angle de fairway'}
 ];
 var APPROACH_STRATEGIES=[
   {key:'direct',label:'🎯 Direct — viser le drapeau'},
@@ -12236,6 +12238,7 @@ function drawHoleMapOverlay(){
       if(t.indexOf('bunker')===0)return '#f59e0b';
       if(t.indexOf('water')===0)return '#0891b2';
       if(t.indexOf('green_')===0||t==='layup')return '#10b981';
+      if(t==='fairway_corner')return '#64748b';
       return '#dc2626';
     })(d.type);
     out+='<circle cx="'+p.x+'" cy="'+p.y+'" r="18" fill="'+color+'" fill-opacity="0.35" stroke="'+color+'" stroke-width="3"/>';
@@ -12253,6 +12256,7 @@ function drawHoleMapOverlay(){
       if(t.indexOf('bunker')===0)return '#f59e0b';
       if(t.indexOf('water')===0)return '#0891b2';
       if(t.indexOf('green_')===0||t==='layup')return '#10b981';
+      if(t==='fairway_corner')return '#64748b';
       return '#dc2626';
     })(d.type);
     out+='<circle cx="'+p.x+'" cy="'+p.y+'" r="18" fill="'+color+'" fill-opacity="0.35" stroke="'+color+'" stroke-width="3"/>';
