@@ -10933,9 +10933,48 @@ function seedDemoDataV3(){
     };
   }
 
+  // ── Sessions d'entraînement inventées (5 dernières semaines) ──
+  var d=86400000;
+  DB.practice=[
+    {id:'s1',date:Date.now()-2*d,type:'putting',duration:45,location:'Vigneux',rating:4,
+      focuses:['Putting vitesse','Putting ligne'],
+      counters:{shortMade:14,shortTried:15,medMade:7,medTried:12,longMade:2,longTried:8},
+      notes:'Bonne sensation sur les courts, moins sur les longs.'},
+    {id:'s2',date:Date.now()-5*d,type:'chipping',duration:30,location:'Vigneux',rating:3,
+      focuses:['Chipping roulé','Distance control'],
+      counters:{chipClose:12,chipTried:20},
+      notes:'Travail des demi-coups au wedge 52°.'},
+    {id:'s3',date:Date.now()-8*d,type:'practice',duration:60,location:'Vigneux',rating:3,
+      focuses:['Tempo','Plan de swing'],
+      counters:{balls:70,goodPct:60},notes:''},
+    {id:'s4',date:Date.now()-12*d,type:'fitness',duration:45,location:'',rating:3,
+      focuses:['Posture'],counters:{},notes:'Mobilité épaules et tronc.'},
+    {id:'s5',date:Date.now()-16*d,type:'practice',duration:75,location:'Vigneux',rating:4,
+      focuses:['Distance control','Tempo'],counters:{balls:90,goodPct:65},notes:''}
+  ];
+  DB.trainingGoal={weekly:2};
+
+  // ── Historique : 1 partie Stableford passée sur Vigneux ──
+  if(vigneux){
+    var holeCount=(vigneux.holes||[]).length||18;
+    var game={
+      id:'hgame1',courseId:vigneux.id,
+      playerIds:[mathieuId,'pnico','pantoine'],
+      gameType:'stableford',tee:'jaune',useHandicap:true,currentHole:holeCount-1,
+      startedAt:Date.now()-14*d,finishedAt:Date.now()-14*d+3.5*3600000,
+      scores:[],useTeams:false
+    };
+    // Scores cohérents : Mathieu ~stableford 28, Nico (0.5 HdJ) ~32, Antoine ~30
+    var profiles=[[4,5,3,4,4,3,4,5,4,4,4,3,4,5,4,3,4,4],[3,4,2,4,4,3,3,5,4,4,4,3,4,4,3,3,4,3],[4,5,3,4,4,3,4,5,4,4,4,4,4,5,4,3,4,4]];
+    for(var h=0;h<holeCount;h++){
+      game.scores.push(profiles.map(p=>p[h]||4));
+    }
+    DB.history=[game];
+  }
+
   save();
   try{localStorage.setItem('gm_seed_done','1');}catch(e){}
-  console.log('[SEED] ✅ 5 joueurs + carnet Vigneux T1 chargés');
+  console.log('[SEED] ✅ 5 joueurs + carnet Vigneux + 5 sessions + 1 partie historique');
 }
 // Auto-chargement : si aucun joueur et pas déjà seedé une fois
 if((!DB.players||DB.players.length===0) && !localStorage.getItem('gm_seed_done')){
@@ -11297,6 +11336,24 @@ function getCaddyContext(g,courseId,holeIdx){
 }
 
 var CADDY_RULES=[
+  // ── Rappel des fondamentaux : grip / posture / alignement ──
+  {id:'basics_first_tee',skill:'prebrief',priority:4,
+    when:function(ctx){return ctx.currentHole.idx===0;},
+    say:function(ctx){return '🎯 1er tee — fondamentaux : grip relâché, posture équilibrée, alignement pieds-épaules parallèle à ta ligne.';}
+  },
+  {id:'basics_mid_round',skill:'prebrief',priority:3,
+    when:function(ctx){return ctx.currentHole.idx===6;},
+    say:function(ctx){return '🎯 Trou 7 — re-check : grip pression, posture, ligne d\'alignement. Les détails comptent sur la longueur.';}
+  },
+  {id:'basics_back_nine',skill:'prebrief',priority:3,
+    when:function(ctx){return ctx.currentHole.idx===12;},
+    say:function(ctx){return '🎯 Trou 13 — bases : grip, posture, alignement. Reste concentré sur ta routine, pas sur le score.';}
+  },
+  {id:'basics_if_distracted',skill:'prebrief',priority:7,
+    when:function(ctx){return ctx.checkIn && ctx.checkIn.mental==='distracted' && ctx.currentHole.idx%3===0;},
+    say:function(ctx){return '🧠 Reviens aux bases : grip, posture, alignement. Une routine complète avant chaque coup.';}
+  },
+
   // ── Pré-coup : direction de dispersion vs dangers ──
   // Priorité sur missDirection (= où ta balle va si tu rates)
   {id:'miss_right_danger_right',skill:'prebrief',priority:9,
