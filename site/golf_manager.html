@@ -7214,14 +7214,12 @@ function playing(){
     ${g.gameType==='bbb'?bbbUI(g,pls,hn):''}
   </div>
   ${renderNotebookFab(g.courseId,hn)}
-  <div class="navbar" style="justify-content:space-between;gap:6px">
-    <button class="btn bo mb0" style="width:auto;padding:11px 12px" onclick="prevH()" ${hn===0?'disabled style="opacity:.35"':''}>‹</button>
-    <div style="display:flex;align-items:center;gap:10px">
-      <button class="btn bo mb0" style="width:auto;padding:11px 10px;font-size:18px;background:rgba(22,163,74,.15);color:#16a34a" onclick="openAdvisorFromGame()" title="Quel club ?">🎯</button>
-      <span style="display:inline-flex;align-items:center;justify-content:center;min-width:36px;height:36px;padding:0 10px;border-radius:18px;background:#1f2937;color:rgba(255,255,255,.9);font-weight:800;font-size:16px">${hn+1}</span>
-      <button class="btn bo mb0" style="width:auto;padding:11px 10px;font-size:18px" onclick="go('scorecard')" title="Carte de score">📊</button>
-    </div>
-    ${hn<17?`<button class="btn bp mb0" style="width:auto;padding:11px 12px" onclick="nextH()">›</button>`:
+  <div class="navbar" style="justify-content:space-around;gap:4px">
+    <button class="btn bo mb0" style="width:auto;padding:11px 16px;font-size:18px" onclick="prevH()" ${hn===0?'disabled style="opacity:.35"':''}>‹</button>
+    <button class="btn bo mb0" style="width:auto;padding:11px 12px;font-size:18px;background:rgba(22,163,74,.15);color:#16a34a" onclick="openAdvisorFromGame()" title="Quel club ?">🎯</button>
+    <span style="display:inline-flex;align-items:center;justify-content:center;min-width:36px;height:36px;padding:0 10px;border-radius:18px;background:#1f2937;color:rgba(255,255,255,.9);font-weight:800;font-size:16px">${hn+1}</span>
+    <button class="btn bo mb0" style="width:auto;padding:11px 12px;font-size:18px" onclick="go('scorecard')" title="Carte de score">📊</button>
+    ${hn<17?`<button class="btn bp mb0" style="width:auto;padding:11px 16px;font-size:18px" onclick="nextH()">›</button>`:
     `<button class="btn bg2 mb0" style="width:auto;padding:11px 14px" onclick="finishGame()">🏆 Fin</button>`}
   </div>`}
 
