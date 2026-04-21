@@ -18,8 +18,7 @@
 |---|---|---|---|---|---|
 | 6 | 🛰️ GPS simple au drapeau | ☐ | ☐ | ☐ | À scoper |
 | 7 | 📊 Stats cachées (FIR/GIR/putts) | ☐ | ☐ | ☐ | À scoper |
-| 8 | 🎒 Usure du matériel | ☐ | ☐ | ☐ | À scoper |
-| 9 | 🗺️ Carte satellite du trou | ☐ | ☐ | ☐ | À scoper (après GPS) |
+| 8 | 🗺️ Carte satellite du trou | ☐ | ☐ | ☐ | À scoper (après GPS) |
 
 ---
 
