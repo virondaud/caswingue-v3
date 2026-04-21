@@ -10940,7 +10940,7 @@ function seedDemoDataV3(){
       notes:'',
       coordsTee:{lat:47.29155113,lng:-1.70012326},
       coordsGreen:{lat:47.29318071,lng:-1.70251479},
-      mapImage:'assets/Parcours/Vigneux/vigneux_google_trou_1.png',
+      mapImage:'assets/Parcours/Vigneux/vigneux_gps_trou_1.png',
       mapImageClub:'assets/Parcours/Vigneux/vigneux_trou_1.png',
       officialUrl:'https://www.golfclubdenantes.com/parcours/trou-1/'
     };
@@ -11011,6 +11011,12 @@ if((!DB.players||DB.players.length===0) && !localStorage.getItem('gm_seed_done')
         delete note.mapImageSat;
         delete note.calibration;           // force recalibration sur la nouvelle image
         delete note.calibrationSat;
+        migrated=true;
+      }
+      // Migration chemin : vigneux_google_trou_N → vigneux_gps_trou_N (capture GPS affinée)
+      if(note.mapImage && /vigneux_google_trou_1\.png$/i.test(note.mapImage)){
+        note.mapImage=note.mapImage.replace(/vigneux_google_trou_1\.png$/i,'vigneux_gps_trou_1.png');
+        delete note.calibration; // nouvelle image = recalibration obligatoire
         migrated=true;
       }
     });
