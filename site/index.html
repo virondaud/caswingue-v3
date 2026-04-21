@@ -12125,10 +12125,10 @@ function gpsToPx(lat,lng,tee,green,cal){
   var perp =dN*(-uE)+dE*uN;      // composante perpendiculaire (m), +gauche de l'axe GPS
   // Correspondance dans l'image : axe tee→green = vecteur (pX,pY)/pLenPx
   var vX=pX/pLenPx, vY=pY/pLenPx;
-  // Perpendiculaire image : rotation +90° dans le repère écran (y vers le bas), donc gauche visuelle = (-vY, vX) inversée selon orientation photo
-  // Convention : "perp GPS" + (gauche de l'axe dans le monde) = côté gauche du dessin (généralement en haut de l'image orientée nord-haut)
-  // En SVG (y vers le bas), rotation 90° CCW = (vY, -vX). On ajuste empiriquement.
-  var nX=vY, nY=-vX; // perpendiculaire "gauche" dans l'image
+  // Perpendiculaire image : la composante perp du GPS pointe vers le côté "NE" (droite du marcheur quand il va NW).
+  // Sur une image satellite nord-haut avec axe tee→green qui descend vers le haut-gauche,
+  // la droite du marcheur = direction (−vY, vX) dans le repère écran (y vers le bas).
+  var nX=-vY, nY=vX; // perpendiculaire "droite" dans l'image (alignée sur perp>0 = droite de l'axe GPS)
   var x=cal.teePx.x + along*pxPerM*vX + perp*pxPerM*nX;
   var y=cal.teePx.y + along*pxPerM*vY + perp*pxPerM*nY;
   return{x:x,y:y};
