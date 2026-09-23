@@ -13,18 +13,69 @@
       "color": "E6F4EA",
       "hue": "green",
       "terms": [
-        { "emoji": "🎯", "term": "Feature", "english": "fonctionnalité",
+        {
+          "emoji": "🎯",
+          "term": "Feature",
+          "english": "fonctionnalité",
           "definition": "Une capacité précise que l'app fournit. Une chose qu'un utilisateur peut faire avec.",
-          "example": "« Partager sa partie en direct via Firebase » est une feature. « Club Advisor » est une autre feature. Tu peux ajouter des features une par une." },
-        { "emoji": "📱", "term": "PWA", "english": "Progressive Web App",
+          "example": "« Partager sa partie en direct via Firebase » est une feature. « Club Advisor » est une autre feature. Tu peux ajouter des features une par une — et en retirer : le 23/09/2026, les features en ligne de Ça Swingue (partage en direct, championnats en ligne, sauvegarde cloud) ont été débranchées, car personne ne s'en servait et elles ouvraient une faille de sécurité."
+        },
+        {
+          "emoji": "📱",
+          "term": "PWA",
+          "english": "Progressive Web App",
           "definition": "Une app web qui s'installe comme une vraie app (icône sur l'écran d'accueil, fonctionne offline, ressemble à une app native) mais sans passer par l'App Store.",
-          "example": "Ça Swingue Manager est une PWA. Tu l'as installée en tapant « Partager → Ajouter à l'écran d'accueil » depuis Safari." },
-        { "emoji": "💾", "term": "localStorage", "english": "stockage local (navigateur)",
+          "example": "Ça Swingue Manager est une PWA. Tu l'as installée en tapant « Partager → Ajouter à l'écran d'accueil » depuis Safari."
+        },
+        {
+          "emoji": "💾",
+          "term": "localStorage",
+          "english": "stockage local (navigateur)",
           "definition": "Un espace mémoire de 5-10 Mo dans le navigateur où l'app range ses données (clé → valeur). Accessible uniquement sur ton appareil, perdu si tu vides les caches du navigateur.",
-          "example": "Tes scores, joueurs, parcours sont dans le localStorage. Les clés sont gm_c (courses), gm_p (players), gm_h (history), etc." },
-        { "emoji": "🗄", "term": "IndexedDB", "english": "base de données locale",
+          "example": "Tes scores, joueurs, parcours sont dans le localStorage. Les clés sont gm_c (courses), gm_p (players), gm_h (history), etc."
+        },
+        {
+          "emoji": "🗄",
+          "term": "IndexedDB",
+          "english": "base de données locale",
           "definition": "Version améliorée du localStorage : 50-250 Mo, structure en tables (stores), recherches par index. Utile quand on a beaucoup de données.",
-          "example": "On n'en utilise pas encore dans Ça Swingue v2. Dans v3, on la prévoyait pour stocker le cache des cartes satellite et les GPS de greens (qu'on a finalement retirés du pré-travail)." }
+          "example": "On n'en utilise pas encore dans Ça Swingue v2. Dans v3, on la prévoyait pour stocker le cache des cartes satellite et les GPS de greens (qu'on a finalement retirés du pré-travail)."
+        },
+        {
+          "emoji": "📋",
+          "term": "Template",
+          "english": "modèle / gabarit",
+          "definition": "Un fichier pré-rempli qui sert de modèle pour créer de nouveaux fichiers à la même structure. Au lieu de repartir de zéro à chaque fois, on duplique le template et on remplace les parties variables (nom du projet, date, contenu spécifique). C'est comme un formulaire vierge qu'on photocopie avant de le remplir pour chaque nouveau patient.",
+          "example": "Dans Apps Santé, le dossier _templates/ contient les modèles de départ : REFERENCE_MEDICALE_TEMPLATE.html (le cahier des charges clinique avec ses 14 sections à remplir par pathologie) et JOURNAL_PROJET_TEMPLATE.html (le journal de bord vierge). Quand on lance /new-app pour une nouvelle pathologie, ces templates sont dupliqués et pré-remplis automatiquement."
+        },
+        {
+          "emoji": "☰",
+          "term": "Menu hamburger",
+          "english": "hamburger menu / sidebar menu",
+          "definition": "Bouton formé de trois traits horizontaux (☰) qui ouvre un panneau de navigation latéral. On l'appelle « hamburger » parce que les trois traits évoquent un pain, un steak et un pain. Ce menu cache les options secondaires pour ne pas encombrer l'écran principal, surtout sur mobile. C'est un peu comme le tiroir d'un bureau : les outils du quotidien sont sur le bureau (la barre de navigation en bas), et les outils moins fréquents sont rangés dans le tiroir (le menu hamburger).",
+          "example": "Dans l'app SAHOS, la barre en bas a 3 onglets patient (Accueil, Mon suivi, Infos). Le bouton ☰ en haut à droite ouvre le menu hamburger qui donne accès aux vues soignant : Scores & questionnaires, Conseils pratiques, Réglages, Mode d'emploi. Ça permet de garder l'interface patient simple et épurée sans sacrifier les fonctionnalités avancées."
+        },
+        {
+          "emoji": "👋",
+          "term": "Onboarding",
+          "english": "accueil guidé / visite guidée",
+          "definition": "Écran (ou série d'écrans) qui s'affiche la toute première fois qu'un utilisateur ouvre l'app, pour lui expliquer comment elle fonctionne. L'onboarding montre les principales fonctionnalités étape par étape, comme un guide qui fait visiter un nouveau cabinet. Après cette première visite, l'app retient que l'utilisateur l'a déjà vue (via un drapeau dans le localStorage) et ne la remontre plus automatiquement. On peut en général la relancer manuellement depuis les réglages.",
+          "example": "Dans l'app SAHOS v0.8.0, l'onboarding est un carrousel de 5 écrans qui s'affiche au premier lancement : bienvenue, explication de l'onglet Mon suivi (saisie quotidienne), Infos (fiches + conseils + FAQ), le menu ☰ (outils soignant), et un dernier écran d'encouragement. Le drapeau localStorage sahos_onboarding_done empêche de le revoir à chaque ouverture. Un bouton « Revoir la visite guidée » dans le Mode d'emploi permet de le relancer."
+        },
+        {
+          "emoji": "🎯",
+          "term": "Takeaway",
+          "english": "point clé à retenir / enseignement principal",
+          "definition": "Dans une fiche bibliographique, le takeaway est la phrase qui résume ce qu'il faut retenir d'un article ou d'une recommandation. C'est l'équivalent du « bottom line » en médecine : pas le résumé complet, mais LE message essentiel que tu dois garder en tête pour ta pratique. Le mot vient de l'anglais « to take away » = emporter avec soi. En documentation technique, chaque source citée a son takeaway pour que le lecteur sache immédiatement pourquoi cette référence est là et ce qu'elle apporte au projet.",
+          "example": "Pour l'étude Lin 2024 sur l'exercice et le SAHOS, les mots clés seraient : obstructive sleep apnea, exercise, meta-analysis — ils servent à retrouver l'article sur PubMed. Le takeaway, lui, dit ce qu'on en tire pour le projet : « L'exercice réduit l'IAH de 7/h, indépendamment de la sévérité — ça justifie les recommandations d'activité physique dans l'app. » Dans les SOURCES[] de data.js, chaque article a son champ takeaway pour savoir en un coup d'œil pourquoi cette référence est citée et ce qu'elle apporte."
+        },
+        {
+          "emoji": "🏷️",
+          "term": "Mot clé",
+          "english": "keyword",
+          "definition": "Mot ou expression courte qui sert à classer et retrouver un article, un fichier ou une ressource. Les mots clés sont des étiquettes de rangement : ils répondent à la question « de quoi ça parle ? ». C'est comme les codes CIM-10 en médecine — ils identifient le sujet mais ne disent rien sur ce qu'il faut en retenir. À ne pas confondre avec le takeaway, qui lui résume la conclusion pratique de l'article (« qu'est-ce que ça change pour moi ? »). Les mots clés aident à trouver, le takeaway aide à se souvenir.",
+          "example": "Pour l'étude Lin 2024 sur l'exercice et le SAHOS, les mots clés seraient : obstructive sleep apnea, exercise, CPAP, meta-analysis. Ils permettent de retrouver l'article sur PubMed. Le takeaway, lui, dit ce qu'on en tire : « L'exercice réduit l'IAH de 7/h — ça justifie les recommandations d'activité physique dans l'app. » Dans les SOURCES[] de data.js, on a choisi de mettre des takeaways plutôt que des mots clés, parce que le but n'est pas de chercher les articles (on a PubMed pour ça) mais de savoir pourquoi chaque source est citée."
+        }
       ]
     },
     {
@@ -34,33 +85,90 @@
       "color": "FEF3C7",
       "hue": "yellow",
       "terms": [
-        { "emoji": "📄", "term": "HTML", "english": "HyperText Markup Language",
+        {
+          "emoji": "📄",
+          "term": "HTML",
+          "english": "HyperText Markup Language",
           "definition": "Le langage qui décrit la STRUCTURE d'une page web (titres, paragraphes, boutons).",
-          "example": "golf_manager.html est un fichier HTML. Il contient tout le texte et la structure de Ça Swingue." },
-        { "emoji": "🎨", "term": "CSS", "english": "Cascading Style Sheets",
+          "example": "golf_manager.html est un fichier HTML. Il contient tout le texte et la structure de Ça Swingue."
+        },
+        {
+          "emoji": "🎨",
+          "term": "CSS",
+          "english": "Cascading Style Sheets",
           "definition": "Le langage qui décrit l'APPARENCE (couleurs, tailles, positions).",
-          "example": "Les fonds verts, les cartes arrondies, les boutons de Ça Swingue — tout ça, c'est du CSS. Il est mélangé avec le HTML dans golf_manager.html." },
-        { "emoji": "⚙️", "term": "JavaScript (JS)", "english": "langage de programmation navigateur",
+          "example": "Les fonds verts, les cartes arrondies, les boutons de Ça Swingue — tout ça, c'est du CSS. Il est mélangé avec le HTML dans golf_manager.html."
+        },
+        {
+          "emoji": "⚙️",
+          "term": "JavaScript (JS)",
+          "english": "langage de programmation navigateur",
           "definition": "Le langage qui fait AGIR la page : calculer les scores, envoyer sur Firebase, réagir aux clics. Tout ce qui n'est pas statique.",
-          "example": "Les 15 formats de jeu, le Club Advisor, le partage live — 100% JavaScript. Écrit dans golf_manager.html." },
-        { "emoji": "🟦", "term": "TypeScript (TS)", "english": "JS avec types",
+          "example": "Les 15 formats de jeu, le Club Advisor, le partage live — 100% JavaScript. Écrit dans golf_manager.html."
+        },
+        {
+          "emoji": "🟦",
+          "term": "TypeScript (TS)",
+          "english": "JS avec types",
           "definition": "JavaScript avec des types en plus (nombres, textes, listes...) pour détecter les erreurs avant de tourner. Tout TS est compilé en JS avant d'être exécuté.",
-          "example": "On envisageait d'utiliser TypeScript pour ça_swingue 4 (le projet fusion) pour plus de fiabilité. Ça_swingue v2 et v3 restent en JavaScript pur." },
-        { "emoji": "📦", "term": "Module ES", "english": "morceau de code réutilisable",
+          "example": "On envisageait d'utiliser TypeScript pour ça_swingue 4 (le projet fusion) pour plus de fiabilité. Ça_swingue v2 et v3 restent en JavaScript pur."
+        },
+        {
+          "emoji": "📦",
+          "term": "Module ES",
+          "english": "morceau de code réutilisable",
           "definition": "Un fichier JS qu'on peut importer dans un autre fichier JS. Au lieu d'avoir 10 000 lignes dans un seul fichier, on le découpe en modules logiques (un par responsabilité).",
-          "example": "On avait créé 6 modules (geo.js, idb-wrapper.js, etc.) pour v3 puis supprimés par YAGNI (pas encore utilisés)." },
-        { "emoji": "📝", "term": "Markdown (.md)", "english": "format texte balisé léger",
+          "example": "On avait créé 6 modules (geo.js, idb-wrapper.js, etc.) pour v3 puis supprimés par YAGNI (pas encore utilisés)."
+        },
+        {
+          "emoji": "📝",
+          "term": "Markdown (.md)",
+          "english": "format texte balisé léger",
           "definition": "Format de fichier texte qui utilise quelques symboles simples pour la mise en forme : # pour un titre, ** pour gras, - pour une liste, ``` pour du code. Lisible tel quel et convertible en HTML/PDF/Word. Standard d'écriture technique (GitHub, documentation, slash commands Claude Code).",
-          "example": "Le fichier ~/.claude/commands/glossaire.md qu'on vient de créer est en Markdown — c'est lui qui définit le comportement du slash command /glossaire. Les README.md de tes projets golf sont aussi du Markdown." },
-        { "emoji": "🗃", "term": "Source unique de vérité", "english": "Single Source of Truth (SSOT)",
+          "example": "Le fichier ~/.claude/commands/glossaire.md qu'on vient de créer est en Markdown — c'est lui qui définit le comportement du slash command /glossaire. Les README.md de tes projets golf sont aussi du Markdown."
+        },
+        {
+          "emoji": "🗃",
+          "term": "Source unique de vérité",
+          "english": "Single Source of Truth (SSOT)",
           "definition": "Principe d'architecture : une seule donnée existe à un seul endroit. Si tu veux la modifier, tu édites CE fichier — et rien d'autre. Tout le reste (autres formats, exports, affichages) est régénéré depuis cette source. Évite les incohérences et les oublis de synchro.",
-          "example": "Pour ton glossaire, glossaire_data.json est la source unique de vérité. Les fichiers .docx et .html ne sont jamais édités à la main — ils sont générés depuis le JSON." },
-        { "emoji": "⚗️", "term": "Générateur", "english": "script de génération",
+          "example": "Pour ton glossaire, glossaire_data.json est la source unique de vérité. Les fichiers .docx et .html ne sont jamais édités à la main — ils sont générés depuis le JSON."
+        },
+        {
+          "emoji": "⚗️",
+          "term": "Générateur",
+          "english": "script de génération",
           "definition": "Petit programme qui LIT des données structurées (JSON, YAML, base de données…) et PRODUIT un fichier dans un format cible (Word, HTML, PDF, image…). On peut avoir plusieurs générateurs qui partent de la même source pour produire plusieurs formats de sortie.",
-          "example": "Tu as deux générateurs : generate_glossaire_dev.py (produit le .docx pour lecture confortable) et generate_glossaire_html.py (produit le .html pour recherche rapide sur iPhone). Les deux lisent le même JSON." },
-        { "emoji": "🔌", "term": "API", "english": "Application Programming Interface",
+          "example": "Tu as deux générateurs : generate_glossaire_dev.py (produit le .docx pour lecture confortable) et generate_glossaire_html.py (produit le .html pour recherche rapide sur iPhone). Les deux lisent le même JSON."
+        },
+        {
+          "emoji": "🔌",
+          "term": "API",
+          "english": "Application Programming Interface",
           "definition": "« Prise de courant » numérique qui permet à une app d'accéder aux services d'une autre sans avoir à coder le service soi-même. Tu envoies une requête avec des paramètres, tu reçois une réponse structurée (souvent en JSON). Les API sont partout : météo, cartes, paiement, IA, bases de données en ligne.",
-          "example": "Ça Swingue utilise l'API openmeteo (récupérer la météo en temps réel), l'API Firebase (partage live des parties entre joueurs), et l'API Claude (réponses du Club Advisor). Chaque API = un service externe accessible depuis ton code avec une clé d'identification." }
+          "example": "Ça Swingue utilise l'API openmeteo (récupérer la météo en temps réel) et l'API Claude (réponses du Club Advisor). Il utilisait aussi l'API Firebase (partage live des parties entre joueurs), débranchée le 23/09/2026. Chaque API = un service externe accessible depuis ton code, souvent avec une clé d'identification."
+        },
+        {
+          "emoji": "🌱",
+          "term": "Extensibilité",
+          "english": "extensibility / scalability",
+          "definition": "Capacité d'un code à accueillir de nouvelles fonctionnalités sans avoir à tout réécrire. Un code extensible est conçu dès le départ pour qu'on puisse y brancher des choses plus tard — comme un tableau électrique avec des emplacements libres pour de futurs disjoncteurs. Le contraire, c'est du code « en dur » où chaque ajout oblige à tout casser et reconstruire. En médecine, c'est la différence entre un protocole de soins modulaire (on peut ajouter une ligne de traitement sans revoir tout le plan) et un protocole rigide qu'il faut refaire de zéro si le patient ne répond pas.",
+          "example": "Dans les apps santé, le composant de chat de l'onboarding est conçu avec de l'extensibilité : aujourd'hui le moteur de réponse lit un arbre de conversation scripté (offline, gratuit), mais demain on pourra le remplacer par un appel à l'API Claude (online, intelligent) SANS toucher à l'interface de chat. On a prévu l'emplacement du futur disjoncteur."
+        },
+        {
+          "emoji": "🔌",
+          "term": "Pattern Adapter",
+          "english": "adapter pattern / design pattern",
+          "definition": "Technique de programmation qui consiste à créer une couche intermédiaire (l'adaptateur) entre deux parties du code qui ne se connaissent pas. L'adaptateur traduit les demandes de l'une dans le langage de l'autre — exactement comme un adaptateur de prise électrique qui permet de brancher un appareil français sur une prise anglaise. Le code qui utilise l'adaptateur ne sait pas (et n'a pas besoin de savoir) ce qu'il y a derrière : prise française ou anglaise, peu importe, ça marche. Un « Design Pattern » (patron de conception) est un nom donné à une solution éprouvée à un problème courant en programmation — comme les protocoles HAS sont des solutions éprouvées à des problèmes cliniques courants.",
+          "example": "Dans les apps santé, la fonction getResponse(context, userInput) est un adaptateur. L'interface de chat lui envoie une question ; l'adaptateur la transmet soit au ScriptEngine (arbre local, offline) soit à l'APIEngine (Claude API, online). L'interface de chat ne sait pas lequel répond — elle reçoit juste un message à afficher. Si demain on branche un 3e moteur (par ex. un LLM local sur le Mac), il suffit de créer un nouvel adaptateur sans toucher au chat."
+        },
+        {
+          "emoji": "📢",
+          "term": "Callout",
+          "english": "encadré d'appel / mise en exergue",
+          "definition": "Un bloc visuel mis en évidence dans une page web, avec un fond coloré et souvent une bordure latérale, qui attire l'attention sur une information importante. C'est l'équivalent numérique de l'encadré jaune « Attention » ou vert « Bonne pratique » qu'on trouve dans les recommandations HAS. En CSS, on le crée avec une classe (.callout) qui applique un fond, une bordure gauche colorée et un arrondi. On peut le décliner en variantes : .callout.ok (vert, bonne nouvelle), .callout.warn (orange, attention), .callout.danger (rouge, alerte).",
+          "example": "Dans tous les documents du fork-apps-sante (COMPARATIF, FINANCEMENT, ARGUMENTAIRES…), les callouts sont omniprésents. Par exemple : un callout bleu pour « L'IA est le meilleur programme de réduction des coûts du projet », un callout vert (.ok) pour « Le S1 Solo redevient compatible avec un cabinet à temps plein », un callout orange (.warn) pour « Ce que l'IA ne réduit pas ». Le code HTML est simple : <div class=\"callout ok\"><strong>Titre</strong> Texte explicatif.</div>."
+        }
       ]
     },
     {
@@ -70,24 +178,48 @@
       "color": "DBEAFE",
       "hue": "blue",
       "terms": [
-        { "emoji": "📚", "term": "Repo / Repository", "english": "dépôt de code",
+        {
+          "emoji": "📚",
+          "term": "Repo / Repository",
+          "english": "dépôt de code",
           "definition": "Le dossier complet d'un projet avec tout son historique. Existe en local (sur ton Mac) ET en ligne sur GitHub.",
-          "example": "Ton compte GitHub virondaud a 3 repos liés au golf : caswingue (v2 prod), caswingue-v3 (évolutions), caswinguetest (test)." },
-        { "emoji": "📸", "term": "Commit", "english": "instantané des modifications",
+          "example": "Ton compte GitHub virondaud a 3 repos liés au golf : caswingue (v2 prod), caswingue-v3 (évolutions), caswinguetest (test)."
+        },
+        {
+          "emoji": "📸",
+          "term": "Commit",
+          "english": "instantané des modifications",
           "definition": "Une photo figée de ton code à un moment précis, avec un message qui décrit ce qui a changé.",
-          "example": "Chaque fois qu'on corrige un bug, on fait un commit. Ça_swingue v2 a plus de 50 commits d'historique depuis le démarrage." },
-        { "emoji": "📤", "term": "Push", "english": "envoyer",
+          "example": "Chaque fois qu'on corrige un bug, on fait un commit. Ça_swingue v2 a plus de 50 commits d'historique depuis le démarrage."
+        },
+        {
+          "emoji": "📤",
+          "term": "Push",
+          "english": "envoyer",
           "definition": "Envoyer tes commits locaux vers GitHub pour les publier en ligne.",
-          "example": "Quand tu cliques « Push origin » dans GitHub Desktop, tu pousses tes derniers commits sur caswingue-v3 (par exemple)." },
-        { "emoji": "📥", "term": "Pull", "english": "récupérer",
+          "example": "Quand tu cliques « Push origin » dans GitHub Desktop, tu pousses tes derniers commits sur caswingue-v3 (par exemple)."
+        },
+        {
+          "emoji": "📥",
+          "term": "Pull",
+          "english": "récupérer",
           "definition": "Télécharger les commits qui ont été ajoutés en ligne depuis ton dernier push. Utile si tu travailles depuis plusieurs Macs.",
-          "example": "Tu ne pulles pas souvent car tu es seul à pousser. Ça deviendra utile si quelqu'un d'autre contribue (par exemple sur le projet Birdie Club)." },
-        { "emoji": "🌿", "term": "Branch", "english": "branche",
+          "example": "Tu ne pulles pas souvent car tu es seul à pousser. Ça deviendra utile si quelqu'un d'autre contribue (par exemple sur le projet Birdie Club)."
+        },
+        {
+          "emoji": "🌿",
+          "term": "Branch",
+          "english": "branche",
           "definition": "Une ligne parallèle de développement. Permet de travailler sur une feature sans risquer de casser la version principale.",
-          "example": "On a la branche main (principale). On a brièvement créé « docs/18birdies-recovery-guide » pour un test de PR, puis supprimée." },
-        { "emoji": "🔀", "term": "PR / Pull Request", "english": "demande de fusion",
+          "example": "On a la branche main (principale). On a brièvement créé « docs/18birdies-recovery-guide » pour un test de PR, puis supprimée."
+        },
+        {
+          "emoji": "🔀",
+          "term": "PR / Pull Request",
+          "english": "demande de fusion",
           "definition": "Demande formelle de fusionner une branche dans une autre (typiquement une feature dans main). Permet de vérifier le code avant qu'il ne rejoigne le projet principal.",
-          "example": "On a essayé de créer une PR pour tester, mais c'est sur-dimensionné pour un projet solo. On pousse directement sur main." }
+          "example": "On a essayé de créer une PR pour tester, mais c'est sur-dimensionné pour un projet solo. On pousse directement sur main."
+        }
       ]
     },
     {
@@ -97,18 +229,34 @@
       "color": "F3E8FF",
       "hue": "purple",
       "terms": [
-        { "emoji": "⚙️", "term": "Workflow", "english": "flux de travail auto",
+        {
+          "emoji": "⚙️",
+          "term": "Workflow",
+          "english": "flux de travail auto",
           "definition": "Une suite d'actions qui se déclenche automatiquement quand un événement se produit. Définie dans un fichier .yml sur GitHub.",
-          "example": "On a un workflow « deploy.yml » qui dit : à chaque push sur main, prends le dossier site/ et publie-le sur GitHub Pages." },
-        { "emoji": "🤖", "term": "CI (Continuous Integration)", "english": "intégration continue",
+          "example": "On avait un workflow « deploy.yml » qui disait : à chaque push sur main, prends le dossier site/ et publie-le sur GitHub Pages. Il a été désactivé le 23/09/2026 (GitHub › onglet Actions › Disable workflow) quand GitHub Pages a été abandonné : un workflow peut être mis en pause sans être supprimé, et réactivé plus tard."
+        },
+        {
+          "emoji": "🤖",
+          "term": "CI (Continuous Integration)",
+          "english": "intégration continue",
           "definition": "Un ensemble de vérifications automatiques qui tournent à chaque modification du code (tests, qualité, compilation...). Évite de casser l'app sans s'en apercevoir.",
-          "example": "On avait un workflow CI (supprimé par YAGNI). Il lancera les tests quand on attaquera les vraies features." },
-        { "emoji": "🚀", "term": "Deploy / Déploiement", "english": "mise en ligne",
+          "example": "On avait un workflow CI (supprimé par YAGNI). Il lancera les tests quand on attaquera les vraies features."
+        },
+        {
+          "emoji": "🚀",
+          "term": "Deploy / Déploiement",
+          "english": "mise en ligne",
           "definition": "L'action de publier l'app sur un serveur accessible au public.",
-          "example": "Quand le workflow deploy.yml se termine, l'app est accessible à https://virondaud.github.io/caswingue-v3/. Ça prend environ 30 secondes." },
-        { "emoji": "📄", "term": "GitHub Pages", "english": "hébergement GitHub gratuit",
+          "example": "Jusqu'au 23/09/2026, quand le workflow deploy.yml se terminait, l'app était accessible à https://virondaud.github.io/caswingue-v3/ (environ 30 secondes). Aujourd'hui Ça Swingue se déploie chez Infomaniak : double-clic sur « 2 · Publier une modification », qui compare chaque fichier du Mac au serveur et n'envoie que ceux qui ont changé, vers golf.virondaud.fr/ca-swingue/."
+        },
+        {
+          "emoji": "📄",
+          "term": "GitHub Pages",
+          "english": "hébergement GitHub gratuit",
           "definition": "Un service gratuit de GitHub qui publie n'importe quel repo public comme un site web.",
-          "example": "Ton URL https://virondaud.github.io/caswingue/ est hébergée sur GitHub Pages." }
+          "example": "Ton URL https://virondaud.github.io/caswingue/ était hébergée sur GitHub Pages. Le 23/09/2026, les 6 sites publiés sur virondaud.github.io (Ça Swingue v2 et v3, ESP du Noyer, Ia Juliette…) ont été dépubliés (réglages du dépôt › Pages › source « None ») : les dépôts et leur code restent sur GitHub, mais plus aucune page publique. Tes sites vivent désormais chez Infomaniak (golf.virondaud.fr, perso.virondaud.fr)."
+        }
       ]
     },
     {
@@ -118,15 +266,27 @@
       "color": "FEE2E2",
       "hue": "red",
       "terms": [
-        { "emoji": "🔒", "term": "CSP", "english": "Content Security Policy",
+        {
+          "emoji": "🔒",
+          "term": "CSP",
+          "english": "Content Security Policy",
           "definition": "Une liste de règles qui dit au navigateur : autorise ces sources, refuse les autres. Protège contre les scripts malveillants injectés.",
-          "example": "Dans golf_manager.html v3, il y a une balise meta CSP qui autorise Firebase, openmeteo, unpkg — et bloque tout le reste." },
-        { "emoji": "🔑", "term": "Hash SHA-256", "english": "empreinte numérique",
+          "example": "Dans golf_manager.html v3, une balise meta CSP autorisait Firebase, openmeteo, unpkg — et bloquait tout le reste. Le 23/09/2026, Firebase a été retiré de la liste en même temps que la fonction : quand on retire une fonction, on resserre aussi la CSP. Limite apprise à l'audit : cette CSP autorise encore le code « en ligne » dans la page ('unsafe-inline'), elle n'aurait donc pas bloqué un script injecté."
+        },
+        {
+          "emoji": "🔑",
+          "term": "Hash SHA-256",
+          "english": "empreinte numérique",
           "definition": "Une \"signature\" unique de 64 caractères calculée à partir d'un fichier. Si le fichier change d'un seul octet, l'empreinte change complètement. Permet de vérifier qu'un fichier n'a pas été modifié.",
-          "example": "Dans DEV_STANDARDS on prévoyait de hasher le bundle pour s'assurer qu'un attaquant n'ait pas modifié le code entre le build et le déploiement." },
-        { "emoji": "🔐", "term": "Token / PAT", "english": "jeton d'authentification",
+          "example": "Dans DEV_STANDARDS on prévoyait de hasher le bundle pour s'assurer qu'un attaquant n'ait pas modifié le code entre le build et le déploiement."
+        },
+        {
+          "emoji": "🔐",
+          "term": "Token / PAT",
+          "english": "jeton d'authentification",
           "definition": "Un mot de passe numérique à longue durée de vie qui prouve ton identité sur un service (GitHub, Firebase...). Plus pratique qu'un mot de passe mais à protéger soigneusement.",
-          "example": "Pour pousser les workflows GitHub, il fallait un PAT avec le scope « workflow ». Le terminal n'avait pas les bons droits donc on a poussé via GitHub Desktop." }
+          "example": "Pour pousser les workflows GitHub, il fallait un PAT avec le scope « workflow ». Le terminal n'avait pas les bons droits donc on a poussé via GitHub Desktop."
+        }
       ]
     },
     {
@@ -136,33 +296,97 @@
       "color": "FEF3C7",
       "hue": "yellow",
       "terms": [
-        { "emoji": "🧠", "term": "Skill", "english": "compétence Claude Code",
-          "definition": "Une commande préprogrammée qu'on tape dans Claude Code (précédée d'un /). L'IA suit un script précis au lieu d'improviser.",
-          "example": "Dans le projet golf-suivi, on a /onboarding, /planifier-seance, /analyser-parcours, /bilan-progression. Tu tapes la commande, Claude suit la checklist associée." },
-        { "emoji": "🤝", "term": "Claude Code", "english": "app IA développeur",
-          "definition": "L'application de bureau ou terminal d'Anthropic qui permet à Claude d'écrire et modifier du code directement dans tes dossiers.",
-          "example": "C'est avec Claude Code que tu travailles en ce moment. Je peux lire tes fichiers, exécuter des commandes bash, modifier du code." },
-        { "emoji": "📝", "term": "Prompt", "english": "consigne donnée à l'IA",
+        {
+          "emoji": "🧠",
+          "term": "Skill",
+          "english": "compétence Claude",
+          "definition": "Un fichier d'instructions (SKILL.md) que Claude lit AVANT de répondre. Au lieu d'improviser, il suit un protocole précis étape par étape. Analogie médicale : c'est comme ouvrir la recommandation HAS avant d'agir — au lieu de répondre de mémoire. Un skill contient un en-tête (nom + description de déclenchement) et un corps (les instructions détaillées). On peut créer ses propres skills ou utiliser ceux d'Anthropic (docx, pdf, pptx, xlsx...).",
+          "example": "Le skill verification-ebm vérifie systématiquement les sources médicales : étape 1 PubMed/NCBI, étape 2 site HAS, étape 3 encadré [Vérifiée]/[Non vérifiée]. Tu peux aussi forcer un skill avec /nom-du-skill dans Cowork. Dans Claude Code, les skills du golf (/onboarding, /planifier-seance) fonctionnent pareil."
+        },
+        {
+          "emoji": "🤝",
+          "term": "Claude Code",
+          "english": "app IA développeur (terminal)",
+          "definition": "La version « terminal » (ligne de commande) de Claude, destinée aux développeurs. Plus puissante que Cowork pour le code mais moins accessible. Supporte les skills et plugins. On y accède depuis le terminal Mac.",
+          "example": "C'est avec Claude Code qu'on a construit le Golf Manager, les workflows Juliette, et le site ESP. Pour les tâches non-code (fiches médicales, FMC, comptabilité), on utilise plutôt Cowork."
+        },
+        {
+          "emoji": "📝",
+          "term": "Prompt",
+          "english": "consigne donnée à l'IA",
           "definition": "Ce que tu tapes à Claude pour lui faire faire quelque chose. La qualité du prompt détermine la qualité de la réponse.",
-          "example": "« Fais-moi un Word explicatif avec des couleurs » est un prompt. Plus c'est précis, meilleur est le résultat." },
-        { "emoji": "🎭", "term": "YAGNI", "english": "You Aren't Gonna Need It",
+          "example": "« Fais-moi un Word explicatif avec des couleurs » est un prompt. Plus c'est précis, meilleur est le résultat."
+        },
+        {
+          "emoji": "🎭",
+          "term": "YAGNI",
+          "english": "You Aren't Gonna Need It",
           "definition": "Principe de développement : « Tu n'en auras pas besoin ». Ne code pas par anticipation des besoins futurs — ajoute les choses quand elles sont vraiment nécessaires. Évite le code dormant.",
-          "example": "On a appliqué YAGNI à ça_swingue 3 : les modules prévus pour 4 futures features ont été supprimés. On les recréera seulement quand on décidera de coder ces features." },
-        { "emoji": "⏰", "term": "Cron", "english": "planificateur de tâches",
+          "example": "On a appliqué YAGNI à ça_swingue 3 : les modules prévus pour 4 futures features ont été supprimés. On les recréera seulement quand on décidera de coder ces features."
+        },
+        {
+          "emoji": "⏰",
+          "term": "Cron",
+          "english": "planificateur de tâches",
           "definition": "Système historique Unix pour programmer des tâches qui se répètent à intervalle fixe (chaque heure, chaque jour à 20 h, tous les lundis, etc.). La « cron expression » est une syntaxe à 5 champs qui décrit le calendrier.",
-          "example": "Pour le suivi de Sophie, on peut créer un cron « tous les dimanches 20 h » qui réveille Claude pour qu'il fasse le bilan hebdo automatiquement." },
-        { "emoji": "🤖", "term": "Remote agent / Trigger", "english": "instance Claude planifiée",
+          "example": "Pour le suivi de Sophie, on peut créer un cron « tous les dimanches 20 h » qui réveille Claude pour qu'il fasse le bilan hebdo automatiquement."
+        },
+        {
+          "emoji": "🤖",
+          "term": "Remote agent / Trigger",
+          "english": "instance Claude planifiée",
           "definition": "Une session Claude qui se lance automatiquement sur un cron, sans que tu aies besoin d'ouvrir l'app toi-même. Créée via le skill schedule. Elle exécute une tâche définie, puis se termine.",
-          "example": "Un remote agent « Sophie — bilan hebdo » peut lire l'export JSON de la semaine, analyser les tendances, te proposer 1-3 ajustements, puis s'arrêter. Résultat dans ta boîte." },
-        { "emoji": "🗂", "term": "Memory (Claude)", "english": "mémoire persistante",
+          "example": "Un remote agent « Sophie — bilan hebdo » peut lire l'export JSON de la semaine, analyser les tendances, te proposer 1-3 ajustements, puis s'arrêter. Résultat dans ta boîte."
+        },
+        {
+          "emoji": "🗂",
+          "term": "Memory (Claude)",
+          "english": "mémoire persistante",
           "definition": "Fichiers que Claude écrit dans ~/.claude/projects/.../memory/ pour se souvenir entre sessions : profil utilisateur, contexte projet, retours d'expérience. Chaque projet a sa propre mémoire. Tu peux la lire, l'éditer, la supprimer.",
-          "example": "Pour le projet Sophie, j'ai trois fichiers mémoire : profil Mathieu, contexte clinique Sophie, vocabulaire informatique. Ça m'évite de repartir de zéro à chaque conversation." },
-        { "emoji": "🔎", "term": "ToolSearch", "english": "chargeur d'outils à la demande",
+          "example": "Pour le projet Sophie, j'ai trois fichiers mémoire : profil Mathieu, contexte clinique Sophie, vocabulaire informatique. Ça m'évite de repartir de zéro à chaque conversation."
+        },
+        {
+          "emoji": "🔎",
+          "term": "ToolSearch",
+          "english": "chargeur d'outils à la demande",
           "definition": "Mécanisme de Claude Code qui permet de charger le détail technique d'un outil seulement quand j'en ai besoin. Au démarrage, certains outils sont listés par leur nom mais pas activés ; je dois taper une requête pour les récupérer et les rendre utilisables. Ça évite de saturer mon contexte avec des centaines d'outils dormants.",
-          "example": "Aujourd'hui, quand j'ai voulu vérifier des citations PubMed, j'ai utilisé ToolSearch pour charger le tool de recherche d'articles, puis j'ai pu interroger la base. Sans ça, j'aurais hallucé les références (comme je l'ai déjà fait) au lieu de les vérifier." },
-        { "emoji": "📅", "term": "Schedule", "english": "skill de planification Claude",
+          "example": "Aujourd'hui, quand j'ai voulu vérifier des citations PubMed, j'ai utilisé ToolSearch pour charger le tool de recherche d'articles, puis j'ai pu interroger la base. Sans ça, j'aurais hallucé les références (comme je l'ai déjà fait) au lieu de les vérifier."
+        },
+        {
+          "emoji": "📅",
+          "term": "Schedule",
+          "english": "skill de planification Claude",
           "definition": "Skill Claude qui crée des remote agents (triggers) programmés sur un cron. Une fois configuré, l'agent s'exécute tout seul à l'heure dite, fait sa tâche, envoie le résultat à l'utilisateur — sans qu'il ait à ouvrir Claude. Nécessite une connexion au compte claude.ai.",
-          "example": "On a tenté de créer « Sophie — Bilan hebdo » (dimanche 20h Europe/Paris) qui analyse les 7 derniers jours de Sophie et propose des ajustements. Première tentative a échoué (problème de connexion claude.ai) — à relancer plus tard." }
+          "example": "On a tenté de créer « Sophie — Bilan hebdo » (dimanche 20h Europe/Paris) qui analyse les 7 derniers jours de Sophie et propose des ajustements. Première tentative a échoué (problème de connexion claude.ai) — à relancer plus tard."
+        },
+        {
+          "emoji": "🔗",
+          "term": "Symlink",
+          "english": "lien symbolique",
+          "definition": "Un raccourci au niveau du système de fichiers qui pointe vers un autre fichier ou dossier. Contrairement à un alias Mac, un symlink est transparent pour les programmes : ils croient lire le fichier original. Si la cible est supprimée ou inaccessible, le symlink devient « cassé » (dangling).",
+          "example": "Les fichiers ~/claude/Glossaire_Developpement.html et .docx sont des symlinks qui pointent vers iCloud Drive. Ça permet de travailler dans ~/claude/ tout en synchronisant automatiquement sur iCloud. En sandbox Cowork, ces symlinks sont cassés car iCloud n'est pas monté."
+        },
+        {
+          "emoji": "🗂️",
+          "term": "Space",
+          "english": "espace de travail Claude Desktop",
+          "definition": "Conteneur dans Claude Desktop qui regroupe un ensemble de conversations, connecteurs MCP et fichiers autour d'un même thème. Chaque Space a sa propre configuration. C'est l'équivalent d'un « projet » mais côté Claude Desktop.",
+          "example": "Tu pourrais avoir un Space « Cabinet médical » avec le connecteur NCBI et le skill verification-ebm, et un Space « Golf » avec les fichiers du projet ça_swingue."
+        },
+        {
+          "emoji": "🪝",
+          "term": "Hook",
+          "english": "crochet / déclencheur automatique",
+          "definition": "Script ou commande qui s'exécute automatiquement avant ou après une action de Claude. Permet d'ajouter des vérifications, transformations ou notifications sans intervention manuelle. Les hooks sont configurés dans les settings du projet.",
+          "example": "On pourrait créer un hook « après chaque génération de fiche médicale, vérifier automatiquement que toutes les sources ont un PMID ». Ou un hook « avant chaque push Git, lancer les tests »."
+        },
+        {
+          "emoji": "🗺️",
+          "term": "Mapping automatique basé sur keywords",
+          "english": "règle de détection par mots-clés",
+          "definition": "Technique qui consiste à associer automatiquement un élément à une catégorie en cherchant des mots-clés dans son contenu. Un dictionnaire de règles (mot-clé → catégorie) est appliqué séquentiellement jusqu'à trouver une correspondance.",
+          "example": "Pour la comptabilité, on a mappé automatiquement 542 libellés bancaires vers des catégories comptables : si le libellé contient « URSSAF » → « Cotisations sociales », « APPLE » → « Matériel informatique », etc."
+        }
       ]
     },
     {
@@ -172,27 +396,374 @@
       "color": "DBEAFE",
       "hue": "blue",
       "terms": [
-        { "emoji": "🌐", "term": "Tailscale", "english": "VPN personnel",
+        {
+          "emoji": "🌐",
+          "term": "Tailscale",
+          "english": "VPN personnel",
           "definition": "Service qui crée un réseau privé chiffré entre TES appareils uniquement. Tu installes l'app sur chaque device, tu te connectes avec le même compte, et ils peuvent se voir entre eux comme s'ils étaient sur le même WiFi. Gratuit pour un usage personnel.",
-          "example": "Le MacBook sert l'app Sophie en HTTPS à l'adresse privée macbook-air-de-mathieu.tailb2f8d7.ts.net. Les 2 iPhones y accèdent via Tailscale — personne d'autre au monde ne peut." },
-        { "emoji": "🔐", "term": "WireGuard", "english": "protocole VPN moderne",
+          "example": "Le MacBook sert l'app Sophie en HTTPS à l'adresse privée macbook-air-de-mathieu.tailb2f8d7.ts.net. Les 2 iPhones y accèdent via Tailscale — personne d'autre au monde ne peut."
+        },
+        {
+          "emoji": "🔐",
+          "term": "WireGuard",
+          "english": "protocole VPN moderne",
           "definition": "Technologie de chiffrement qui sert de moteur à Tailscale. Elle est rapide, moderne, validée cryptographiquement. Tu n'as pas à la configurer — Tailscale s'en occupe.",
-          "example": "Tu n'interagis jamais avec WireGuard directement. C'est la plomberie invisible qui fait que Tailscale chiffre tout entre tes appareils." },
-        { "emoji": "📡", "term": "MagicDNS", "english": "noms lisibles pour tes machines",
+          "example": "Tu n'interagis jamais avec WireGuard directement. C'est la plomberie invisible qui fait que Tailscale chiffre tout entre tes appareils."
+        },
+        {
+          "emoji": "📡",
+          "term": "MagicDNS",
+          "english": "noms lisibles pour tes machines",
           "definition": "Fonction Tailscale qui donne à chacun de tes appareils un nom DNS propre, plutôt que d'avoir à retenir des adresses IP. À activer une fois dans l'admin Tailscale.",
-          "example": "Au lieu de taper https://100.108.23.34:443, tu tapes https://macbook-air-de-mathieu.tailb2f8d7.ts.net. Plus parlant, plus stable." },
-        { "emoji": "⚙️", "term": "Service Worker", "english": "script hors-ligne de la PWA",
+          "example": "Au lieu de taper https://100.108.23.34:443, tu tapes https://macbook-air-de-mathieu.tailb2f8d7.ts.net. Plus parlant, plus stable."
+        },
+        {
+          "emoji": "⚙️",
+          "term": "Service Worker",
+          "english": "script hors-ligne de la PWA",
           "definition": "Petit programme JavaScript qui tourne en arrière-plan dans le navigateur. Il met en cache tous les fichiers de l'app au premier chargement, ce qui permet à la PWA de fonctionner entièrement hors-ligne ensuite. Pour forcer une mise à jour, on change le numéro de version (« bump »).",
-          "example": "L'app Sophie a un service worker sw.js avec CACHE = 'sophie-v5'. Quand on modifie le code, on passe à v6 — les iPhones téléchargent la nouvelle version au prochain refresh." },
-        { "emoji": "🍎", "term": "HealthKit", "english": "base de données santé Apple",
+          "example": "L'app Sophie a un service worker sw.js avec CACHE = 'sophie-v5'. Quand on modifie le code, on passe à v6 — les iPhones téléchargent la nouvelle version au prochain refresh."
+        },
+        {
+          "emoji": "🍎",
+          "term": "HealthKit",
+          "english": "base de données santé Apple",
           "definition": "Système iOS qui centralise toutes les données de santé (entraînements, pas, sommeil, fréquence cardiaque). Réservé aux apps iOS natives — inaccessible depuis une PWA. Pour y accéder, il faut soit une app native, soit passer par l'app Raccourcis.",
-          "example": "Pour faire remonter les entraînements Apple Watch de Sophie dans l'app Sophie, on a créé un Raccourci iOS qui lit HealthKit puis envoie les données à la PWA via une URL." },
-        { "emoji": "🔗", "term": "Raccourcis (Shortcuts)", "english": "automatisation iOS native",
+          "example": "Pour faire remonter les entraînements Apple Watch de Sophie dans l'app Sophie, on a créé un Raccourci iOS qui lit HealthKit puis envoie les données à la PWA via une URL."
+        },
+        {
+          "emoji": "🔗",
+          "term": "Raccourcis (Shortcuts)",
+          "english": "automatisation iOS native",
           "definition": "App native Apple qui permet de créer des automatisations sans coder : lire Santé, envoyer un SMS, ouvrir une URL, appeler une API, chaîner des actions. Les Raccourcis peuvent aussi se déclencher automatiquement (heure, lieu, ouverture d'une app).",
-          "example": "Le Raccourci « Sync Sophie » lit les entraînements du jour dans Santé, les formate en JSON, et ouvre l'URL privée de la PWA pour les importer. Déclenchable manuellement ou chaque soir 21 h." },
-        { "emoji": "🔏", "term": "Certificat HTTPS", "english": "preuve d'authenticité + chiffrement",
+          "example": "Le Raccourci « Sync Sophie » lit les entraînements du jour dans Santé, les formate en JSON, et ouvre l'URL privée de la PWA pour les importer. Déclenchable manuellement ou chaque soir 21 h."
+        },
+        {
+          "emoji": "🔏",
+          "term": "Certificat HTTPS",
+          "english": "preuve d'authenticité + chiffrement",
           "definition": "Fichier cryptographique qui (1) atteste qu'un site est bien celui qu'il prétend être, et (2) active le chiffrement HTTPS. Nécessaire pour installer une PWA sur iPhone. Tailscale génère les certificats automatiquement pour tes machines.",
-          "example": "La commande `tailscale cert macbook-air-de-mathieu.tailb2f8d7.ts.net` a créé le certificat HTTPS qui permet à Safari d'accepter l'adresse de ton MacBook comme site sécurisé." }
+          "example": "La commande `tailscale cert macbook-air-de-mathieu.tailb2f8d7.ts.net` a créé le certificat HTTPS qui permet à Safari d'accepter l'adresse de ton MacBook comme site sécurisé."
+        },
+        {
+          "emoji": "🔀",
+          "term": "CNAME",
+          "english": "Canonical Name — redirection DNS",
+          "definition": "Un type d'enregistrement DNS qui fait pointer un nom de domaine vers un autre nom. C'est un panneau de redirection : quand quelqu'un tape l'adresse A, le DNS le renvoie vers l'adresse B. Ça ne touche pas aux emails (qui utilisent les enregistrements MX, séparés).",
+          "example": "Chez Gandi, tu ajoutes un CNAME : apps.ton-domaine.fr → xyz123.cfargotunnel.com. Résultat : quand tu tapes apps.ton-domaine.fr dans un navigateur, tu arrives sur ton Mac via le tunnel Cloudflare. Tes emails continuent de fonctionner normalement."
+        },
+        {
+          "emoji": "🚇",
+          "term": "Cloudflare Tunnel",
+          "english": "tunnel sécurisé vers internet",
+          "definition": "Programme (cloudflared) qui crée un tunnel chiffré entre ton Mac et les serveurs Cloudflare. Tes apps deviennent accessibles sur internet via une URL publique, sans ouvrir de port sur ta box, sans IP fixe. Alternative à Tailscale quand tu veux que n'importe qui (pas seulement tes appareils) puisse accéder à tes apps.",
+          "example": "Tailscale = réseau privé (seuls TES appareils). Cloudflare Tunnel = accès public (tout le monde, ou restreint par email via Cloudflare Access). Les deux tournent sur ton Mac, les deux sont gratuits, mais ils répondent à des besoins différents."
+        }
+      ]
+    },
+    {
+      "num": 11,
+      "title": "Cowork, Skills et Plugins — l'écosystème Claude au quotidien",
+      "intro": "Section ajoutée lors de l'audit d'avril 2026. Ces termes décrivent comment Claude s'organise pour être plus fiable et plus utile, notamment pour les tâches médicales et documentaires. Si « Claude Code » est la version développeur (terminal), « Cowork » est la version grand public (interface graphique). Les deux utilisent le même système de skills et plugins.",
+      "color": "E8F5E9",
+      "hue": "green",
+      "terms": [
+        {
+          "emoji": "🖥",
+          "term": "Cowork",
+          "english": "interface de bureau Claude",
+          "definition": "L'interface de bureau de Claude pour les non-développeurs. On y accède depuis l'application Claude Desktop. Permet de connecter un dossier de son ordinateur, d'installer des skills et plugins, de lancer des tâches automatisées. C'est la version « grand public » de Claude Code — même moteur, interface plus accessible.",
+          "example": "C'est dans Cowork qu'on a fait l'audit complet, créé le skill verification-ebm, les fiches médicales, les documents comptabilité. On y connecte ~/claude/ comme dossier de travail."
+        },
+        {
+          "emoji": "📋",
+          "term": "SKILL.md",
+          "english": "fichier d'instructions d'un skill",
+          "definition": "Le fichier principal (et obligatoire) d'un skill. Écrit en Markdown avec un en-tête YAML (frontmatter) entre des ---. L'en-tête contient le nom et la description de déclenchement (toujours visibles par Claude). Le corps contient les instructions détaillées (lues uniquement quand le skill se déclenche).",
+          "example": "Le SKILL.md de verification-ebm fait 138 lignes. L'en-tête dit à Claude de s'activer pour « toute production médicale à usage professionnel ou universitaire ». Le corps détaille les 3 étapes : PubMed → HAS → encadré sources."
+        },
+        {
+          "emoji": "📦",
+          "term": "Plugin",
+          "english": "pack de skills + connecteurs",
+          "definition": "Un ensemble de skills, connecteurs MCP et configuration regroupés dans un package installable (.plugin). C'est un niveau d'organisation au-dessus du skill individuel. Un plugin regroupe tout ce qui concerne un domaine.",
+          "example": "Le plugin bio-research contient 6 skills (single-cell QC, Nextflow, scvi-tools...) et le connecteur NCBI/PubMed. On pourrait imaginer un plugin « cabinet-medical » regroupant verification-ebm + courrier-specialiste + protocole-msp."
+        },
+        {
+          "emoji": "🔌",
+          "term": "Connecteur MCP",
+          "english": "pont vers un service externe",
+          "definition": "MCP = Model Context Protocol. Un connecteur MCP est un « pont » entre Claude et un service externe (PubMed/NCBI, Slack, Google Drive...). Il permet à Claude d'aller chercher des données en TEMPS RÉEL, au lieu de se fier à sa mémoire d'entraînement.",
+          "example": "Le connecteur NCBI permet à Claude de chercher des articles sur PubMed et de récupérer PMID, DOI, auteurs, année. C'est grâce à ce connecteur que le skill verification-ebm peut marquer les sources [Vérifiée] au lieu de les inventer."
+        },
+        {
+          "emoji": "🎯",
+          "term": "Triggering (déclenchement)",
+          "english": "activation automatique d'un skill",
+          "definition": "Mécanisme par lequel Claude décide d'activer un skill. Claude compare ta question à la description de chaque skill installé. Si correspondance suffisante, il charge le SKILL.md complet et suit ses instructions. On peut aussi forcer le déclenchement avec /nom-du-skill.",
+          "example": "Quand tu tapes « fais-moi une fiche sur l'HTA », Claude voit que ça correspond à la description de verification-ebm et l'active. Quand tu tapes « c'est quoi la tension ? », pas de match → réponse standard."
+        },
+        {
+          "emoji": "📄",
+          "term": "Frontmatter YAML",
+          "english": "en-tête structuré d'un fichier",
+          "definition": "L'en-tête d'un fichier SKILL.md, entouré de ---. C'est un format de données structurées simple (clé: valeur). Contient le name (identifiant) et la description (critère de déclenchement). Claude lit cette partie en permanence pour décider s'il doit activer le skill.",
+          "example": "---\\nname: verification-ebm\\ndescription: Vérification systématique des sources médicales...\\n--- C'est ce bloc que Claude voit tout le temps. Le reste du fichier, il ne le lit que quand il décide d'activer le skill."
+        },
+        {
+          "emoji": "📎",
+          "term": "Artifact",
+          "english": "page HTML persistante dans Cowork",
+          "definition": "Une page HTML interactive créée par Claude dans Cowork qui persiste entre les sessions. Contrairement aux fichiers classiques, un artifact peut se rafraîchir automatiquement en allant chercher des données à jour via les connecteurs MCP à chaque ouverture.",
+          "example": "On pourrait transformer le tableau de bord de l'audit en artifact : à chaque ouverture, il irait re-vérifier les scores EBM, compter les fiches produites, et afficher l'état actuel."
+        },
+        {
+          "emoji": "⚠️",
+          "term": "Hallucination bibliographique",
+          "english": "invention de source par l'IA",
+          "definition": "Quand un modèle d'IA invente une référence qui n'existe pas : faux titre d'article, faux PMID, fausse date de recommandation, URL qui ne mène nulle part. C'est le risque principal en utilisation médicale de l'IA. Le skill verification-ebm a été créé spécifiquement pour contrer ce risque.",
+          "example": "Sans skill, Claude a cité « ESC/ESH 2023 » pour l'HTA — cette recommandation n'existe pas (c'est ESC 2024 ou ESC/ESH 2018). Avec le skill, il a vérifié sur PubMed et corrigé automatiquement."
+        },
+        {
+          "emoji": "✅",
+          "term": "[Vérifiée] / [Non vérifiée]",
+          "english": "tag de fiabilité des sources",
+          "definition": "Système de marquage créé par le skill verification-ebm. Chaque source citée dans un document médical est étiquetée : [Vérifiée] si Claude a pu confirmer son existence en temps réel (PubMed, site HAS), [Non vérifiée] si elle vient de sa mémoire d'entraînement et n'a pas pu être confirmée.",
+          "example": "Dans la fiche HTA avec skill : « [Vérifiée] ESC 2024 Guidelines for management of elevated blood pressure — PMID 39210706 ». Dans la fiche sans skill : juste « ESC/ESH 2023 » sans PMID ni vérification."
+        },
+        {
+          "emoji": "🏗",
+          "term": "Skill-creator",
+          "english": "skill qui crée des skills",
+          "definition": "Skill spécial pré-installé par Anthropic qui aide à créer d'autres skills. Il guide Claude dans la rédaction du SKILL.md, les tests avec/sans skill, l'évaluation des résultats, le packaging en fichier .skill installable, et l'optimisation de la description de déclenchement.",
+          "example": "C'est avec le skill-creator qu'on a construit verification-ebm : rédaction → test sur 3 cas (HTA Mathieu, purpura Eloi, inertie Marie) → comparaison → packaging."
+        },
+        {
+          "emoji": "📦",
+          "term": "Packaging (.skill)",
+          "english": "compression d'un skill pour installation",
+          "definition": "L'étape de compression d'un dossier skill en fichier .skill (format zip avec extension .skill). C'est comme créer un .zip, mais l'extension .skill permet à Cowork de reconnaître qu'il s'agit d'un skill installable. Double-clic pour installer.",
+          "example": "Le fichier ~/claude/verification-ebm.skill fait 3 Ko. Il contient un seul fichier (verification-ebm/SKILL.md). Les skills plus complexes peuvent contenir des scripts et des ressources en plus."
+        },
+        {
+          "emoji": "🏥",
+          "term": "EBM (Evidence-Based Medicine)",
+          "english": "médecine fondée sur les preuves",
+          "definition": "Principe selon lequel toute décision médicale doit s'appuyer sur les meilleures données scientifiques disponibles. Dans le contexte Claude : toute information médicale produite doit être vérifiée et sourcée, avec grade de preuve (A/B/C/AE) et lien vers la source.",
+          "example": "Le skill verification-ebm applique l'EBM à Claude : au lieu de citer de mémoire « reco HAS 2009 », il va vérifier sur has-sante.fr si cette reco existe, si elle est toujours en vigueur, et donne l'URL directe."
+        },
+        {
+          "emoji": "🔬",
+          "term": "PMID / DOI",
+          "english": "identifiants uniques d'articles scientifiques",
+          "definition": "PMID (PubMed ID) : numéro unique d'un article dans la base PubMed. DOI (Digital Object Identifier) : identifiant universel d'une publication. Ce sont les « numéros de sécu » des articles — ils permettent de retrouver un article de manière certaine, sans ambiguïté.",
+          "example": "L'article ESC 2024 a le PMID 39210706 et le DOI 10.1093/eurheartj/ehae178. Avec ces identifiants, n'importe qui peut retrouver l'article exact en 2 clics."
+        },
+        {
+          "emoji": "🏛",
+          "term": "Projet Claude",
+          "english": "espace de travail persistant",
+          "definition": "Espace dédié dans Claude (interface web claude.ai) avec des instructions persistantes et des fichiers joints. Permet d'éviter de tout ré-expliquer à chaque session. Chaque projet conserve son contexte indéfiniment.",
+          "example": "Recommandé dans l'audit : un projet « Cabinet MSP Campbon » avec les documents ARS, un projet « FMC ActioN » avec les supports de formation, un projet « Juliette » avec le prompt global."
+        },
+        {
+          "emoji": "💬",
+          "term": "present_files",
+          "english": "outil de partage de fichiers Cowork",
+          "definition": "Outil Cowork qui permet à Claude de te « présenter » un fichier sous forme de carte cliquable dans la conversation. Pour les .skill, la carte a un bouton « Enregistrer le skill » qui installe directement. Alternative : utiliser un lien computer:// vers le fichier.",
+          "example": "Quand Claude crée un Word ou un PDF, il utilise present_files pour te donner un lien cliquable. Pour les .skill, c'est le même mécanisme mais avec un bouton d'installation."
+        },
+        {
+          "emoji": "📂",
+          "term": "Workspace",
+          "english": "espace de travail / dossier connecté",
+          "definition": "Le dossier de ton ordinateur que tu connectes à Claude dans Cowork. C'est l'espace dans lequel Claude peut lire et écrire des fichiers. Sans workspace connecté, Claude travaille dans un dossier temporaire qui disparaît à la fin de la session. Avec un workspace, les fichiers persistent sur ton Mac.",
+          "example": "Notre workspace est ~/claude/ — c'est le dossier que tu sélectionnes au lancement de Cowork. Claude y lit le glossaire, les fiches médicales, les documents d'audit, et y écrit les fichiers générés (Word, HTML, PDF). Si tu ne connectes pas ce dossier, Claude ne peut pas accéder à tes projets."
+        }
+      ]
+    },
+    {
+      "num": 12,
+      "title": "Business, financement et stratégie numérique",
+      "intro": "Ces termes viennent du monde des startups et de la finance. Tu les rencontres dans les documents de verticalisation d'Ariane Med, dans les pitchs investisseurs, et chaque fois qu'on parle de modèle économique.",
+      "color": "FFF8E1",
+      "hue": "amber",
+      "terms": [
+        {
+          "emoji": "📦",
+          "term": "SaaS",
+          "english": "Software as a Service",
+          "definition": "Logiciel vendu comme un abonnement mensuel ou annuel, accessible via internet, sans installation. Le client paye chaque mois pour utiliser le logiciel — comme un loyer plutôt qu'un achat. L'éditeur héberge tout, met à jour tout, et facture en continu. C'est le modèle dominant des logiciels professionnels modernes.",
+          "example": "Ariane Med est un SaaS : le cabinet MG solo paye €20/mois (biposte : €30, MSP : €60-75) et accède au cockpit EBM, aux trames et à la connexion apps-sante. Pas de CD-ROM, pas d'installation informaticien — juste un abonnement comme tu payes Netflix."
+        },
+        {
+          "emoji": "🔄",
+          "term": "MRR",
+          "english": "Monthly Recurring Revenue — revenu mensuel récurrent",
+          "definition": "La somme de tous les abonnements actifs en cours, ramenée à un mois. C'est le chiffre que les startups SaaS surveillent chaque semaine : il dit combien d'argent rentre régulièrement, chaque mois, indépendamment des nouvelles ventes. Un MRR stable = une base solide. Un MRR qui monte = croissance. Un MRR qui baisse = clients qui partent.",
+          "example": "Ariane Med à M18 avec 400 cabinets à €24/mois (ARPU blended early adopters) : MRR = 400 × 24 = 9 600 €/mois. Si 10 cabinets réslient en un mois, le MRR perd 240 €. Le MRR est le pouls mensuel de l'entreprise."
+        },
+        {
+          "emoji": "📅",
+          "term": "ARR",
+          "english": "Annual Recurring Revenue — revenu annuel récurrent",
+          "definition": "Le MRR multiplié par 12. Ça donne une vision annuelle de la base d'abonnements. C'est l'unité de mesure standard pour valoriser une startup SaaS : les investisseurs disent « l'entreprise vaut X fois son ARR ». ARR ne veut pas dire que l'argent est déjà encaissé — c'est une projection annualisée du revenu récurrent actuel.",
+          "example": "Ariane Med à M18 : MRR €11 800 × 12 = ARR €141 600. À M30 : MRR €32 120 × 12 = ARR €385 440. L'investisseur qui dit « je valorise à 10 fois l'ARR » propose alors 3,85 M€ à M30."
+        },
+        {
+          "emoji": "👤",
+          "term": "ARPU",
+          "english": "Average Revenue Per User — revenu moyen par utilisateur",
+          "definition": "Le revenu moyen que génère un client par mois. Se calcule en divisant le MRR par le nombre de clients actifs. Permet de mesurer si les clients paient plus (upsell) ou moins (churn des bons clients) dans le temps. Un ARPU qui monte = les clients achètent des options supplémentaires.",
+          "example": "Ariane Med Phase 1 : 400 cabinets, ARPU blended = 63 % × 20 € + 25 % × 30 € + 12 % × 45 € = 26 €. Phase 2 avec l'add-on apps-sante (60 % des cabinets) : ARPU blended monte à 35 € (26 + 0,60 × 15). Le mot « blended » signifie qu'on mélange les clients avec et sans add-on pour obtenir une moyenne pondérée."
+        },
+        {
+          "emoji": "💰",
+          "term": "LTV",
+          "english": "Lifetime Value — valeur vie client",
+          "definition": "Combien d'argent un client va rapporter en moyenne sur toute sa durée de vie comme client. Se calcule simplement : ARPU divisé par le taux de churn mensuel. C'est l'équivalent en business de la valeur d'un patient chronique fidèle : quelqu'un qui reste 10 ans avec son MG vaut bien plus qu'un patient vu une seule fois.",
+          "example": "Ariane Med Phase 2 : ARPU €35, churn 2 %/mois → LTV = 35 ÷ 0,02 = 1 750 €. Ça veut dire qu'un cabinet MG qui s'abonne rapportera en moyenne 1 750 € avant de résilier. Phase 1 (churn 5 %) : LTV = 24 ÷ 0,05 = 480 €."
+        },
+        {
+          "emoji": "🎯",
+          "term": "CAC",
+          "english": "Customer Acquisition Cost — coût d'acquisition client",
+          "definition": "Combien ça coûte en moyenne d'aller chercher un nouveau client : marketing, commercial, démos, conférences FMC, temps passé. C'est la dépense faite AVANT que le client paye. Un modèle sain a un CAC bas et une LTV haute.",
+          "example": "Ariane Med Phase 1 utilise le réseau confraternel MG (bouche à oreille entre médecins, pas de commercial terrain) → CAC estimé à €120/cabinet. Phase 2 avec le Pôle 2 commercial actif : CAC monte à €180. Reste excellent car la LTV est de €3 650."
+        },
+        {
+          "emoji": "📊",
+          "term": "Ratio LTV/CAC",
+          "english": "LTV/CAC ratio",
+          "definition": "Le rapport qui résume en un seul chiffre si le modèle économique est sain : combien de fois la valeur vie client dépasse le coût pour l'acquérir. En dessous de 3 : l'entreprise perd de l'argent sur chaque client. Entre 3 et 8 : correct. Au-dessus de 10 : excellent. C'est comme comparer le coût d'installation d'un cabinet (CAC) au revenu total qu'il génère sur 30 ans de carrière (LTV).",
+          "example": "Ariane Med Phase 1 : LTV €1 180 / CAC €120 = 9,8×. Phase 2 : LTV €3 650 / CAC €180 = 20,3×. Un LTV/CAC de 20× signifie que le modèle de diffusion confraternelle est structurellement très efficace — chaque euro dépensé en acquisition rapporte 20 euros."
+        },
+        {
+          "emoji": "🚪",
+          "term": "Churn",
+          "english": "taux de résiliation — attrition",
+          "definition": "Le pourcentage de clients qui résilient chaque mois. C'est la fuite permanente de revenus. Un churn de 5 %/mois veut dire que sur 100 clients en janvier, il en reste 95 en février, 90 en mars, etc. En un an à 5 %/mois, on perd presque la moitié de sa base. Le churn est l'ennemi n°1 du SaaS.",
+          "example": "Ariane Med Phase 1 cible un churn de 5 %/mois au démarrage, 4 % à M18. Phase 2 avec la boucle patient apps-sante activée : churn cible 2 %/mois, car quitter le service coûte cher (données perdues, 20 patients à réexpliquer). Le switching cost naturel fait baisser le churn."
+        },
+        {
+          "emoji": "📈",
+          "term": "Net Revenue Retention",
+          "english": "NRR — rétention nette des revenus",
+          "definition": "Mesure si les clients existants paient plus ou moins avec le temps, en comptant à la fois les résiliations ET les ventes additionnelles (upsell). Un NRR > 100 % signifie que même sans nouveaux clients, les revenus augmentent grâce aux options achetées en plus. C'est le signe que le produit crée de la valeur croissante.",
+          "example": "Ariane Med Phase 2 : NRR visé ~112 %. Sur 100 € de MRR en début d'année, les clients existants génèrent 112 € en fin d'année grâce à l'add-on apps-sante. Chaque cabinet qui adopte l'add-on compense plusieurs résiliations."
+        },
+        {
+          "emoji": "💹",
+          "term": "Marge brute",
+          "english": "Gross Margin",
+          "definition": "Le pourcentage de chaque euro de revenu qui reste après avoir payé les coûts directement liés à délivrer le service (hébergement, API IA, support). C'est la matière première du bénéfice. Un SaaS bien construit a une marge brute de 65-80 %. Ce qui reste sert à payer l'équipe, le marketing, et à faire du bénéfice.",
+          "example": "Ariane Med Phase 2 : ARPU €35, coût marginal €14,50/cabinet → marge brute = (35-14,50)/35 = 59 %. Sans l'IA (coût marginal €37), la marge serait −6 % : le modèle classique perd de l'argent à ce prix ! L'IA est donc la seule architecture viable à €20-35 d'ARPU. C'est aussi un verrou concurrentiel : aucun LGC traditionnel ne peut entrer sur ce segment."
+        },
+        {
+          "emoji": "📉",
+          "term": "EBITDA",
+          "english": "Earnings Before Interest, Taxes, Depreciation and Amortization",
+          "definition": "Bénéfice d'exploitation de l'entreprise avant les intérêts, impôts et amortissements comptables. En français : résultat brut d'exploitation. C'est ce qui reste des revenus après avoir payé tous les coûts de fonctionnement réels (salaires, serveurs, marketing). L'indicateur central de la santé économique opérationnelle.",
+          "example": "Ariane Med M30 : MRR €32 120 — coûts marginaux €6 380 — salaires équipe €14 000 — marketing €2 000 = EBITDA mensuel ~€9 740. Annualisé : ~€117k/an. Marge EBITDA = 30 %. À M48 : EBITDA mensuel €43k soit 55 % de marge — signe que l'entreprise est très rentable."
+        },
+        {
+          "emoji": "🌱",
+          "term": "Bootstrapping",
+          "english": "autofinancement — démarrage sans investisseur",
+          "definition": "Construire et développer son entreprise avec ses propres ressources, sans lever de fonds auprès d'investisseurs extérieurs. L'entreprise se finance uniquement par ses revenus et le travail du fondateur. Plus lent, mais le fondateur garde 100 % du capital. Vient de l'expression anglaise « se soulever par les lacets de ses propres bottes ».",
+          "example": "Ariane Med en scénario bootstrappé (M0 à M54 sans levée) : le fondateur se sous-rémunère (€3k/mois Phase 1), réinvestit les revenus dans le développement. ARR de €1,35M à M54 avec 0€ levé. Possible grâce aux faibles coûts marginaux de l'instrumentation IA (Claude API)."
+        },
+        {
+          "emoji": "🏦",
+          "term": "Levée de fonds",
+          "english": "funding round / fundraising",
+          "definition": "Opération par laquelle une startup vend une part de son capital à des investisseurs en échange d'argent frais pour accélérer. Les tours successifs ont des noms : Pre-seed (très tôt), Seed / Amorçage, Série A, Série B... Le montant levé et la dilution du fondateur augmentent à chaque tour.",
+          "example": "Pour Ariane Med, la levée d'amorçage envisagée à M18-M24 serait de €400-600k (BPI + Business Angels), pour financer les Pôles 2+3 et le module apps-sante. En échange, l'investisseur reçoit ~15-20 % du capital."
+        },
+        {
+          "emoji": "💎",
+          "term": "Valorisation pre-money / post-money",
+          "english": "pre-money / post-money valuation",
+          "definition": "La valeur estimée de l'entreprise AVANT (pre-money) ou APRÈS (post-money) une levée de fonds. Si une startup est valorisée 2 M€ pre-money et lève 500k€, sa valorisation post-money est 2,5 M€. L'investisseur qui apporte 500k€ détient 500k/2 500k = 20 % du capital.",
+          "example": "Ariane Med à M30 (ARR €385k, multiple 10×) : valorisation pre-money ~€3,85 M. Levée de €600k → post-money €4,45 M. L'investisseur reçoit 600/4 450 = 13,5 % du capital. Le fondateur en garde 86,5 %."
+        },
+        {
+          "emoji": "✖️",
+          "term": "Multiple ARR",
+          "english": "ARR multiple / revenue multiple",
+          "definition": "Le coefficient utilisé pour calculer la valorisation d'une startup SaaS : Valorisation = ARR × Multiple. Le multiple dépend du stade, du secteur et de la conjoncture. En 2025-2026 : 8-15× pour un SaaS santé en croissance en France. Les entreprises IA-natives et healthtech/DTx bénéficient d'une prime supplémentaire de 25-50 %.",
+          "example": "Ariane Med à M42 (ARR €750k) avec multiple 14× → valorisation €10,5 M. Si le dossier DTx avance (prime santé numérique), le multiple monte à 18-20× → valorisation €13-15 M. L'instrumentation IA-native (Claude) justifie +30 % vs un SaaS médical classique selon le Galion Project 2025."
+        },
+        {
+          "emoji": "🔐",
+          "term": "Switching cost",
+          "english": "coût de changement — barrière d'inertie",
+          "definition": "Le coût réel (temps, argent, risque) qu'un client devrait payer pour quitter un service et aller chez un concurrent. Plus ce coût est élevé, plus le client reste — même s'il n'est pas totalement satisfait. C'est une barrière de fidélisation structurelle, différente de la simple satisfaction.",
+          "example": "Pour Ariane Med : un cabinet MG qui suit 20 patients chroniques via apps-sante a un switching cost élevé. Résilier = interrompre le suivi numérique de 20 patients, perdre leurs données de boucle retour, ré-expliquer le changement à chaque patient. Ce coût de sortie croît mécaniquement avec chaque patient actif supplémentaire."
+        },
+        {
+          "emoji": "🏰",
+          "term": "Moat",
+          "english": "douves — barrière défensive durable",
+          "definition": "Avantage concurrentiel durable qui empêche les concurrents de prendre des parts de marché. Comme les douves d'un château médiéval. En SaaS santé, les moats les plus forts sont : les données propriétaires irréproductibles, les intégrations réglementaires coûteuses (Ségur), les effets réseau, et les switching costs élevés.",
+          "example": "Les 5 dimensions de singularité d'Ariane Med constituent son moat : cockpit EBM + prescription numérique + boucle retour + API_SCOPE + données RWE population MG. Le moat data (Strate 4) est le plus fort : un concurrent qui part de zéro a 3-5 ans de retard sur la taille de la cohorte et ne peut pas la rattraper par l'argent seul."
+        },
+        {
+          "emoji": "🧬",
+          "term": "RWE",
+          "english": "Real World Evidence — données de vie réelle",
+          "definition": "Données médicales collectées en dehors des essais cliniques contrôlés : en pratique courante, dans la vraie vie des patients. Contrairement aux essais (patients sélectionnés, protocole strict, population homogène), les RWE viennent de patients réels, polymorbides, avec leur polypharmacie habituelle. La HAS et les agences de régulation exigent de plus en plus ces données pour évaluer les thérapeutiques numériques.",
+          "example": "La Strate 4 d'Ariane Med génère des RWE en soins primaires : données longitudinales de patients MG polymorbides (HTA + diabète + ICC), collectées via la boucle retour apps-sante, avec consentement opt-in. Ces données sont quasi inexistantes dans la littérature médicale — elles ont une valeur immense pour INSERM, CNAM, et l'industrie pharmaceutique."
+        },
+        {
+          "emoji": "💊",
+          "term": "DTx",
+          "english": "Digital Therapeutics — thérapeutiques numériques",
+          "definition": "Applications de santé qui ont démontré une efficacité clinique et obtenu une reconnaissance réglementaire (HAS en France, FDA aux États-Unis). Une DTx n'est pas une simple app wellness — c'est un logiciel qui traite une pathologie, avec des données cliniques qui prouvent son efficacité. En France, elles peuvent être remboursées par l'Assurance Maladie via un forfait.",
+          "example": "apps-sante pourrait devenir une DTx remboursée si le dossier HAS est constitué avec des données RWE (Strate 4) démontrant que l'app diabète améliore l'HbA1c ou que l'app HTA réduit les consultations non programmées. Le forfait potentiel : ~€100/patient/an. 10 000 patients actifs = €1 M/an supplémentaire."
+        },
+        {
+          "emoji": "📐",
+          "term": "TAM",
+          "english": "Total Addressable Market — marché total adressable",
+          "definition": "La taille maximale théorique du marché si l'entreprise captait 100 % des clients potentiels. Sert à calibrer l'ambition et à montrer à un investisseur que le marché est suffisamment grand pour justifier l'investissement. En pratique, une startup vise d'abord le SAM (marché atteignable) puis le SOM (part réaliste à court terme).",
+          "example": "TAM d'Ariane Med — MG seul : 30 000 cabinets × €85/mois ARPU × 12 = €30,6 M/an. Avec spécialistes : +€20 M. Avec RWE institutionnel : +€2-5 M. TAM total France : ~€52 M/an. Suffisant pour justifier un exit à €20-40 M, cohérent avec les attentes d'un fonds de santé numérique."
+        },
+        {
+          "emoji": "🤝",
+          "term": "Business Angel",
+          "english": "BA — investisseur providentiel",
+          "definition": "Personne physique (souvent un entrepreneur qui a réussi ou un cadre dirigeant) qui investit son propre argent dans une startup à un stade précoce. En échange d'une part du capital, il apporte aussi souvent son réseau et son expérience sectorielle. C'est le premier filet de sécurité financier après le financement personnel (love money).",
+          "example": "Pour Ariane Med, les Business Angels idéaux seraient des médecins entrepreneurs, des professionnels de la santé numérique, ou des anciens dirigeants de LGC. Ticket typique en France : €20k-100k par BA. Une levée d'amorçage de €400k = 5 à 10 BA réunis."
+        },
+        {
+          "emoji": "🏋️",
+          "term": "Due diligence",
+          "english": "audit d'investissement — vérification approfondie",
+          "definition": "Processus d'investigation approfondie qu'un investisseur effectue avant d'investir : vérification des comptes, des contrats, du code, des risques juridiques. C'est l'équivalent d'un bilan pré-opératoire avant une chirurgie majeure : on vérifie que tout est solide avant de s'engager. En SaaS santé, elle inclut aussi la conformité RGPD et le statut réglementaire.",
+          "example": "Avant d'investir dans Ariane Med, un fonds ferait une due diligence sur : les métriques SaaS (churn, LTV/CAC, MRR), la conformité Ségur DSR V3, le statut juridique des apps-sante (DM logiciel ou pas ?), la propriété intellectuelle du code, et les risques R-B1 à R-B11 listés dans l'audit stratégique."
+        },
+        {
+          "emoji": "🎰",
+          "term": "BSPCE",
+          "english": "Bons de Souscription de Parts de Créateur d'Entreprise",
+          "definition": "Outil fiscal français qui permet à une startup d'attirer des talents en leur donnant des options sur des parts de l'entreprise à un prix fixé aujourd'hui. Si l'entreprise réussit et vaut bien plus dans 3-5 ans, le bénéficiaire achète ses parts à l'ancien prix et empoche la différence. Soumis à une fiscalité très avantageuse (imposition sur la plus-value, pas sur le salaire).",
+          "example": "Pour attirer le CTO (Pôle 3) d'Ariane Med sans pouvoir payer un salaire de marché (€70-90k/an), on peut lui offrir des BSPCE : option d'acheter 5 % du capital à la valorisation amorçage (€1,5 M = €75k pour 5 %). Si l'entreprise est vendue €10 M dans 4 ans, ses 5 % valent €500k. C'est sa rémunération différée."
+        },
+        {
+          "emoji": "🏛️",
+          "term": "Equity",
+          "english": "capital — parts du capital",
+          "definition": "La part de propriété qu'une personne détient dans une entreprise, exprimée en pourcentage du capital total. Posséder de l'equity, c'est être copropriétaire : on a droit à une part des bénéfices futurs et du produit d'une vente (exit). L'equity peut être attribuée au fondateur (contrepartie de l'idée et du travail initial), achetée par un investisseur (contre de l'argent frais), ou offerte à un associé en compensation d'un travail quand la trésorerie est nulle. C'est la monnaie d'échange des startups en phase de démarrage.",
+          "example": "Dans Ariane Med, les 4 pôles sont rémunérés en equity sur toutes les phases : le Fondateur (vision terrain, UX/UI), le CTO (développement), le pôle commercial/marketing et le pôle gestion de projet. L'équipe est constituée d'associés-copropriétaires, pas de salariés. Un associé qui détient 8 % de l'equity devient copropriétaire à 8 % : si l'entreprise est vendue €8 M dans 5 ans, il perçoit €640k. L'equity aligne les intérêts de toute l'équipe sur la réussite commune — chacun a la même raison de vouloir que ça marche."
+        },
+        {
+          "emoji": "⚡",
+          "term": "Quick win",
+          "english": "gain rapide / victoire rapide",
+          "definition": "Une action à faible effort mais à fort impact visible, qu'on réalise vite pour obtenir un résultat concret et motivant. Dans un projet, on commence souvent par les quick wins : ils prouvent que ça marche, rassurent les utilisateurs et créent de l'élan avant d'attaquer les chantiers lourds. C'est l'opposé d'un projet de fond, long et coûteux. L'analogie médicale : c'est le geste simple qui soulage tout de suite (l'antalgique donné en salle d'attente) avant de lancer le bilan complet — peu coûteux, effet rapide, confiance gagnée.",
+          "example": "Dans l'app SAHOS, ajouter le bouton « Revoir la visite guidée » dans le Mode d'emploi était un quick win : quelques minutes de code, mais un vrai confort pour l'utilisateur. À l'inverse, brancher HealthKit sur la PWA de Sophie n'est pas un quick win — c'est un chantier (Raccourci iOS, certificat HTTPS, sync JSON). Bonne pratique : lister les quick wins en début de projet et les traiter en premier."
+        }
       ]
     }
   ],
@@ -201,10 +772,26 @@
     "title": "Comprendre la structure de tes projets",
     "intro": "Tu as 4 projets golf en parallèle. Voici comment ils s'articulent :",
     "rows": [
-      ["ça_swingue/", "App v2 en production, stable, utilisée", "🟢 Ne pas toucher"],
-      ["ça_swingue_3/", "Évolutions v2 (4 features prévues)", "🚧 Fondations posées"],
-      ["ça_swingue_4/", "Fusion 3 outils (PWA + Nantes + golf-suivi)", "🎯 Plan écrit, pas démarré"],
-      ["birdie_club/", "App indépendante championnats multi-user", "🆕 Plan écrit, pas démarré"]
+      [
+        "ça_swingue/",
+        "Ancienne v2 (avec Firebase), dépubliée le 23/09/2026",
+        "🗄️ Archive, ne plus déployer"
+      ],
+      [
+        "ça_swingue_3/",
+        "v3 en ligne sur golf.virondaud.fr/ca-swingue/ (sans Firebase)",
+        "🟢 Source du site en ligne"
+      ],
+      [
+        "ça_swingue_4/",
+        "Fusion 3 outils (PWA + Nantes + golf-suivi)",
+        "🎯 Plan écrit, pas démarré"
+      ],
+      [
+        "birdie_club/",
+        "App indépendante championnats multi-user",
+        "🆕 Plan écrit, pas démarré"
+      ]
     ],
     "note": "Chaque projet a sa propre roadmap et sa propre arborescence. Règle d'or : ne jamais modifier un projet depuis un autre (permissions strictes dans les settings.local.json)."
   },
@@ -213,23 +800,69 @@
     "title": "Quelques commandes à connaître",
     "intro": "Des commandes à taper dans GitHub Desktop ou que tu verras passer dans nos échanges :",
     "items": [
-      ["📂 Pour lancer ton serveur local", "Double-clic sur Lancer_v3.command", "Ouvre un serveur Python sur le port 8093 pour tester v3 localement"],
-      ["🔄 Pour voir tes commits", "GitHub Desktop → sidebar gauche → History", "Liste tous tes commits avec leurs messages"],
-      ["📤 Pour publier des changements", "GitHub Desktop → Push origin", "Envoie tes commits locaux vers GitHub"],
-      ["👁 Pour voir ton app en prod", "Ouvrir virondaud.github.io/<nom_repo>/", "L'URL publique après déploiement"],
-      ["📊 Pour voir les workflows", "GitHub web → onglet Actions", "Statut des derniers runs (verts/rouges)"]
+      [
+        "📂 Pour lancer ton serveur local",
+        "Double-clic sur Lancer_v3.command",
+        "Ouvre un serveur Python sur le port 8093 pour tester v3 localement"
+      ],
+      [
+        "🔄 Pour voir tes commits",
+        "GitHub Desktop → sidebar gauche → History",
+        "Liste tous tes commits avec leurs messages"
+      ],
+      [
+        "📤 Pour sauvegarder ton code sur GitHub",
+        "GitHub Desktop → Push origin",
+        "Envoie tes commits vers GitHub (copie de sécurité du code — ne met plus rien en ligne)"
+      ],
+      [
+        "👁 Pour voir ton app en ligne",
+        "Ouvrir golf.virondaud.fr/<site>/ (ou « 1 · Voir où j'en suis »)",
+        "L'adresse publique chez Infomaniak — GitHub Pages n'est plus utilisé depuis le 23/09/2026"
+      ],
+      [
+        "📊 Pour voir les workflows",
+        "GitHub web → onglet Actions",
+        "Statut des derniers runs (verts/rouges)"
+      ]
     ]
   },
   "recap": {
     "num": 9,
     "title": "À retenir",
     "items": [
-      ["🎯 Feature", "pour TOI (l'utilisateur final)"],
-      ["⚙️ Workflow", "pour l'APP (action automatique sur GitHub)"],
-      ["🧠 Skill", "pour CLAUDE (commande IA)"],
-      ["📦 Module", "pour le CODE (bloc réutilisable)"],
-      ["🚀 Deploy", "pour le DÉPLOIEMENT (mise en ligne)"],
-      ["🔒 CSP", "pour la SÉCURITÉ (règles du navigateur)"]
+      [
+        "🎯 Feature",
+        "pour TOI (l'utilisateur final)"
+      ],
+      [
+        "⚙️ Workflow",
+        "pour l'APP (action automatique sur GitHub)"
+      ],
+      [
+        "🧠 Skill",
+        "pour CLAUDE (fiche d'instructions vérifiable)"
+      ],
+      [
+        "🖥 Cowork",
+        "pour TOI (interface Claude graphique)"
+      ],
+      [
+        "🔌 Connecteur MCP",
+        "pour les DONNÉES (pont vers PubMed, HAS...)"
+      ],
+      [
+        "📦 Module",
+        "pour le CODE (bloc réutilisable)"
+      ],
+      [
+        "🚀 Deploy",
+        "pour le DÉPLOIEMENT (mise en ligne)"
+      ],
+      [
+        "🔒 CSP",
+        "pour la SÉCURITÉ (règles du navigateur)"
+      ]
     ]
   }
 }

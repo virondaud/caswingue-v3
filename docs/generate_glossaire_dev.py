@@ -10,7 +10,15 @@ from datetime import datetime
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(HERE, "glossaire_data.json")
-OUTPUT = "/Users/mathieuvirondaud/claude/Glossaire_Developpement.docx"
+
+# Chemin de sortie adaptatif : accepte un argument en ligne de commande,
+# sinon utilise le chemin par défaut (~/claude/ qui peut être un symlink iCloud).
+# En Cowork (sandbox), passer le chemin de sortie en argument.
+import sys
+if len(sys.argv) > 1:
+    OUTPUT = sys.argv[1]
+else:
+    OUTPUT = "/Users/mathieuvirondaud/claude/Glossaire_Developpement.docx"
 
 DARK_GREEN = RGBColor(0x00, 0x60, 0x39)
 GREEN = RGBColor(0x16, 0xa3, 0x4a)
